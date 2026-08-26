@@ -26,3 +26,17 @@ Offline Windows desktop repair-shop app (Tauri 2 + React/TS + Rust + SQLite). Wo
 8. i18n for all user-facing strings (`en`, `es`, `de`).
 9. Performance over visual effects; Windows 10/11 x64 + 4 GB RAM target.
 10. Never commit secrets; never log customer PII.
+
+## Specialized agents (keep context small)
+
+Use project subagents under `.cursor/agents/` so one chat does not own the whole stack:
+
+| Invoke | Owns |
+| --- | --- |
+| `/frontend` | `src/**` UI only |
+| `/backend` | `src-tauri/**` only |
+| `/i18n` | Locale catalogs `en`/`es`/`de` |
+| `/verifier` | Run checks; report pass/fail (readonly) |
+| `/phase-orchestrator` | Phase plan, IPC split, 12-point report (readonly) |
+
+Typical phase slice: orchestrator locks the contract → backend implements → frontend wires → i18n fills strings → verifier runs tests.

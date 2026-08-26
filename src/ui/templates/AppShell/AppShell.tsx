@@ -37,6 +37,19 @@ export function AppShell() {
           >
             {t("nav.customers")}
           </NavLink>
+          <NavLink
+            to="/devices"
+            className={({ isActive }) =>
+              cn(
+                "rounded-md px-3 py-2 text-sm",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-foreground hover:bg-background",
+              )
+            }
+          >
+            {t("nav.devices")}
+          </NavLink>
         </nav>
       </aside>
       <div className="min-w-0 flex-1">

@@ -4,6 +4,8 @@ export { TextField } from "./atoms/TextField";
 export type { TextFieldProps } from "./atoms/TextField";
 export { TextArea } from "./atoms/TextArea";
 export type { TextAreaProps } from "./atoms/TextArea";
+export { SelectField } from "./atoms/SelectField";
+export type { SelectFieldProps } from "./atoms/SelectField";
 export { StatusMessage } from "./atoms/StatusMessage";
 export type { StatusMessageProps } from "./atoms/StatusMessage";
 export { FormField } from "./molecules/FormField";

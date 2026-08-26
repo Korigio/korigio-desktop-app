@@ -8,7 +8,8 @@
   },
   "nav": {
     "home": "Inicio",
-    "customers": "Clientes"
+    "customers": "Clientes",
+    "devices": "Dispositivos"
   },
   "common": {
     "loading": "Cargando…",
@@ -58,6 +59,50 @@
     },
     "validation": {
       "nameRequired": "El nombre es obligatorio."
+    }
+  },
+  "devices": {
+    "title": "Dispositivos",
+    "subtitle": "Buscar por número de serie, marca o modelo",
+    "customerSectionTitle": "Dispositivos",
+    "createTitle": "Nuevo dispositivo",
+    "createSubtitle": "Vincular hardware a un cliente",
+    "editTitle": "Editar dispositivo",
+    "search": "Buscar",
+    "searchPlaceholder": "Serie, fabricante, modelo o tipo",
+    "includeArchived": "Incluir archivados",
+    "empty": "No hay dispositivos",
+    "notFound": "Dispositivo no encontrado",
+    "invalidId": "Identificador de dispositivo no válido",
+    "backToList": "Volver a dispositivos",
+    "archivedEditHint": "Desarchive el dispositivo para poder editarlo.",
+    "fields": {
+      "device": "Dispositivo",
+      "customer": "Cliente",
+      "customerPlaceholder": "Seleccione un cliente",
+      "deviceType": "Tipo",
+      "manufacturer": "Fabricante",
+      "model": "Modelo",
+      "serialNumber": "Número de serie",
+      "accessories": "Accesorios",
+      "notes": "Notas",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Activo",
+      "archived": "Archivado"
+    },
+    "actions": {
+      "new": "Nuevo dispositivo",
+      "create": "Crear dispositivo",
+      "save": "Guardar",
+      "edit": "Editar",
+      "archive": "Archivar",
+      "unarchive": "Desarchivar"
+    },
+    "validation": {
+      "customerRequired": "El cliente es obligatorio.",
+      "identityHint": "Indique al menos tipo, fabricante, modelo o número de serie."
     }
   }
 }

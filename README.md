@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 3 — customer domain (CRUD, search, soft archive).
+Phase 4 — device domain (linked to customers, serial search, soft archive).

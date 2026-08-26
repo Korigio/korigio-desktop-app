@@ -17,6 +17,7 @@ Do **not** introduce: Electron, Next.js, MUI, Ant Design, Chakra, local HTTP API
 - After each phase: full 12-point report, then STOP.
 - Do not start the next phase without explicit approval.
 - Docs: `docs/roadmap.md`, `docs/architecture.md`, `docs/coding-standards.md`, `docs/decisions/`.
+- Prefer specialized subagents (`.cursor/agents/`) for phase work: `/frontend`, `/backend`, `/i18n`, `/verifier`, `/phase-orchestrator` — keep each agent in its lane.
 
 ## Architecture
 

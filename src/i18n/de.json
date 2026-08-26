@@ -8,7 +8,8 @@
   },
   "nav": {
     "home": "Start",
-    "customers": "Kunden"
+    "customers": "Kunden",
+    "devices": "Geräte"
   },
   "common": {
     "loading": "Laden…",
@@ -58,6 +59,50 @@
     },
     "validation": {
       "nameRequired": "Name ist erforderlich."
+    }
+  },
+  "devices": {
+    "title": "Geräte",
+    "subtitle": "Geräte nach Seriennummer, Marke oder Modell suchen",
+    "customerSectionTitle": "Geräte",
+    "createTitle": "Neues Gerät",
+    "createSubtitle": "Hardware einem Kunden zuordnen",
+    "editTitle": "Gerät bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Serie, Hersteller, Modell oder Typ",
+    "includeArchived": "Archivierte anzeigen",
+    "empty": "Keine Geräte gefunden",
+    "notFound": "Gerät nicht gefunden",
+    "invalidId": "Ungültige Geräte-ID",
+    "backToList": "Zurück zu Geräten",
+    "archivedEditHint": "Gerät zuerst wiederherstellen, um zu bearbeiten.",
+    "fields": {
+      "device": "Gerät",
+      "customer": "Kunde",
+      "customerPlaceholder": "Kunde auswählen",
+      "deviceType": "Typ",
+      "manufacturer": "Hersteller",
+      "model": "Modell",
+      "serialNumber": "Seriennummer",
+      "accessories": "Zubehör",
+      "notes": "Notizen",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Aktiv",
+      "archived": "Archiviert"
+    },
+    "actions": {
+      "new": "Neues Gerät",
+      "create": "Gerät anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "unarchive": "Wiederherstellen"
+    },
+    "validation": {
+      "customerRequired": "Kunde ist erforderlich.",
+      "identityHint": "Mindestens Typ, Hersteller, Modell oder Seriennummer angeben."
     }
   }
 }

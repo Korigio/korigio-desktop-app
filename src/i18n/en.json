@@ -8,7 +8,8 @@
   },
   "nav": {
     "home": "Home",
-    "customers": "Customers"
+    "customers": "Customers",
+    "devices": "Devices"
   },
   "common": {
     "loading": "Loading…",
@@ -58,6 +59,50 @@
     },
     "validation": {
       "nameRequired": "Name is required."
+    }
+  },
+  "devices": {
+    "title": "Devices",
+    "subtitle": "Search devices by serial, brand or model",
+    "customerSectionTitle": "Devices",
+    "createTitle": "New device",
+    "createSubtitle": "Link hardware to a customer",
+    "editTitle": "Edit device",
+    "search": "Search",
+    "searchPlaceholder": "Serial, manufacturer, model or type",
+    "includeArchived": "Include archived",
+    "empty": "No devices found",
+    "notFound": "Device not found",
+    "invalidId": "Invalid device id",
+    "backToList": "Back to devices",
+    "archivedEditHint": "Unarchive the device before editing.",
+    "fields": {
+      "device": "Device",
+      "customer": "Customer",
+      "customerPlaceholder": "Select a customer",
+      "deviceType": "Type",
+      "manufacturer": "Manufacturer",
+      "model": "Model",
+      "serialNumber": "Serial number",
+      "accessories": "Accessories",
+      "notes": "Notes",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "actions": {
+      "new": "New device",
+      "create": "Create device",
+      "save": "Save",
+      "edit": "Edit",
+      "archive": "Archive",
+      "unarchive": "Unarchive"
+    },
+    "validation": {
+      "customerRequired": "Customer is required.",
+      "identityHint": "Enter at least a type, manufacturer, model, or serial number."
     }
   }
 }

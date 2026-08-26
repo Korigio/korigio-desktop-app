@@ -10,7 +10,7 @@ Do not combine phases without permission. Do not implement unsolicited features.
 | 1 | Minimal skeleton | **Done** — Tauri + React + Vite + Tailwind tokens + Router placeholder |
 | 2 | Database foundation | **Done** — SQLite, migrations, AppData, connection, tests |
 | 3 | Customer domain | **Done** — CRUD, search, archive, Form + Table examples |
-| 4 | Device domain | Devices linked to customers, serial search |
+| 4 | Device domain | **Done** — devices linked to customers, serial search, archive |
 | 5 | Repair order domain | Numbers, status, core fields |
 | 6 | Repair workflow UI | Fast keyboard data entry |
 | 7 | Search | DB-side multi-field search + indexes |
