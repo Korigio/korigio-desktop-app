@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 4 — device domain (linked to customers, serial search, soft archive).
+Phase 5 — repair order domain (YYYY-NNNNNN numbering, status, core CRUD).

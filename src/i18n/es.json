@@ -10,6 +10,7 @@
     "home": "Inicio",
     "customers": "Clientes",
     "devices": "Dispositivos",
+    "repairs": "Reparaciones",
     "settings": "Ajustes"
   },
   "common": {
@@ -104,6 +105,62 @@
     "validation": {
       "customerRequired": "El cliente es obligatorio.",
       "identityHint": "Indique al menos tipo, fabricante, modelo o número de serie."
+    }
+  },
+  "repairs": {
+    "title": "Reparaciones",
+    "subtitle": "Buscar, crear y gestionar reparaciones",
+    "customerSectionTitle": "Reparaciones",
+    "deviceSectionTitle": "Reparaciones",
+    "createTitle": "Nueva reparación",
+    "createSubtitle": "Registrar una reparación para un cliente y dispositivo",
+    "editTitle": "Editar reparación",
+    "search": "Buscar",
+    "searchPlaceholder": "Número, cliente o dispositivo",
+    "statusFilterAll": "Todos los estados",
+    "empty": "No hay reparaciones",
+    "notFound": "Reparación no encontrada",
+    "invalidId": "Identificador de reparación no válido",
+    "backToList": "Volver a reparaciones",
+    "archivedEditHint": "Desarchive la reparación para poder editarla.",
+    "fields": {
+      "repairNumber": "Número",
+      "status": "Estado",
+      "customer": "Cliente",
+      "customerPlaceholder": "Seleccione un cliente",
+      "device": "Dispositivo",
+      "devicePlaceholder": "Seleccione un dispositivo",
+      "receivedAt": "Fecha de recepción",
+      "reportedProblem": "Problema reportado",
+      "accessoriesReceived": "Accesorios recibidos",
+      "deviceCondition": "Estado del dispositivo",
+      "diagnosisNotes": "Notas de diagnóstico",
+      "workPerformed": "Trabajo realizado",
+      "notes": "Notas",
+      "readyAt": "Fecha listo",
+      "collectedAt": "Fecha de recogida"
+    },
+    "status": {
+      "received": "Recibido",
+      "diagnosis": "Diagnóstico",
+      "waiting_customer": "Esperando al cliente",
+      "waiting_part": "Esperando pieza",
+      "in_repair": "En reparación",
+      "ready": "Listo para recoger",
+      "collected": "Recogido",
+      "cancelled": "Cancelado"
+    },
+    "actions": {
+      "new": "Nueva reparación",
+      "create": "Crear reparación",
+      "save": "Guardar",
+      "edit": "Editar",
+      "cancel": "Cancelar reparación",
+      "changeStatus": "Cambiar estado"
+    },
+    "validation": {
+      "customerRequired": "El cliente es obligatorio.",
+      "deviceRequired": "El dispositivo es obligatorio."
     }
   },
   "settings": {

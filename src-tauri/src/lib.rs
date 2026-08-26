@@ -55,6 +55,10 @@ pub fn run() {
             commands::update_device,
             commands::archive_device,
             commands::unarchive_device,
+            commands::list_repairs,
+            commands::get_repair,
+            commands::create_repair,
+            commands::update_repair,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Repair Manager");

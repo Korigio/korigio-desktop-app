@@ -10,6 +10,7 @@
     "home": "Home",
     "customers": "Customers",
     "devices": "Devices",
+    "repairs": "Repairs",
     "settings": "Settings"
   },
   "common": {
@@ -104,6 +105,62 @@
     "validation": {
       "customerRequired": "Customer is required.",
       "identityHint": "Enter at least a type, manufacturer, model, or serial number."
+    }
+  },
+  "repairs": {
+    "title": "Repairs",
+    "subtitle": "Search, create and manage repairs",
+    "customerSectionTitle": "Repairs",
+    "deviceSectionTitle": "Repairs",
+    "createTitle": "New repair",
+    "createSubtitle": "Register a repair for a customer and device",
+    "editTitle": "Edit repair",
+    "search": "Search",
+    "searchPlaceholder": "Number, customer or device",
+    "statusFilterAll": "All statuses",
+    "empty": "No repairs found",
+    "notFound": "Repair not found",
+    "invalidId": "Invalid repair id",
+    "backToList": "Back to repairs",
+    "archivedEditHint": "Unarchive the repair before editing.",
+    "fields": {
+      "repairNumber": "Number",
+      "status": "Status",
+      "customer": "Customer",
+      "customerPlaceholder": "Select a customer",
+      "device": "Device",
+      "devicePlaceholder": "Select a device",
+      "receivedAt": "Received",
+      "reportedProblem": "Reported problem",
+      "accessoriesReceived": "Accessories received",
+      "deviceCondition": "Device condition",
+      "diagnosisNotes": "Diagnosis notes",
+      "workPerformed": "Work performed",
+      "notes": "Notes",
+      "readyAt": "Ready date",
+      "collectedAt": "Collected date"
+    },
+    "status": {
+      "received": "Received",
+      "diagnosis": "Diagnosis",
+      "waiting_customer": "Waiting for customer",
+      "waiting_part": "Waiting for part",
+      "in_repair": "In repair",
+      "ready": "Ready for pickup",
+      "collected": "Collected",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "new": "New repair",
+      "create": "Create repair",
+      "save": "Save",
+      "edit": "Edit",
+      "cancel": "Cancel repair",
+      "changeStatus": "Change status"
+    },
+    "validation": {
+      "customerRequired": "Customer is required.",
+      "deviceRequired": "Device is required."
     }
   },
   "settings": {

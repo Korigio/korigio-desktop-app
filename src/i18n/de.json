@@ -10,6 +10,7 @@
     "home": "Start",
     "customers": "Kunden",
     "devices": "Geräte",
+    "repairs": "Reparaturen",
     "settings": "Einstellungen"
   },
   "common": {
@@ -104,6 +105,62 @@
     "validation": {
       "customerRequired": "Kunde ist erforderlich.",
       "identityHint": "Mindestens Typ, Hersteller, Modell oder Seriennummer angeben."
+    }
+  },
+  "repairs": {
+    "title": "Reparaturen",
+    "subtitle": "Reparaturen suchen, anlegen und verwalten",
+    "customerSectionTitle": "Reparaturen",
+    "deviceSectionTitle": "Reparaturen",
+    "createTitle": "Neue Reparatur",
+    "createSubtitle": "Reparatur für Kunde und Gerät erfassen",
+    "editTitle": "Reparatur bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Nummer, Kunde oder Gerät",
+    "statusFilterAll": "Alle Status",
+    "empty": "Keine Reparaturen gefunden",
+    "notFound": "Reparatur nicht gefunden",
+    "invalidId": "Ungültige Reparatur-ID",
+    "backToList": "Zurück zu Reparaturen",
+    "archivedEditHint": "Reparatur zuerst wiederherstellen, um zu bearbeiten.",
+    "fields": {
+      "repairNumber": "Nummer",
+      "status": "Status",
+      "customer": "Kunde",
+      "customerPlaceholder": "Kunde auswählen",
+      "device": "Gerät",
+      "devicePlaceholder": "Gerät auswählen",
+      "receivedAt": "Eingangsdatum",
+      "reportedProblem": "Gemeldetes Problem",
+      "accessoriesReceived": "Erhaltenes Zubehör",
+      "deviceCondition": "Gerätezustand",
+      "diagnosisNotes": "Diagnose-Notizen",
+      "workPerformed": "Durchgeführte Arbeit",
+      "notes": "Notizen",
+      "readyAt": "Abholbereit am",
+      "collectedAt": "Abgeholt am"
+    },
+    "status": {
+      "received": "Empfangen",
+      "diagnosis": "Diagnose",
+      "waiting_customer": "Wartet auf Kunde",
+      "waiting_part": "Wartet auf Teil",
+      "in_repair": "In Reparatur",
+      "ready": "Abholbereit",
+      "collected": "Abgeholt",
+      "cancelled": "Storniert"
+    },
+    "actions": {
+      "new": "Neue Reparatur",
+      "create": "Reparatur anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "cancel": "Reparatur stornieren",
+      "changeStatus": "Status ändern"
+    },
+    "validation": {
+      "customerRequired": "Kunde ist erforderlich.",
+      "deviceRequired": "Gerät ist erforderlich."
     }
   },
   "settings": {
