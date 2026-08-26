@@ -9,7 +9,8 @@
   "nav": {
     "home": "Start",
     "customers": "Kunden",
-    "devices": "Geräte"
+    "devices": "Geräte",
+    "settings": "Einstellungen"
   },
   "common": {
     "loading": "Laden…",
@@ -103,6 +104,19 @@
     "validation": {
       "customerRequired": "Kunde ist erforderlich.",
       "identityHint": "Mindestens Typ, Hersteller, Modell oder Seriennummer angeben."
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Anwendungseinstellungen für diesen Computer",
+    "language": {
+      "label": "Sprache",
+      "hint": "„System“ folgt der Computersprache. Nicht unterstützte Sprachen fallen auf Spanisch zurück.",
+      "system": "System",
+      "de": "Deutsch",
+      "es": "Spanisch",
+      "en": "Englisch",
+      "error": "Spracheinstellung konnte nicht gespeichert werden."
     }
   }
 }

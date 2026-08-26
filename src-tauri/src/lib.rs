@@ -2,6 +2,7 @@ mod commands;
 mod db;
 mod domain;
 mod error;
+mod menu;
 mod paths;
 
 use std::sync::Mutex;
@@ -30,11 +31,18 @@ pub fn run() {
             })?;
 
             app.manage(DbState(Mutex::new(database)));
+
+            if let Err(err) = menu::install_app_menu(app.handle()) {
+                eprintln!("failed to install application menu: {err}");
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::app_status,
             commands::db_health,
+            commands::get_locale_settings,
+            commands::set_locale_preference,
             commands::list_customers,
             commands::get_customer,
             commands::create_customer,

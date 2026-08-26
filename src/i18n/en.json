@@ -9,7 +9,8 @@
   "nav": {
     "home": "Home",
     "customers": "Customers",
-    "devices": "Devices"
+    "devices": "Devices",
+    "settings": "Settings"
   },
   "common": {
     "loading": "Loading…",
@@ -103,6 +104,19 @@
     "validation": {
       "customerRequired": "Customer is required.",
       "identityHint": "Enter at least a type, manufacturer, model, or serial number."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Application preferences for this computer",
+    "language": {
+      "label": "Language",
+      "hint": "“System” follows the language of this computer. Unsupported languages fall back to Spanish.",
+      "system": "System",
+      "de": "German",
+      "es": "Spanish",
+      "en": "English",
+      "error": "Could not save language preference."
     }
   }
 }

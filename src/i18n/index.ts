@@ -4,6 +4,7 @@ import de from "./de.json";
 
 export type Locale = "en" | "es" | "de";
 
+/** Fallback catalog when OS language is unsupported and preference is system. */
 export const defaultLocale: Locale = "es";
 
 export const messages = {

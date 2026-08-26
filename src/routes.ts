@@ -20,5 +20,6 @@ export default [
     route("devices/new", "./routes/devices/new.tsx"),
     route("devices/:id", "./routes/devices/detail.tsx"),
     route("devices/:id/edit", "./routes/devices/edit.tsx"),
+    route("settings", "./routes/settings.tsx"),
   ]),
 ] satisfies RouteConfig;
