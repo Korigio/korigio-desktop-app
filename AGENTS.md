@@ -22,7 +22,7 @@ Offline Windows desktop repair-shop app (Tauri 2 + React/TS + Rust + SQLite). Wo
 4. Business rules and trusted validation in Rust.
 5. Atomic Design + feature modules; hooks for state; utils for non-state.
 6. Tailwind v4 tokens; Radix only inside `src/ui`.
-7. React Router 7; TanStack Form for forms; TanStack Table for tables.
+7. React Router 7 Framework Mode (`src/routes.ts` with `index`/`route`/`layout`/`prefix`); TanStack Form; TanStack Table.
 8. i18n for all user-facing strings (`en`, `es`, `de`).
 9. Performance over visual effects; Windows 10/11 x64 + 4 GB RAM target.
 10. Never commit secrets; never log customer PII.

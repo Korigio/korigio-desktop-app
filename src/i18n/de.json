@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "Repair Manager",
+    "running": "Anwendung läuft",
+    "backendOk": "Backend verbunden",
+    "backendChecking": "Backend wird geprüft…",
+    "backendError": "Backend nicht erreichbar"
+  },
+  "home": {
+    "title": "Start",
+    "refresh": "Verbindung prüfen"
+  }
+}

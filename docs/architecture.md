@@ -10,7 +10,7 @@ Working product name: **Repair Manager** (`repair-manager`).
 | UI | React + TypeScript + Vite |
 | Styling | Tailwind CSS v4 + design tokens |
 | UI primitives | Radix (wrapped in our `src/ui`), shadcn-style ownership |
-| Routing | React Router 7 |
+| Routing | React Router 7 **Framework Mode** (`src/routes.ts` RouteConfig) |
 | Forms / tables | TanStack Form + TanStack Table (mandatory) |
 | Backend | Rust |
 | Database | SQLite via `rusqlite` |
@@ -42,8 +42,11 @@ AppData: SQLite, images, backups, logs
 ## Target layout (Phase 1+)
 
 ```text
-src/                     # React frontend
-  app/                   # providers, React Router 7 route tree
+src/                     # React frontend (RR appDirectory)
+  root.tsx
+  routes.ts              # RouteConfig (index / route / layout / prefix)
+  routes/                # thin route modules
+  app/providers/
   features/<domain>/     # pages, components, hooks, utils, types, api, constants
   ui/                    # Atomic Design: atoms, molecules, organisms, templates
   shared/                # invoke helper, cn(), shared types

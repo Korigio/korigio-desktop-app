@@ -7,7 +7,7 @@ Do not combine phases without permission. Do not implement unsolicited features.
 | Phase | Name | Outcome |
 | --- | --- | --- |
 | 0 | Requirements and architecture | Docs, ADRs, Cursor rules (this phase) |
-| 1 | Minimal skeleton | Tauri + React + Vite + Tailwind tokens + Router placeholder |
+| 1 | Minimal skeleton | **Done** — Tauri + React + Vite + Tailwind tokens + Router placeholder |
 | 2 | Database foundation | SQLite, migrations, AppData, repos, tests |
 | 3 | Customer domain | CRUD, search, archive, Form + Table examples |
 | 4 | Device domain | Devices linked to customers, serial search |

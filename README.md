@@ -1,12 +1,32 @@
 # Repair Manager
 
-Offline Windows desktop app for small repair workshops. Independent replacement inspired by CP Reparaciones workflows (not a clone).
+Offline Windows desktop app for small repair workshops (Tauri 2 + React + Rust + SQLite).
 
 ## Docs
 
-Start here: [docs/architecture.md](docs/architecture.md) · [docs/roadmap.md](docs/roadmap.md) · [AGENTS.md](AGENTS.md)
+- [Architecture](docs/architecture.md)
+- [Coding standards](docs/coding-standards.md)
+- [Roadmap](docs/roadmap.md)
+- [AGENTS.md](AGENTS.md)
+
+## Development (Phase 1+)
+
+Prerequisites: Node.js 20+, Rust stable, platform WebView (macOS WKWebView / Windows WebView2).
+
+```bash
+npm install
+npm run tauri dev
+```
+
+Other scripts:
+
+```bash
+npm run lint
+npm run typecheck
+npm run format:check
+npm run build
+```
 
 ## Status
 
-**Phase 0 complete** — requirements and architecture documentation only. Application scaffold begins in Phase 1 after approval.
-# cp-reparaciones
+Phase 1 — application skeleton (no database / domain features yet).

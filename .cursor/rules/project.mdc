@@ -7,9 +7,9 @@ alwaysApply: true
 
 ## Stack (locked)
 
-Tauri 2 · React · TypeScript · Vite · Rust · SQLite (`rusqlite`) · Tailwind CSS v4 · Radix wrapped in `src/ui` · React Router 7 · TanStack Form · TanStack Table.
+Tauri 2 · React · TypeScript · Vite · Rust · SQLite (`rusqlite`) · Tailwind CSS v4 · Radix wrapped in `src/ui` · React Router 7 Framework Mode · TanStack Form · TanStack Table.
 
-Do **not** introduce: Electron, Next.js, MUI, Ant Design, Chakra, local HTTP API, React Hook Form, Formik, Redux/MobX unless an ADR is approved.
+Do **not** introduce: Electron, Next.js, MUI, Ant Design, Chakra, local HTTP API, React Hook Form, Formik, Redux/MobX, or `RouterProvider`/`createBrowserRouter` for primary routing unless an ADR is approved.
 
 ## Phases
 
