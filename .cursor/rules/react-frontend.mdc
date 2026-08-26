@@ -1,0 +1,39 @@
+---
+description: React frontend — Atomic Design, Tailwind tokens, Router, TanStack Form/Table
+globs: src/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# Frontend rules
+
+## Structure
+
+- Features: `src/features/<domain>/{components,hooks,utils,types,constants,api,pages}`
+- Design system: `src/ui/{atoms,molecules,organisms,templates}` — **no domain knowledge**
+- App shell / routes: `src/app/` (React Router 7 only)
+- Shared: `src/shared/` (`invoke`, `cn`, shared types)
+- i18n: `src/i18n/{en,es,de}.json` — no hard-coded user-facing strings
+
+## Atomic Design
+
+`pages → templates → organisms → molecules → atoms` (never import upward).
+`ui` never imports `features`. Features import `@/ui`, never `@radix-ui/*`.
+
+## State logic
+
+- Components stay thin.
+- Hooks own state, effects, TanStack Form instances, TanStack Table instances.
+- Utils are pure (no React, no `invoke`).
+- Pages do not call `invoke` directly — go through feature `api` + hooks.
+
+## Mandatory libraries
+
+- **Routing:** React Router 7 (`src/app/routes.tsx`)
+- **Forms:** `@tanstack/react-form` for every create/edit form
+- **Tables:** `@tanstack/react-table` for every data table; prefer SQL pagination from Rust
+- **Styling:** Tailwind v4 + `styles/tokens.css`; prefer semantic token classes (`bg-primary`)
+- Do not use React Hook Form, Formik, or MUI/Ant as substitutes
+
+## Performance
+
+Quiet visuals; limited blur/shadow/animation. Add Radix packages only when needed.

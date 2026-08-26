@@ -1,0 +1,38 @@
+---
+description: Repair Manager project-wide stack, phases, and hard constraints
+alwaysApply: true
+---
+
+# Repair Manager — project rules
+
+## Stack (locked)
+
+Tauri 2 · React · TypeScript · Vite · Rust · SQLite (`rusqlite`) · Tailwind CSS v4 · Radix wrapped in `src/ui` · React Router 7 · TanStack Form · TanStack Table.
+
+Do **not** introduce: Electron, Next.js, MUI, Ant Design, Chakra, local HTTP API, React Hook Form, Formik, Redux/MobX unless an ADR is approved.
+
+## Phases
+
+- Implement only the phase the user explicitly approved.
+- After each phase: full 12-point report, then STOP.
+- Do not start the next phase without explicit approval.
+- Docs: `docs/roadmap.md`, `docs/architecture.md`, `docs/coding-standards.md`, `docs/decisions/`.
+
+## Architecture
+
+- Frontend: `src/` · Backend: `src-tauri/`
+- UI never touches SQLite or the filesystem; only `invoke` via `shared/api`.
+- One domain = `src/features/<domain>` + `src-tauri/src/domain/<domain>`.
+- App data only under OS AppData paths.
+- Offline-first; no CDN fonts/APIs for core features.
+- OS target: Windows 10/11 x64 only. Customer installer must work offline (`offlineInstaller` for WebView2).
+
+## Features
+
+Propose useful extras; do not implement without permission (SMS, cloud sync, inventory, invoices, auto-update, etc.).
+
+## Quality
+
+- Prefer small focused diffs; no drive-by refactors.
+- New dependencies require purpose + impact in the phase report.
+- Prefer performance over visual effects on low-end PCs.
