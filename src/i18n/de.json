@@ -6,8 +6,58 @@
     "backendChecking": "Backend wird geprüft…",
     "backendError": "Backend nicht erreichbar"
   },
+  "nav": {
+    "home": "Start",
+    "customers": "Kunden"
+  },
+  "common": {
+    "loading": "Laden…",
+    "saving": "Speichern…",
+    "actions": "Aktionen",
+    "prev": "Zurück",
+    "next": "Weiter",
+    "page": "Seite"
+  },
   "home": {
     "title": "Start",
     "refresh": "Verbindung prüfen"
+  },
+  "customers": {
+    "title": "Kunden",
+    "subtitle": "Kunden suchen, anlegen und archivieren",
+    "createTitle": "Neuer Kunde",
+    "createSubtitle": "Kundendaten für spätere Reparaturen",
+    "editTitle": "Kunde bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Name, Telefon oder E-Mail",
+    "includeArchived": "Archivierte anzeigen",
+    "empty": "Keine Kunden gefunden",
+    "notFound": "Kunde nicht gefunden",
+    "invalidId": "Ungültige Kunden-ID",
+    "backToList": "Zurück zu Kunden",
+    "archivedEditHint": "Kunde zuerst wiederherstellen, um zu bearbeiten.",
+    "fields": {
+      "name": "Name",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "address": "Adresse",
+      "notes": "Notizen",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Aktiv",
+      "archived": "Archiviert"
+    },
+    "actions": {
+      "new": "Neuer Kunde",
+      "create": "Kunde anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "unarchive": "Wiederherstellen"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich."
+    }
   }
 }

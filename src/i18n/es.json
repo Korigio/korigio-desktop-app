@@ -6,8 +6,58 @@
     "backendChecking": "Comprobando backend…",
     "backendError": "Backend no disponible"
   },
+  "nav": {
+    "home": "Inicio",
+    "customers": "Clientes"
+  },
+  "common": {
+    "loading": "Cargando…",
+    "saving": "Guardando…",
+    "actions": "Acciones",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "page": "Página"
+  },
   "home": {
     "title": "Inicio",
     "refresh": "Comprobar conexión"
+  },
+  "customers": {
+    "title": "Clientes",
+    "subtitle": "Buscar, crear y archivar clientes",
+    "createTitle": "Nuevo cliente",
+    "createSubtitle": "Datos del cliente para futuras reparaciones",
+    "editTitle": "Editar cliente",
+    "search": "Buscar",
+    "searchPlaceholder": "Nombre, teléfono o email",
+    "includeArchived": "Incluir archivados",
+    "empty": "No hay clientes",
+    "notFound": "Cliente no encontrado",
+    "invalidId": "Identificador de cliente no válido",
+    "backToList": "Volver a clientes",
+    "archivedEditHint": "Desarchive el cliente para poder editarlo.",
+    "fields": {
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "email": "Email",
+      "address": "Dirección",
+      "notes": "Notas",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Activo",
+      "archived": "Archivado"
+    },
+    "actions": {
+      "new": "Nuevo cliente",
+      "create": "Crear cliente",
+      "save": "Guardar",
+      "edit": "Editar",
+      "archive": "Archivar",
+      "unarchive": "Desarchivar"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio."
+    }
   }
 }

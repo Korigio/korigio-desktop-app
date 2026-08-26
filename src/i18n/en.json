@@ -6,8 +6,58 @@
     "backendChecking": "Checking backend…",
     "backendError": "Backend not reachable"
   },
+  "nav": {
+    "home": "Home",
+    "customers": "Customers"
+  },
+  "common": {
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "actions": "Actions",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page"
+  },
   "home": {
     "title": "Home",
     "refresh": "Check connection"
+  },
+  "customers": {
+    "title": "Customers",
+    "subtitle": "Search, create and archive customers",
+    "createTitle": "New customer",
+    "createSubtitle": "Customer details for future repairs",
+    "editTitle": "Edit customer",
+    "search": "Search",
+    "searchPlaceholder": "Name, phone or email",
+    "includeArchived": "Include archived",
+    "empty": "No customers found",
+    "notFound": "Customer not found",
+    "invalidId": "Invalid customer id",
+    "backToList": "Back to customers",
+    "archivedEditHint": "Unarchive the customer before editing.",
+    "fields": {
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "notes": "Notes",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "archived": "Archived"
+    },
+    "actions": {
+      "new": "New customer",
+      "create": "Create customer",
+      "save": "Save",
+      "edit": "Edit",
+      "archive": "Archive",
+      "unarchive": "Unarchive"
+    },
+    "validation": {
+      "nameRequired": "Name is required."
+    }
   }
 }

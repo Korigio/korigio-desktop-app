@@ -1,5 +1,6 @@
 mod commands;
 mod db;
+mod domain;
 mod error;
 mod paths;
 
@@ -33,7 +34,13 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::app_status,
-            commands::db_health
+            commands::db_health,
+            commands::list_customers,
+            commands::get_customer,
+            commands::create_customer,
+            commands::update_customer,
+            commands::archive_customer,
+            commands::unarchive_customer,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Repair Manager");

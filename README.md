@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 2 — database foundation (SQLite in AppData). No customer UI yet.
+Phase 3 — customer domain (CRUD, search, soft archive).

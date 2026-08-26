@@ -20,7 +20,7 @@ Offline Windows desktop repair-shop app (Tauri 2 + React/TS + Rust + SQLite). Wo
 2. No unsolicited features — propose first.
 3. UI ↔ Rust only via Tauri commands; no localhost HTTP API.
 4. Business rules and trusted validation in Rust.
-5. Atomic Design + feature modules; hooks for state; utils for non-state.
+5. Atomic Design + feature modules; hooks for state; utils for non-state. Pages stay thin: compose named `ui` / feature components — no copy-pasted headers, filters, pagination, or status chrome.
 6. Tailwind v4 tokens; Radix only inside `src/ui`.
 7. React Router 7 Framework Mode (`src/routes.ts` with `index`/`route`/`layout`/`prefix`); TanStack Form; TanStack Table.
 8. i18n for all user-facing strings (`en`, `es`, `de`).
