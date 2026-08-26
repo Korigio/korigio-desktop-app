@@ -11,6 +11,7 @@
     "customers": "Kunden",
     "devices": "Geräte",
     "repairs": "Reparaturen",
+    "intake": "Annahme",
     "settings": "Einstellungen"
   },
   "common": {
@@ -161,6 +162,23 @@
     "validation": {
       "customerRequired": "Kunde ist erforderlich.",
       "deviceRequired": "Gerät ist erforderlich."
+    },
+    "intake": {
+      "title": "Reparatur-Annahme",
+      "subtitle": "Schnelle Tastatureingabe für neue Reparaturen an der Theke",
+      "start": "Annahme starten",
+      "saveAndNext": "Speichern und weiter",
+      "success": "Reparatur {number} angelegt.",
+      "shortcutHint": "Tipp: Strg+Umschalt+N öffnet die Annahme überall. Strg+Eingabe speichert.",
+      "noCustomers": "Keine Kunden gefunden",
+      "noDevices": "Keine Geräte gefunden",
+      "selectCustomerFirst": "Zuerst Kunde auswählen",
+      "quickCreateCustomer": "Neuen Kunden anlegen…",
+      "quickCreateCustomerTitle": "Kunde schnell anlegen",
+      "quickCreateDevice": "Neues Gerät anlegen…",
+      "quickCreateDeviceTitle": "Gerät schnell anlegen",
+      "cancelQuickCreate": "Abbrechen",
+      "problemRequired": "Gemeldetes Problem ist erforderlich."
     }
   },
   "settings": {

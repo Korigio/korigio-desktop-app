@@ -11,6 +11,7 @@
     "customers": "Customers",
     "devices": "Devices",
     "repairs": "Repairs",
+    "intake": "Intake",
     "settings": "Settings"
   },
   "common": {
@@ -161,6 +162,23 @@
     "validation": {
       "customerRequired": "Customer is required.",
       "deviceRequired": "Device is required."
+    },
+    "intake": {
+      "title": "Repair intake",
+      "subtitle": "Fast keyboard entry for new repairs at the counter",
+      "start": "Start repair intake",
+      "saveAndNext": "Save and next",
+      "success": "Repair {number} created.",
+      "shortcutHint": "Tip: Ctrl+Shift+N opens intake from anywhere. Ctrl+Enter saves.",
+      "noCustomers": "No customers found",
+      "noDevices": "No devices found",
+      "selectCustomerFirst": "Select a customer first",
+      "quickCreateCustomer": "Create new customer…",
+      "quickCreateCustomerTitle": "Quick create customer",
+      "quickCreateDevice": "Create new device…",
+      "quickCreateDeviceTitle": "Quick create device",
+      "cancelQuickCreate": "Cancel",
+      "problemRequired": "Reported problem is required."
     }
   },
   "settings": {

@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 5 — repair order domain (YYYY-NNNNNN numbering, status, core CRUD).
+Phase 6 — repair workflow UI (keyboard intake, Save & next).

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { invoke } from "@/shared/api/invoke";
-import { Button } from "@/ui";
+import { Button, LinkButton } from "@/ui";
 
 type BackendStatus = "checking" | "ok" | "error";
 
@@ -38,6 +38,12 @@ export function HomePage() {
           {t("app.name")}
         </h1>
         <p className="mt-3 text-lg text-muted">{t("app.running")}</p>
+
+        <div className="mt-6">
+          <LinkButton to="/repairs/intake" variant="primary">
+            {t("repairs.intake.start")}
+          </LinkButton>
+        </div>
 
         <div className="mt-6 flex flex-col gap-3">
           <p className="text-sm text-foreground">
