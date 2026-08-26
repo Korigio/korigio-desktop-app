@@ -6,11 +6,18 @@ SQLite via **`rusqlite`** (bundled SQLite). See [ADR 001](decisions/001-sqlite-r
 
 ## Location
 
+Resolved through Tauri `app.path().app_data_dir()` (OS AppData / Application Support). Layout:
+
 ```text
-{appDataDir}/RepairManager/database.sqlite
+{appDataDir}/
+  database.sqlite
+  images/
+  thumbs/
+  backups/
+  logs/
 ```
 
-Resolved through Tauri path APIs. WAL mode; foreign keys enabled on every connection.
+The app data directory is already scoped to this application by Tauri (identifier `com.repairmanager.desktop`). Do not store mutable data under the install directory.
 
 ## Migrations
 

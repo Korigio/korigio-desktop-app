@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 1 — application skeleton (no database / domain features yet).
+Phase 2 — database foundation (SQLite in AppData). No customer UI yet.
