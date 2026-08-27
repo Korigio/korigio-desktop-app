@@ -1,0 +1,1 @@
+export { DiagnosisTemplateForm } from "./DiagnosisTemplateForm";

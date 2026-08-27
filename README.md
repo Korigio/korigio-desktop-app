@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 7 — search (global /search, multi-field repairs, indexes).
+Phase 8 — diagnosis templates (reusable checklists applied to repairs).

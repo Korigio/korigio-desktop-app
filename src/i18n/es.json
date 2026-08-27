@@ -11,6 +11,7 @@
     "customers": "Clientes",
     "devices": "Dispositivos",
     "repairs": "Reparaciones",
+    "diagnosisTemplates": "Plantillas de diagnóstico",
     "intake": "Recepción",
     "search": "Buscar",
     "settings": "Ajustes"
@@ -193,6 +194,49 @@
       "quickCreateDeviceTitle": "Creación rápida de dispositivo",
       "cancelQuickCreate": "Cancelar",
       "problemRequired": "El problema reportado es obligatorio."
+    }
+  },
+  "diagnosis": {
+    "title": "Plantillas de diagnóstico",
+    "subtitle": "Listas reutilizables para diagnósticos de reparación",
+    "createTitle": "Nueva plantilla de diagnóstico",
+    "createSubtitle": "Defina los ítems de la lista para diagnósticos habituales",
+    "editTitle": "Editar plantilla de diagnóstico",
+    "search": "Buscar",
+    "searchPlaceholder": "Nombre de la plantilla",
+    "empty": "No hay plantillas de diagnóstico",
+    "notFound": "Plantilla de diagnóstico no encontrada",
+    "invalidId": "Identificador de plantilla no válido",
+    "deleteFailed": "No se pudo eliminar la plantilla de diagnóstico.",
+    "repairSectionTitle": "Diagnóstico",
+    "repairEmpty": "Aún no hay diagnóstico registrado.",
+    "noTemplates": "No hay plantillas de diagnóstico disponibles.",
+    "fields": {
+      "name": "Nombre",
+      "items": "Ítems de la lista",
+      "updatedAt": "Actualizado",
+      "itemLabel": "Etiqueta",
+      "itemKind": "Tipo",
+      "template": "Plantilla"
+    },
+    "kinds": {
+      "checkbox": "Casilla",
+      "text": "Texto"
+    },
+    "actions": {
+      "new": "Nueva plantilla",
+      "create": "Crear plantilla",
+      "save": "Guardar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "addItem": "Añadir ítem",
+      "removeItem": "Quitar",
+      "applyTemplate": "Aplicar plantilla"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio.",
+      "itemsRequired": "Añada al menos un ítem a la lista.",
+      "labelRequired": "La etiqueta es obligatoria."
     }
   },
   "settings": {

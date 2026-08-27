@@ -9,6 +9,7 @@ use crate::error::AppError;
 pub const MIGRATIONS: &[(i64, &str)] = &[
     (1, include_str!("../../migrations/001_initial.sql")),
     (2, include_str!("../../migrations/002_search_indexes.sql")),
+    (3, include_str!("../../migrations/003_diagnosis_unique_repair.sql")),
 ];
 
 pub fn run(conn: &Connection) -> Result<(), AppError> {
@@ -73,7 +74,7 @@ mod tests {
                 row.get(0)
             })
             .expect("count");
-        assert_eq!(count, 2);
+        assert_eq!(count, 3);
 
         let tables: i64 = conn
             .query_row(

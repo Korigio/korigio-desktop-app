@@ -60,6 +60,13 @@ pub fn run() {
             commands::create_repair,
             commands::update_repair,
             commands::global_search,
+            commands::list_diagnosis_templates,
+            commands::get_diagnosis_template,
+            commands::create_diagnosis_template,
+            commands::update_diagnosis_template,
+            commands::delete_diagnosis_template,
+            commands::get_repair_diagnosis,
+            commands::upsert_repair_diagnosis,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Servioo");

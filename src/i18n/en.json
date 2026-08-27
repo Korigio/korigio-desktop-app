@@ -11,6 +11,7 @@
     "customers": "Customers",
     "devices": "Devices",
     "repairs": "Repairs",
+    "diagnosisTemplates": "Diagnosis templates",
     "intake": "Intake",
     "search": "Search",
     "settings": "Settings"
@@ -193,6 +194,49 @@
       "quickCreateDeviceTitle": "Quick create device",
       "cancelQuickCreate": "Cancel",
       "problemRequired": "Reported problem is required."
+    }
+  },
+  "diagnosis": {
+    "title": "Diagnosis templates",
+    "subtitle": "Reusable checklists for repair diagnoses",
+    "createTitle": "New diagnosis template",
+    "createSubtitle": "Define checklist items for common diagnoses",
+    "editTitle": "Edit diagnosis template",
+    "search": "Search",
+    "searchPlaceholder": "Template name",
+    "empty": "No diagnosis templates found",
+    "notFound": "Diagnosis template not found",
+    "invalidId": "Invalid diagnosis template id",
+    "deleteFailed": "Could not delete the diagnosis template.",
+    "repairSectionTitle": "Diagnosis",
+    "repairEmpty": "No diagnosis recorded yet.",
+    "noTemplates": "No diagnosis templates available.",
+    "fields": {
+      "name": "Name",
+      "items": "Checklist items",
+      "updatedAt": "Updated",
+      "itemLabel": "Label",
+      "itemKind": "Type",
+      "template": "Template"
+    },
+    "kinds": {
+      "checkbox": "Checkbox",
+      "text": "Text"
+    },
+    "actions": {
+      "new": "New template",
+      "create": "Create template",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "addItem": "Add item",
+      "removeItem": "Remove",
+      "applyTemplate": "Apply template"
+    },
+    "validation": {
+      "nameRequired": "Name is required.",
+      "itemsRequired": "Add at least one checklist item.",
+      "labelRequired": "Label is required."
     }
   },
   "settings": {

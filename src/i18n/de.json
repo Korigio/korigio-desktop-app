@@ -11,6 +11,7 @@
     "customers": "Kunden",
     "devices": "Geräte",
     "repairs": "Reparaturen",
+    "diagnosisTemplates": "Diagnosevorlagen",
     "intake": "Annahme",
     "search": "Suche",
     "settings": "Einstellungen"
@@ -193,6 +194,49 @@
       "quickCreateDeviceTitle": "Gerät schnell anlegen",
       "cancelQuickCreate": "Abbrechen",
       "problemRequired": "Gemeldetes Problem ist erforderlich."
+    }
+  },
+  "diagnosis": {
+    "title": "Diagnosevorlagen",
+    "subtitle": "Wiederverwendbare Checklisten für Reparaturdiagnosen",
+    "createTitle": "Neue Diagnosevorlage",
+    "createSubtitle": "Checklistenpunkte für häufige Diagnosen festlegen",
+    "editTitle": "Diagnosevorlage bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Vorlagenname",
+    "empty": "Keine Diagnosevorlagen gefunden",
+    "notFound": "Diagnosevorlage nicht gefunden",
+    "invalidId": "Ungültige Diagnosevorlagen-ID",
+    "deleteFailed": "Diagnosevorlage konnte nicht gelöscht werden.",
+    "repairSectionTitle": "Diagnose",
+    "repairEmpty": "Noch keine Diagnose erfasst.",
+    "noTemplates": "Keine Diagnosevorlagen verfügbar.",
+    "fields": {
+      "name": "Name",
+      "items": "Checklistenpunkte",
+      "updatedAt": "Aktualisiert",
+      "itemLabel": "Bezeichnung",
+      "itemKind": "Typ",
+      "template": "Vorlage"
+    },
+    "kinds": {
+      "checkbox": "Kontrollkästchen",
+      "text": "Text"
+    },
+    "actions": {
+      "new": "Neue Vorlage",
+      "create": "Vorlage anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "addItem": "Punkt hinzufügen",
+      "removeItem": "Entfernen",
+      "applyTemplate": "Vorlage anwenden"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich.",
+      "itemsRequired": "Mindestens einen Checklistenpunkt hinzufügen.",
+      "labelRequired": "Bezeichnung ist erforderlich."
     }
   },
   "settings": {
