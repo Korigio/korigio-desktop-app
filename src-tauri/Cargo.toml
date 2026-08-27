@@ -1,8 +1,8 @@
 [package]
 name = "repair-manager"
 version = "0.1.0"
-description = "Repair Manager desktop application"
-authors = ["Repair Manager"]
+description = "Servioo desktop application"
+authors = ["Servioo"]
 edition = "2021"
 
 [lib]

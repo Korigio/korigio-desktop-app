@@ -1,6 +1,6 @@
-# Architecture — Repair Manager
+# Architecture — Servioo
 
-Working product name: **Repair Manager** (`repair-manager`).
+Product name: **Servioo** (npm package `servioo`; Tauri identifier `com.servioo.desktop`).
 
 ## Stack
 
