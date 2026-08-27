@@ -1,8 +1,9 @@
+import { CustomerSearchCombobox } from "@/features/customers/components/CustomerSearchCombobox";
+import { DeviceSearchCombobox } from "@/features/devices/components/DeviceSearchCombobox";
 import type { useRepairIntake } from "@/features/repairs/hooks/useRepairIntake";
 import {
   Button,
   FormField,
-  SearchCombobox,
   StatusMessage,
   TextArea,
   TextField,
@@ -31,23 +32,10 @@ export function RepairIntakeForm({ intake }: Props) {
         <StatusMessage tone="danger">{intake.error}</StatusMessage>
       ) : null}
 
-      <SearchCombobox
-        inputRef={intake.customerInputRef}
-        label={t("repairs.fields.customer")}
-        query={intake.customerQuery}
-        onQueryChange={intake.setCustomerQuery}
-        items={intake.customers}
-        renderItem={(item) => intake.customerLabel(item)}
-        getItemKey={(item) => item.id}
-        onSelect={intake.selectCustomer}
-        selectedLabel={intake.customer ? intake.customerLabel(intake.customer) : null}
-        onClearSelection={intake.clearCustomer}
-        loading={intake.customersLoading}
-        emptyMessage={t("repairs.intake.noCustomers")}
-        footerAction={{
-          label: t("repairs.intake.quickCreateCustomer"),
-          onClick: intake.openQuickCreateCustomer,
-        }}
+      <CustomerSearchCombobox
+        combobox={intake.customerSearch}
+        quickCreateLabel={t("repairs.intake.quickCreateCustomer")}
+        onQuickCreate={intake.openQuickCreateCustomer}
       />
 
       {intake.showQuickCreateCustomer ? (
@@ -100,31 +88,11 @@ export function RepairIntakeForm({ intake }: Props) {
         </section>
       ) : null}
 
-      <SearchCombobox
-        label={t("repairs.fields.device")}
-        query={intake.deviceQuery}
-        onQueryChange={intake.setDeviceQuery}
-        items={intake.devices}
-        renderItem={(item) => intake.deviceLabel(item)}
-        getItemKey={(item) => item.id}
-        onSelect={intake.selectDevice}
-        selectedLabel={intake.device ? intake.deviceLabel(intake.device) : null}
-        onClearSelection={intake.clearDevice}
-        loading={intake.devicesLoading}
-        disabled={!intake.customer}
-        emptyMessage={
-          intake.customer
-            ? t("repairs.intake.noDevices")
-            : t("repairs.intake.selectCustomerFirst")
-        }
-        footerAction={
-          intake.customer
-            ? {
-                label: t("repairs.intake.quickCreateDevice"),
-                onClick: intake.openQuickCreateDevice,
-              }
-            : undefined
-        }
+      <DeviceSearchCombobox
+        combobox={intake.deviceSearch}
+        disabled={!intake.customerSearch.selected}
+        quickCreateLabel={t("repairs.intake.quickCreateDevice")}
+        onQuickCreate={intake.openQuickCreateDevice}
       />
 
       {intake.showQuickCreateDevice ? (

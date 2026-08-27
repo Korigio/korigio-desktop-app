@@ -223,6 +223,112 @@ fn list_filters_by_customer_device_status_and_query() {
 }
 
 #[test]
+fn list_repairs_finds_by_phone_serial_and_reported_problem() {
+    let db = Db::open_in_memory().expect("db");
+    let customer_id = create_customer(
+        db.conn(),
+        CustomerInput {
+            name: "Phone Owner".into(),
+            phone: Some("+34 600 111 222".into()),
+            email: None,
+            address: None,
+            notes: None,
+        },
+    )
+    .expect("customer")
+    .id;
+    let device_id = create_device(
+        db.conn(),
+        DeviceInput {
+            customer_id,
+            device_type: Some("Laptop".into()),
+            manufacturer: Some("Lenovo".into()),
+            model: Some("T14".into()),
+            serial_number: Some("SERIAL-FIND-ME".into()),
+            accessories: None,
+            notes: None,
+        },
+    )
+    .expect("device")
+    .id;
+
+    let repair = create_repair(
+        db.conn(),
+        RepairInput {
+            customer_id,
+            device_id,
+            status: None,
+            reported_problem: Some("Won't boot after update".into()),
+            accessories_received: None,
+            device_condition: None,
+            diagnosis_notes: None,
+            work_performed: None,
+            notes: None,
+        },
+    )
+    .expect("create");
+
+    let by_phone = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            query: Some("600 111".into()),
+            customer_id: None,
+            device_id: None,
+            status: None,
+            page: Some(1),
+            page_size: Some(10),
+        },
+    )
+    .expect("by phone");
+    assert_eq!(by_phone.total, 1);
+    assert_eq!(by_phone.items[0].id, repair.id);
+
+    let by_serial = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            query: Some("SERIAL-FIND".into()),
+            customer_id: None,
+            device_id: None,
+            status: None,
+            page: Some(1),
+            page_size: Some(10),
+        },
+    )
+    .expect("by serial");
+    assert_eq!(by_serial.total, 1);
+    assert_eq!(by_serial.items[0].id, repair.id);
+
+    let by_problem = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            query: Some("won't boot".into()),
+            customer_id: None,
+            device_id: None,
+            status: None,
+            page: Some(1),
+            page_size: Some(10),
+        },
+    )
+    .expect("by problem");
+    assert_eq!(by_problem.total, 1);
+    assert_eq!(by_problem.items[0].id, repair.id);
+
+    let by_manufacturer = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            query: Some("Lenovo".into()),
+            customer_id: None,
+            device_id: None,
+            status: None,
+            page: Some(1),
+            page_size: Some(10),
+        },
+    )
+    .expect("by manufacturer");
+    assert_eq!(by_manufacturer.total, 1);
+}
+
+#[test]
 fn update_status_sets_ready_at_once() {
     let db = Db::open_in_memory().expect("db");
     let customer_id = customer(&db, "Owner");

@@ -39,9 +39,12 @@ export function HomePage() {
         </h1>
         <p className="mt-3 text-lg text-muted">{t("app.running")}</p>
 
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap gap-3">
           <LinkButton to="/repairs/intake" variant="primary">
             {t("repairs.intake.start")}
+          </LinkButton>
+          <LinkButton to="/search" variant="secondary">
+            {t("nav.search")}
           </LinkButton>
         </div>
 

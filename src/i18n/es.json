@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Repair Manager",
+    "name": "Servioo",
     "running": "Aplicación en ejecución",
     "backendOk": "Backend conectado",
     "backendChecking": "Comprobando backend…",
@@ -12,6 +12,7 @@
     "devices": "Dispositivos",
     "repairs": "Reparaciones",
     "intake": "Recepción",
+    "search": "Buscar",
     "settings": "Ajustes"
   },
   "common": {
@@ -25,6 +26,19 @@
   "home": {
     "title": "Inicio",
     "refresh": "Comprobar conexión"
+  },
+  "search": {
+    "title": "Búsqueda",
+    "subtitle": "Encuentre clientes, dispositivos y reparaciones en un solo lugar",
+    "placeholder": "Nombre, teléfono, serie, número de reparación…",
+    "prompt": "Escriba para buscar clientes, dispositivos y reparaciones.",
+    "empty": "No se encontraron resultados",
+    "sectionEmpty": "Sin coincidencias en esta sección",
+    "sections": {
+      "customers": "Clientes",
+      "devices": "Dispositivos",
+      "repairs": "Reparaciones"
+    }
   },
   "customers": {
     "title": "Clientes",
