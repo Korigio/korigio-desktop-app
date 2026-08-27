@@ -12,7 +12,7 @@ import "@/styles/globals.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export function HydrateFallback() {
   return (
     <main className="flex min-h-full items-center justify-center p-8">
-      <p className="text-muted">Repair Manager</p>
+      <p className="text-muted">Servioo</p>
     </main>
   );
 }

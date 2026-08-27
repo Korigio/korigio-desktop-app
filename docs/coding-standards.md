@@ -60,6 +60,19 @@ features/<domain>/
 Dependency direction: `pages → templates → organisms → molecules → atoms` (never upward).  
 `ui` never imports `features`. Features never import `@radix-ui/*` (only `@/ui`).
 
+### Thin pages (mandatory)
+
+`features/*/pages` are composition layers. A page should read like a storyboard of **named** parts, not raw layout markup.
+
+| Extract to | When |
+| --- | --- |
+| `ui/atoms\|molecules\|organisms\|templates` | Generic chrome reused across domains (`Page`, `PageHeader`, `SearchField`, `PaginationBar`, …) |
+| `features/<domain>/components` | Domain meaning (`CustomerListFilters`, `CustomerDetailFields`) |
+
+**Forbidden in pages:** copy-pasted title/subtitle blocks, search toolbars, pagination bars, definition lists, button-styled `<Link>` className strings, repeated loading/error paragraphs.
+
+**Required:** if markup repeats (or will repeat on the next domain), extract immediately with a meaningful name.
+
 ### Hooks and utils
 
 - Components stay thin.

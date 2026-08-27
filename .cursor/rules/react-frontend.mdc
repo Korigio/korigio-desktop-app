@@ -29,6 +29,17 @@ alwaysApply: false
 `pages → templates → organisms → molecules → atoms` (never import upward).
 `ui` never imports `features`. Features import `@/ui`, never `@radix-ui/*`.
 
+## Thin pages (mandatory)
+
+Pages are **composition only**. Reading a page file should tell you the screen storyboard at a glance (`PageHeader`, filters, table, pagination) — not a wall of labels, inputs, and layout `div`s.
+
+- **Do not** paste repeated chrome inline: page title/subtitle blocks, search+filter toolbars, pagination, loading/error status, labeled field rows, button-styled links.
+- **Do** extract to:
+  - `src/ui/*` when reusable across domains (`Page`, `PageHeader`, `SearchField`, `CheckboxField`, `PaginationBar`, `LinkButton`, `DefinitionList`, `StatusMessage`)
+  - `features/<domain>/components/` when domain-specific (`CustomerListFilters`, `CustomerDetailFields`)
+- Prefer meaningful names over generic wrappers (`CustomerListFilters`, not `FiltersBox`).
+- If the same markup appears twice (or will appear on the next domain page), extract it **now**.
+
 ## State logic
 
 - Components stay thin.

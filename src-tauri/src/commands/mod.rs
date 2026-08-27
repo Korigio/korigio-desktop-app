@@ -1,6 +1,13 @@
-//! Thin Tauri command adapters. Business logic will live under `domain/` in later phases.
+mod customers;
+mod devices;
+mod repairs;
+mod search;
+mod settings;
+mod system;
 
-#[tauri::command]
-pub fn app_status() -> String {
-    "Repair Manager backend ready".to_string()
-}
+pub use customers::*;
+pub use devices::*;
+pub use repairs::*;
+pub use search::*;
+pub use settings::*;
+pub use system::*;

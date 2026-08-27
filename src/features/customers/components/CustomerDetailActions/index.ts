@@ -1,0 +1,1 @@
+export { CustomerDetailActions } from "./CustomerDetailActions";
