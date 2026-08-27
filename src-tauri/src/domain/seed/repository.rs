@@ -1,4 +1,6 @@
-use rusqlite::{Connection, Transaction, params};
+use rusqlite::{Transaction, params};
+#[cfg(test)]
+use rusqlite::Connection;
 use time::OffsetDateTime;
 
 use crate::db::repository::now_utc_rfc3339;

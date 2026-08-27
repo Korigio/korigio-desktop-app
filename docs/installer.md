@@ -8,14 +8,29 @@ Locked in [`src-tauri/tauri.conf.json`](../src-tauri/tauri.conf.json):
 
 | Setting | Value | Why |
 | --- | --- | --- |
-| `bundle.targets` | `["nsis"]` | Windows-only product |
+| `bundle.targets` | `["app", "nsis"]` | Customer ship = NSIS on Windows; macOS `.app` for local testing |
 | `windows.webviewInstallMode.type` | `offlineInstaller` | No CDN required at install time (~+127 MB) |
 | `windows.webviewInstallMode.silent` | `true` | Quiet WebView2 bootstrap when missing |
 | `windows.nsis.installMode` | `currentUser` | Typical shop PC without admin elevation |
 
 **Uninstall must not delete AppData** (`%AppData%\com.servioo.desktop` / Tauri app data). Tauri’s default NSIS script leaves application data in place so customer DB, images, and backups survive uninstall/reinstall. Do not add hooks that wipe AppData unless the user explicitly opts in (future ADR).
 
-## Local build (on Windows or with Windows target)
+## Local build on macOS (dev / testing)
+
+```bash
+npm ci
+npm run tauri build
+```
+
+macOS app bundle:
+
+```text
+src-tauri/target/release/bundle/macos/Servioo.app
+```
+
+Drag that into Applications if you want. Customer delivery remains Windows NSIS only.
+
+## Local / CI build on Windows
 
 ```bash
 npm ci
@@ -25,10 +40,10 @@ npm run tauri build
 Artifact path (x64):
 
 ```text
-src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/Servioo_*_x64-setup.exe
+src-tauri/target/release/bundle/nsis/Servioo_*_x64-setup.exe
 ```
 
-(Exact filename includes version from `tauri.conf.json`.)
+(Exact filename includes version from `tauri.conf.json`. Cross-compiled paths may use `x86_64-pc-windows-msvc`.)
 
 ## Code signing
 
