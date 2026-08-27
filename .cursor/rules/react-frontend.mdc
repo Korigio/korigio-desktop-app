@@ -1,5 +1,5 @@
 ---
-description: React frontend — Atomic Design, Tailwind tokens, Router, TanStack Form/Table
+description: React frontend — Atomic Design, RR7 Framework routes, Tailwind, TanStack
 globs: src/**/*.{ts,tsx,css}
 alwaysApply: false
 ---
@@ -10,14 +10,35 @@ alwaysApply: false
 
 - Features: `src/features/<domain>/{components,hooks,utils,types,constants,api,pages}`
 - Design system: `src/ui/{atoms,molecules,organisms,templates}` — **no domain knowledge**
-- App shell / routes: `src/app/` (React Router 7 only)
+- Routing: `src/routes.ts` (RouteConfig) + thin modules in `src/routes/`
+- Root: `src/root.tsx` (Layout, Outlet, ErrorBoundary, HydrateFallback)
+- Providers: `src/app/providers/`
 - Shared: `src/shared/` (`invoke`, `cn`, shared types)
 - i18n: `src/i18n/{en,es,de}.json` — no hard-coded user-facing strings
+
+## Routing (React Router 7 Framework Mode)
+
+- Define routes only in `src/routes.ts` using `index`, `route`, `layout`, `prefix` from `@react-router/dev/routes`.
+- Follow https://reactrouter.com/start/framework/routing
+- Do **not** use `createBrowserRouter`, `createHashRouter`, or `RouterProvider` for primary navigation.
+- Route modules stay thin; render `features/*/pages` components.
+- SPA: `react-router.config.ts` has `ssr: false`. Prefer `clientLoader` / `clientAction` for data.
 
 ## Atomic Design
 
 `pages → templates → organisms → molecules → atoms` (never import upward).
 `ui` never imports `features`. Features import `@/ui`, never `@radix-ui/*`.
+
+## Thin pages (mandatory)
+
+Pages are **composition only**. Reading a page file should tell you the screen storyboard at a glance (`PageHeader`, filters, table, pagination) — not a wall of labels, inputs, and layout `div`s.
+
+- **Do not** paste repeated chrome inline: page title/subtitle blocks, search+filter toolbars, pagination, loading/error status, labeled field rows, button-styled links.
+- **Do** extract to:
+  - `src/ui/*` when reusable across domains (`Page`, `PageHeader`, `SearchField`, `CheckboxField`, `PaginationBar`, `LinkButton`, `DefinitionList`, `StatusMessage`)
+  - `features/<domain>/components/` when domain-specific (`CustomerListFilters`, `CustomerDetailFields`)
+- Prefer meaningful names over generic wrappers (`CustomerListFilters`, not `FiltersBox`).
+- If the same markup appears twice (or will appear on the next domain page), extract it **now**.
 
 ## State logic
 
@@ -28,7 +49,6 @@ alwaysApply: false
 
 ## Mandatory libraries
 
-- **Routing:** React Router 7 (`src/app/routes.tsx`)
 - **Forms:** `@tanstack/react-form` for every create/edit form
 - **Tables:** `@tanstack/react-table` for every data table; prefer SQL pagination from Rust
 - **Styling:** Tailwind v4 + `styles/tokens.css`; prefer semantic token classes (`bg-primary`)

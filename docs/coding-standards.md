@@ -12,13 +12,25 @@ These rules apply to humans and AI agents. Cursor rules under `.cursor/rules/` e
 ## Frontend layout
 
 ```text
-src/app/                 # React Router 7, providers
-src/features/<domain>/   # domain module
-src/ui/                  # Atomic Design library (no domain)
-src/shared/              # invoke, cn, shared types
-src/i18n/                # en, es, de
-src/styles/              # tokens + Tailwind globals
+src/
+  root.tsx               # React Router root (Layout, Outlet, ErrorBoundary)
+  routes.ts              # RouteConfig (index / route / layout / prefix)
+  routes/                # thin route modules only
+  app/providers/         # app-wide providers (i18n, …)
+  features/<domain>/     # domain module
+  ui/                    # Atomic Design library (no domain)
+  shared/                # invoke, cn, shared types
+  i18n/                  # en, es, de
+  styles/                # tokens + Tailwind globals
 ```
+
+### Routing (mandatory)
+
+- Use React Router 7 **Framework Mode** with `src/routes.ts` + `@react-router/dev/routes`.
+- Pattern: `index(...)`, `route(...)`, `layout(...)`, `prefix(...)` as in the [official routing docs](https://reactrouter.com/start/framework/routing).
+- Route modules in `src/routes/` stay thin; feature UI lives in `features/*/pages`.
+- Do not use `RouterProvider` / `createBrowserRouter` / `createHashRouter` for primary app routing.
+- SPA mode: `react-router.config.ts` → `ssr: false`. Use `clientLoader` / `clientAction` for route data.
 
 ### Feature module shape
 
@@ -48,6 +60,19 @@ features/<domain>/
 Dependency direction: `pages → templates → organisms → molecules → atoms` (never upward).  
 `ui` never imports `features`. Features never import `@radix-ui/*` (only `@/ui`).
 
+### Thin pages (mandatory)
+
+`features/*/pages` are composition layers. A page should read like a storyboard of **named** parts, not raw layout markup.
+
+| Extract to | When |
+| --- | --- |
+| `ui/atoms\|molecules\|organisms\|templates` | Generic chrome reused across domains (`Page`, `PageHeader`, `SearchField`, `PaginationBar`, …) |
+| `features/<domain>/components` | Domain meaning (`CustomerListFilters`, `CustomerDetailFields`) |
+
+**Forbidden in pages:** copy-pasted title/subtitle blocks, search toolbars, pagination bars, definition lists, button-styled `<Link>` className strings, repeated loading/error paragraphs.
+
+**Required:** if markup repeats (or will repeat on the next domain), extract immediately with a meaningful name.
+
 ### Hooks and utils
 
 - Components stay thin.
@@ -58,7 +83,7 @@ Dependency direction: `pages → templates → organisms → molecules → atoms
 
 | Concern | Must use | Must not use instead |
 | --- | --- | --- |
-| Routing | React Router 7 | Ad-hoc view switches for primary nav |
+| Routing | React Router 7 Framework Mode (`src/routes.ts`) | `RouterProvider` / ad-hoc primary nav switches |
 | Forms | TanStack Form | React Hook Form, Formik, sprawling useState forms |
 | Tables | TanStack Table | Hand-rolled grids for data tables |
 | Styling | Tailwind v4 + tokens | MUI, Ant Design, Chakra as app kit |

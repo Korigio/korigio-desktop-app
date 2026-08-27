@@ -1,0 +1,96 @@
+//! Ordered SQL migrations. Never edit applied migrations; add a new file instead.
+
+use rusqlite::Connection;
+use time::OffsetDateTime;
+
+use crate::error::AppError;
+
+/// (version, sql). Versions must be unique and increasing.
+pub const MIGRATIONS: &[(i64, &str)] = &[
+    (1, include_str!("../../migrations/001_initial.sql")),
+    (2, include_str!("../../migrations/002_search_indexes.sql")),
+];
+
+pub fn run(conn: &Connection) -> Result<(), AppError> {
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS schema_migrations (
+            version INTEGER PRIMARY KEY NOT NULL,
+            applied_at TEXT NOT NULL
+        );",
+    )?;
+
+    let applied = applied_versions(conn)?;
+
+    for (version, sql) in MIGRATIONS {
+        if applied.contains(version) {
+            continue;
+        }
+
+        let tx = conn.unchecked_transaction()?;
+        tx.execute_batch(sql).map_err(|source| AppError::Migration {
+            message: format!("migration {version} failed: {source}"),
+        })?;
+
+        let applied_at = OffsetDateTime::now_utc()
+            .format(&time::format_description::well_known::Rfc3339)
+            .map_err(|err| AppError::Internal {
+                message: format!("timestamp format failed: {err}"),
+            })?;
+
+        tx.execute(
+            "INSERT INTO schema_migrations (version, applied_at) VALUES (?1, ?2)",
+            rusqlite::params![version, applied_at],
+        )?;
+        tx.commit()?;
+    }
+
+    Ok(())
+}
+
+fn applied_versions(conn: &Connection) -> Result<Vec<i64>, AppError> {
+    let mut stmt = conn.prepare("SELECT version FROM schema_migrations ORDER BY version")?;
+    let versions = stmt
+        .query_map([], |row| row.get(0))?
+        .collect::<Result<Vec<i64>, _>>()?;
+    Ok(versions)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    #[test]
+    fn applies_initial_migration_once() {
+        let conn = Connection::open_in_memory().expect("open");
+        conn.pragma_update(None, "foreign_keys", true)
+            .expect("fk");
+        run(&conn).expect("migrate");
+        run(&conn).expect("migrate again");
+
+        let count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM schema_migrations", [], |row| {
+                row.get(0)
+            })
+            .expect("count");
+        assert_eq!(count, 2);
+
+        let tables: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'customers'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("tables");
+        assert_eq!(tables, 1);
+
+        let indexes: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_customers_phone'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("indexes");
+        assert_eq!(indexes, 1);
+    }
+}
