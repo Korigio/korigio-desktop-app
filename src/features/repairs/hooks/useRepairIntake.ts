@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useFlowWizard } from "@/shared/hooks/useFlowWizard";
+import { companiesApi } from "@/features/companies/api/companiesApi";
+import {
+  companyLabel,
+  type Company,
+} from "@/features/companies/types/company";
 import {
   customerLabel,
   useCustomerSearchCombobox,
@@ -16,7 +21,7 @@ import {
 import { useRepairForm } from "@/features/repairs/hooks/useRepairForm";
 import type { Repair } from "@/features/repairs/types/repair";
 
-export const INTAKE_STEPS = [
+const BASE_INTAKE_STEPS = [
   "customer",
   "device",
   "details",
@@ -24,10 +29,28 @@ export const INTAKE_STEPS = [
   "done",
 ] as const;
 
-export type IntakeStep = (typeof INTAKE_STEPS)[number];
+export type IntakeStep =
+  | "company"
+  | (typeof BASE_INTAKE_STEPS)[number];
+
+export function buildIntakeSteps(includeCompany: boolean): readonly IntakeStep[] {
+  return includeCompany
+    ? (["company", ...BASE_INTAKE_STEPS] as const)
+    : BASE_INTAKE_STEPS;
+}
+
+/** @deprecated Prefer `buildIntakeSteps` / `intake.steps` for dynamic company step. */
+export const INTAKE_STEPS = BASE_INTAKE_STEPS;
+
+export type IntakeGate = "loading" | "no-company" | "ready";
 
 export function useRepairIntake() {
   const { t } = useI18n();
+
+  const [gate, setGate] = useState<IntakeGate>("loading");
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [company, setCompany] = useState<Company | null>(null);
+  const [companiesError, setCompaniesError] = useState<string | null>(null);
 
   const [customerCreateOpen, setCustomerCreateOpen] = useState(false);
   const [deviceCreateOpen, setDeviceCreateOpen] = useState(false);
@@ -43,6 +66,12 @@ export function useRepairIntake() {
   const [createdRepair, setCreatedRepair] = useState<Repair | null>(null);
 
   const createButtonRef = useRef<HTMLButtonElement>(null);
+
+  const includeCompanyStep = companies.length > 1;
+  const steps = useMemo(
+    () => buildIntakeSteps(includeCompanyStep),
+    [includeCompanyStep],
+  );
 
   const customerSearch = useCustomerSearchCombobox();
   const deviceSearch = useDeviceSearchCombobox({
@@ -62,7 +91,7 @@ export function useRepairIntake() {
   const clearError = useCallback(() => setError(null), []);
 
   const wizard = useFlowWizard<IntakeStep>({
-    steps: INTAKE_STEPS,
+    steps,
     onEnter: {
       customer: () => {
         window.setTimeout(() => {
@@ -117,6 +146,7 @@ export function useRepairIntake() {
     mode: "create",
     defaultCustomerId: customer?.id,
     defaultDeviceId: device?.id,
+    defaultCompanyId: company?.id,
     navigateOnSuccess: false,
     onSuccess: (created) => {
       setCreatedRepair(created);
@@ -127,6 +157,57 @@ export function useRepairIntake() {
   const customerFormReset = customerForm.reset;
   const deviceFormReset = deviceForm.reset;
   const repairFormReset = repairForm.reset;
+
+  useEffect(() => {
+    let cancelled = false;
+    setGate("loading");
+    setCompaniesError(null);
+
+    void companiesApi
+      .list({ includeArchived: false, page: 1, pageSize: 100 })
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        const items = result.items;
+        setCompanies(items);
+        if (items.length === 0) {
+          setCompany(null);
+          setGate("no-company");
+          return;
+        }
+        if (items.length === 1) {
+          setCompany(items[0] ?? null);
+        } else {
+          const preferred =
+            items.find((item) => item.isDefault) ?? items[0] ?? null;
+          setCompany(preferred);
+        }
+        setGate("ready");
+      })
+      .catch((err: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        setCompanies([]);
+        setCompany(null);
+        setCompaniesError(
+          err instanceof Error ? err.message : "Failed to load companies",
+        );
+        setGate("no-company");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!company?.id) {
+      return;
+    }
+    repairForm.setFieldValue("companyId", String(company.id));
+  }, [company?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- sync id only
 
   useEffect(() => {
     if (!customer?.id) {
@@ -143,6 +224,11 @@ export function useRepairIntake() {
     repairForm.setFieldValue("deviceId", String(device.id));
   }, [device?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- sync ids only
 
+  const selectCompany = useCallback((next: Company) => {
+    setCompany(next);
+    clearError();
+  }, [clearError]);
+
   const resetWizard = useCallback(() => {
     setCustomerCreateOpen(false);
     setDeviceCreateOpen(false);
@@ -157,8 +243,16 @@ export function useRepairIntake() {
     customerFormReset();
     deviceFormReset();
     repairFormReset();
+    if (companies.length === 1) {
+      setCompany(companies[0] ?? null);
+    } else if (companies.length > 1) {
+      const preferred =
+        companies.find((item) => item.isDefault) ?? companies[0] ?? null;
+      setCompany(preferred);
+    }
     resetWizardSteps();
   }, [
+    companies,
     customerFormReset,
     customerSearchReset,
     deviceFormReset,
@@ -167,8 +261,16 @@ export function useRepairIntake() {
     resetWizardSteps,
   ]);
 
+  const firstStep: IntakeStep = includeCompanyStep ? "company" : "customer";
+
   const goBack = useCallback(() => {
     clearError();
+    if (stepId === "customer") {
+      if (includeCompanyStep) {
+        goTo("company");
+      }
+      return;
+    }
     if (stepId === "device") {
       setDeviceCreateOpen(false);
       setDevice(null);
@@ -186,6 +288,7 @@ export function useRepairIntake() {
     deviceFormReset,
     deviceSearchReset,
     goTo,
+    includeCompanyStep,
     stepId,
   ]);
 
@@ -220,6 +323,16 @@ export function useRepairIntake() {
   const onDeviceCreateOpenChange = useCallback((open: boolean) => {
     setDeviceCreateOpen(open);
   }, []);
+
+  const continueFromCompany = useCallback(() => {
+    clearError();
+    if (!company) {
+      setError(t("repairs.validation.companyRequired"));
+      return;
+    }
+    repairForm.setFieldValue("companyId", String(company.id));
+    goTo("customer");
+  }, [clearError, company, goTo, repairForm, t]);
 
   const continueFromCustomer = useCallback(async () => {
     clearError();
@@ -295,6 +408,9 @@ export function useRepairIntake() {
       setError(t("repairs.intake.problemRequired"));
       return;
     }
+    if (company?.id) {
+      repairForm.setFieldValue("companyId", String(company.id));
+    }
     if (customer?.id) {
       repairForm.setFieldValue("customerId", String(customer.id));
     }
@@ -303,11 +419,16 @@ export function useRepairIntake() {
     }
     repairForm.setFieldValue("status", "received");
     next();
-  }, [clearError, customer?.id, device?.id, next, repairForm, t]);
+  }, [clearError, company?.id, customer?.id, device?.id, next, repairForm, t]);
 
   const createRepair = useCallback(async () => {
     clearError();
 
+    if (!company) {
+      setError(t("repairs.validation.companyRequired"));
+      goTo(includeCompanyStep ? "company" : firstStep);
+      return;
+    }
     if (!customer) {
       setError(t("repairs.validation.customerRequired"));
       goTo("customer");
@@ -319,6 +440,7 @@ export function useRepairIntake() {
       return;
     }
 
+    repairForm.setFieldValue("companyId", String(company.id));
     repairForm.setFieldValue("customerId", String(customer.id));
     repairForm.setFieldValue("deviceId", String(device.id));
     repairForm.setFieldValue("status", "received");
@@ -331,9 +453,23 @@ export function useRepairIntake() {
     } finally {
       setSubmitting(false);
     }
-  }, [clearError, customer, device, goTo, repairForm, t]);
+  }, [
+    clearError,
+    company,
+    customer,
+    device,
+    firstStep,
+    goTo,
+    includeCompanyStep,
+    repairForm,
+    t,
+  ]);
 
   const continuePrimary = useCallback(async () => {
+    if (stepId === "company") {
+      continueFromCompany();
+      return;
+    }
     if (stepId === "customer") {
       await continueFromCustomer();
       return;
@@ -350,6 +486,7 @@ export function useRepairIntake() {
       await createRepair();
     }
   }, [
+    continueFromCompany,
     continueFromCustomer,
     continueFromDetails,
     continueFromDevice,
@@ -360,6 +497,10 @@ export function useRepairIntake() {
   const details = repairForm.state.values;
 
   const reviewItems = [
+    {
+      label: t("repairs.fields.company"),
+      value: company ? companyLabel(company) : "—",
+    },
     {
       label: t("repairs.fields.customer"),
       value: customer ? customerLabel(customer) : "—",
@@ -391,6 +532,13 @@ export function useRepairIntake() {
   ];
 
   return {
+    gate,
+    companies,
+    companiesError,
+    company,
+    selectCompany,
+    includeCompanyStep,
+    steps,
     step: stepId,
     customerCreateOpen,
     deviceCreateOpen,

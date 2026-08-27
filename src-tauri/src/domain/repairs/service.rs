@@ -2,6 +2,7 @@ use rusqlite::Connection;
 use time::OffsetDateTime;
 
 use crate::db::repository::now_utc_rfc3339;
+use crate::domain::companies;
 use crate::domain::customers;
 use crate::domain::devices;
 use crate::domain::repairs::constants::{DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE};
@@ -14,6 +15,7 @@ pub fn create_repair(conn: &Connection, input: RepairInput) -> Result<Repair, Ap
     let validated = validate_create_input(&input)?;
     ensure_customer_accepts_repair(conn, validated.customer_id)?;
     ensure_device_belongs_to_customer(conn, validated.device_id, validated.customer_id)?;
+    ensure_company_accepts_repair(conn, validated.company_id)?;
 
     let now = now_utc_rfc3339()?;
     let year = local_calendar_year()?;
@@ -121,6 +123,17 @@ fn ensure_device_belongs_to_customer(
         return Err(AppError::Validation {
             field: Some("deviceId".into()),
             message: "Device does not belong to the selected customer.".into(),
+        });
+    }
+    Ok(())
+}
+
+fn ensure_company_accepts_repair(conn: &Connection, company_id: i64) -> Result<(), AppError> {
+    let company = companies::get_company(conn, company_id)?;
+    if company.archived_at.is_some() {
+        return Err(AppError::Validation {
+            field: Some("companyId".into()),
+            message: "Cannot create a repair for an archived company.".into(),
         });
     }
     Ok(())

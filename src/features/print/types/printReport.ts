@@ -7,6 +7,17 @@ export type PrintDiagnosisItem = {
   value: PrintDiagnosisValue;
 };
 
+export type PrintCompany = {
+  id: number;
+  legalName: string;
+  tradeName: string | null;
+  taxId: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+};
+
 export type RepairPrintReport = {
   repair: {
     id: number;
@@ -37,6 +48,8 @@ export type RepairPrintReport = {
     model: string | null;
     serialNumber: string | null;
   };
+  company: PrintCompany | null;
+  companyLogoAbsolutePath: string | null;
   diagnosis: {
     items: PrintDiagnosisItem[];
   } | null;

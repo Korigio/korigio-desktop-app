@@ -7,6 +7,8 @@ pub struct Repair {
     pub repair_number: String,
     pub customer_id: i64,
     pub device_id: i64,
+    /// Nullable in SQL for migrate safety on leftover rows; required on create.
+    pub company_id: Option<i64>,
     pub status: String,
     pub received_at: String,
     pub reported_problem: Option<String>,
@@ -28,6 +30,8 @@ pub struct Repair {
 pub struct RepairInput {
     pub customer_id: i64,
     pub device_id: i64,
+    /// Required on create; ignored on update (company cannot change after create).
+    pub company_id: i64,
     pub status: Option<String>,
     pub reported_problem: Option<String>,
     pub accessories_received: Option<String>,

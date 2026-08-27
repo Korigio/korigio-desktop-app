@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet } from "react-router";
 import type { LucideIcon } from "lucide-react";
 import {
+  Building2,
   ClipboardList,
   Home,
   MonitorSmartphone,
@@ -30,6 +31,7 @@ type NavItemConfig = {
 const NAV_ITEMS: NavItemConfig[] = [
   { to: "/", end: true, labelKey: "nav.home", icon: Home },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
+  { to: "/companies", labelKey: "nav.companies", icon: Building2 },
   { to: "/devices", labelKey: "nav.devices", icon: MonitorSmartphone },
   { to: "/repairs", labelKey: "nav.repairs", icon: Wrench },
   {

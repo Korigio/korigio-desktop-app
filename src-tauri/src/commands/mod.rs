@@ -1,4 +1,5 @@
 mod backup;
+mod companies;
 mod customers;
 mod dashboard;
 mod devices;
@@ -12,6 +13,7 @@ mod settings;
 mod system;
 
 pub use backup::*;
+pub use companies::*;
 pub use customers::*;
 pub use dashboard::*;
 pub use devices::*;

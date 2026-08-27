@@ -3,6 +3,7 @@
 use serde_json::json;
 
 use crate::db::Db;
+use crate::domain::companies::{CompanyInput, create_company};
 use crate::domain::customers::{CustomerInput, create_customer};
 use crate::domain::devices::{DeviceInput, create_device};
 use crate::domain::diagnosis::constants::{KIND_CHECKBOX, KIND_TEXT};
@@ -15,7 +16,26 @@ use crate::domain::print::types::PrintDiagnosisValue;
 use crate::domain::repairs::{RepairInput, create_repair};
 use crate::error::AppError;
 
+
+fn company(db: &Db) -> i64 {
+    create_company(
+        db.conn(),
+        CompanyInput {
+            legal_name: "Test Company".into(),
+            trade_name: None,
+            tax_id: None,
+            address: None,
+            phone: None,
+            email: None,
+            website: None,
+        },
+    )
+    .expect("company")
+    .id
+}
+
 fn seed_repair(db: &Db) -> (i64, String) {
+    let company_id = company(db);
     let customer = create_customer(
         db.conn(),
         CustomerInput {
@@ -45,6 +65,7 @@ fn seed_repair(db: &Db) -> (i64, String) {
         RepairInput {
             customer_id: customer.id,
             device_id: device.id,
+            company_id,
             status: None,
             reported_problem: Some("Won't boot".into()),
             accessories_received: Some("Charger".into()),
@@ -64,7 +85,7 @@ fn print_report_assembles_core_fields_without_diagnosis() {
     let db = Db::open_in_memory().expect("db");
     let (repair_id, repair_number) = seed_repair(&db);
 
-    let report = get_repair_print_report(db.conn(), repair_id).expect("report");
+    let report = get_repair_print_report(&db, repair_id).expect("report");
 
     assert_eq!(report.repair.id, repair_id);
     assert_eq!(report.repair.repair_number, repair_number);
@@ -81,6 +102,9 @@ fn print_report_assembles_core_fields_without_diagnosis() {
     assert_eq!(report.device.manufacturer.as_deref(), Some("Lenovo"));
     assert_eq!(report.device.model.as_deref(), Some("T14"));
     assert_eq!(report.device.serial_number.as_deref(), Some("SN-PRINT-1"));
+    let company = report.company.expect("company");
+    assert_eq!(company.legal_name, "Test Company");
+    assert!(report.company_logo_absolute_path.is_none());
     assert!(report.diagnosis.is_none());
 }
 
@@ -114,7 +138,7 @@ fn print_report_includes_diagnosis_items() {
     )
     .expect("diagnosis");
 
-    let report = get_repair_print_report(db.conn(), repair_id).expect("report");
+    let report = get_repair_print_report(&db, repair_id).expect("report");
     let diagnosis = report.diagnosis.expect("diagnosis present");
     assert_eq!(diagnosis.items.len(), 2);
     assert_eq!(diagnosis.items[0].id, "screen");
@@ -128,6 +152,6 @@ fn print_report_includes_diagnosis_items() {
 #[test]
 fn print_report_missing_repair_is_not_found() {
     let db = Db::open_in_memory().expect("db");
-    let err = get_repair_print_report(db.conn(), 999_999).expect_err("missing");
+    let err = get_repair_print_report(&db, 999_999).expect_err("missing");
     assert!(matches!(err, AppError::NotFound));
 }

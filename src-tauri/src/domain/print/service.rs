@@ -1,25 +1,24 @@
-use rusqlite::Connection;
 use serde_json::Value;
 
+use crate::db::Db;
+use crate::domain::companies;
 use crate::domain::customers;
 use crate::domain::devices;
 use crate::domain::diagnosis;
+use crate::domain::images::service::resolve_safe_absolute;
 use crate::domain::print::types::{
-    PrintCustomer, PrintDevice, PrintDiagnosis, PrintDiagnosisItem, PrintDiagnosisValue,
-    PrintRepairCore, RepairPrintReport,
+    PrintCompany, PrintCustomer, PrintDevice, PrintDiagnosis, PrintDiagnosisItem,
+    PrintDiagnosisValue, PrintRepairCore, RepairPrintReport,
 };
 use crate::domain::repairs;
 use crate::error::AppError;
 
 /// Assemble a print report for `repair_id`. Returns [`AppError::NotFound`] if the repair is missing.
-pub fn get_repair_print_report(
-    conn: &Connection,
-    repair_id: i64,
-) -> Result<RepairPrintReport, AppError> {
-    let repair = repairs::get_repair(conn, repair_id)?;
-    let customer = customers::get_customer(conn, repair.customer_id)?;
-    let device = devices::get_device(conn, repair.device_id)?;
-    let diagnosis = diagnosis::get_repair_diagnosis(conn, repair_id)?.map(|d| PrintDiagnosis {
+pub fn get_repair_print_report(db: &Db, repair_id: i64) -> Result<RepairPrintReport, AppError> {
+    let repair = repairs::get_repair(db.conn(), repair_id)?;
+    let customer = customers::get_customer(db.conn(), repair.customer_id)?;
+    let device = devices::get_device(db.conn(), repair.device_id)?;
+    let diagnosis = diagnosis::get_repair_diagnosis(db.conn(), repair_id)?.map(|d| PrintDiagnosis {
         items: d
             .result
             .items
@@ -32,6 +31,33 @@ pub fn get_repair_print_report(
             })
             .collect(),
     });
+
+    let (company, company_logo_absolute_path) = match repair.company_id {
+        Some(company_id) => {
+            let company = companies::get_company(db.conn(), company_id)?;
+            let logo = match &company.logo_path {
+                Some(rel) => match resolve_safe_absolute(db.paths(), rel) {
+                    Ok(path) => Some(path.to_string_lossy().into_owned()),
+                    Err(_) => None,
+                },
+                None => None,
+            };
+            (
+                Some(PrintCompany {
+                    id: company.id,
+                    legal_name: company.legal_name,
+                    trade_name: company.trade_name,
+                    tax_id: company.tax_id,
+                    address: company.address,
+                    phone: company.phone,
+                    email: company.email,
+                    website: company.website,
+                }),
+                logo,
+            )
+        }
+        None => (None, None),
+    };
 
     Ok(RepairPrintReport {
         repair: PrintRepairCore {
@@ -63,6 +89,8 @@ pub fn get_repair_print_report(
             model: device.model,
             serial_number: device.serial_number,
         },
+        company,
+        company_logo_absolute_path,
         diagnosis,
     })
 }

@@ -1,4 +1,4 @@
-use rusqlite::{Transaction, params};
+use rusqlite::{OptionalExtension, Transaction, params};
 #[cfg(test)]
 use rusqlite::Connection;
 use time::OffsetDateTime;
@@ -121,6 +121,7 @@ pub fn insert_repairs(
     count: u32,
     devices: &[(i64, i64)],
     repair_numbers: &[String],
+    company_id: i64,
     now: &str,
 ) -> Result<(), AppError> {
     if count == 0 {
@@ -139,11 +140,11 @@ pub fn insert_repairs(
 
     let mut stmt = tx.prepare(
         "INSERT INTO repairs (
-            repair_number, customer_id, device_id, status, received_at,
+            repair_number, customer_id, device_id, company_id, status, received_at,
             reported_problem, accessories_received, device_condition,
             diagnosis_notes, work_performed, notes, ready_at, collected_at,
             created_at, updated_at, archived_at
-         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ?7, ?8, NULL)",
+         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ?8, ?9, NULL)",
     )?;
 
     let n_devices = devices.len();
@@ -161,6 +162,7 @@ pub fn insert_repairs(
             &repair_numbers[i],
             customer_id,
             device_id,
+            company_id,
             status,
             now,
             problem,
@@ -169,6 +171,29 @@ pub fn insert_repairs(
         ])?;
     }
     Ok(())
+}
+
+/// Ensure at least one company exists for seeded repairs; returns its id.
+pub fn ensure_seed_company(tx: &Transaction<'_>, now: &str) -> Result<i64, AppError> {
+    let existing: Option<i64> = tx
+        .query_row(
+            "SELECT id FROM companies WHERE archived_at IS NULL ORDER BY is_default DESC, id ASC LIMIT 1",
+            [],
+            |row| row.get(0),
+        )
+        .optional()?;
+    if let Some(id) = existing {
+        return Ok(id);
+    }
+
+    tx.execute(
+        "INSERT INTO companies (
+            legal_name, trade_name, tax_id, address, phone, email, website,
+            logo_path, is_default, created_at, updated_at, archived_at
+         ) VALUES ('Seed Company', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, ?1, ?2, NULL)",
+        params![now, now],
+    )?;
+    Ok(tx.last_insert_rowid())
 }
 
 pub fn local_calendar_year() -> i32 {

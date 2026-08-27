@@ -1,5 +1,5 @@
 import { repairsApi } from "@/features/repairs/api/repairsApi";
-import type { Repair } from "@/features/repairs/types/repair";
+import { repairToInput, type Repair } from "@/features/repairs/types/repair";
 import { Button, LinkButton } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -34,11 +34,10 @@ export function RepairDetailActions({
           variant="secondary"
           onClick={() => {
             void (async () => {
-              const next = await repairsApi.update(repair.id, {
-                customerId: repair.customerId,
-                deviceId: repair.deviceId,
-                status: "cancelled",
-              });
+              const next = await repairsApi.update(
+                repair.id,
+                repairToInput(repair, { status: "cancelled" }),
+              );
               onRepairChange(next);
             })();
           }}

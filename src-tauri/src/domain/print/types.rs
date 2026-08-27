@@ -7,6 +7,8 @@ pub struct RepairPrintReport {
     pub repair: PrintRepairCore,
     pub customer: PrintCustomer,
     pub device: PrintDevice,
+    pub company: Option<PrintCompany>,
+    pub company_logo_absolute_path: Option<String>,
     pub diagnosis: Option<PrintDiagnosis>,
 }
 
@@ -46,6 +48,19 @@ pub struct PrintDevice {
     pub manufacturer: Option<String>,
     pub model: Option<String>,
     pub serial_number: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PrintCompany {
+    pub id: i64,
+    pub legal_name: String,
+    pub trade_name: Option<String>,
+    pub tax_id: Option<String>,
+    pub address: Option<String>,
+    pub phone: Option<String>,
+    pub email: Option<String>,
+    pub website: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]

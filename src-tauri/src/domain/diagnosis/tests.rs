@@ -3,6 +3,7 @@
 use serde_json::json;
 
 use crate::db::Db;
+use crate::domain::companies::{CompanyInput, create_company};
 use crate::domain::customers::{CustomerInput, create_customer};
 use crate::domain::devices::{DeviceInput, create_device};
 use crate::domain::diagnosis::constants::{KIND_CHECKBOX, KIND_TEXT};
@@ -56,7 +57,26 @@ fn sample_result() -> DiagnosisResult {
     }
 }
 
+
+fn company(db: &Db) -> i64 {
+    create_company(
+        db.conn(),
+        CompanyInput {
+            legal_name: "Test Company".into(),
+            trade_name: None,
+            tax_id: None,
+            address: None,
+            phone: None,
+            email: None,
+            website: None,
+        },
+    )
+    .expect("company")
+    .id
+}
+
 fn seed_repair(db: &Db) -> i64 {
+    let company_id = company(db);
     let customer_id = create_customer(
         db.conn(),
         CustomerInput {
@@ -88,6 +108,7 @@ fn seed_repair(db: &Db) -> i64 {
         RepairInput {
             customer_id,
             device_id,
+            company_id,
             status: None,
             reported_problem: Some("Broken".into()),
             accessories_received: None,

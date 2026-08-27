@@ -1,13 +1,11 @@
+import { IntakeCompanyStep } from "@/features/repairs/components/IntakeCompanyStep";
 import { IntakeCustomerStep } from "@/features/repairs/components/IntakeCustomerStep";
 import { IntakeDeviceStep } from "@/features/repairs/components/IntakeDeviceStep";
 import { IntakeDetailsStep } from "@/features/repairs/components/IntakeDetailsStep";
 import { IntakeReviewStep } from "@/features/repairs/components/IntakeReviewStep";
 import { IntakeDoneStep } from "@/features/repairs/components/IntakeDoneStep";
-import {
-  INTAKE_STEPS,
-  type RepairIntakeState,
-} from "@/features/repairs/hooks/useRepairIntake";
-import { StatusMessage, Stepper, WizardNav } from "@/ui";
+import type { RepairIntakeState } from "@/features/repairs/hooks/useRepairIntake";
+import { LinkButton, StatusMessage, Stepper, WizardNav } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
@@ -17,12 +15,36 @@ type Props = {
 export function RepairIntakeForm({ intake }: Props) {
   const { t } = useI18n();
 
-  const steps = INTAKE_STEPS.map((id) => ({
+  if (intake.gate === "loading") {
+    return <StatusMessage>{t("common.loading")}</StatusMessage>;
+  }
+
+  if (intake.gate === "no-company") {
+    return (
+      <div className="flex max-w-xl flex-col gap-4">
+        {intake.companiesError ? (
+          <StatusMessage tone="danger">{intake.companiesError}</StatusMessage>
+        ) : null}
+        <StatusMessage tone="danger">
+          {t("repairs.intake.noCompany")}
+        </StatusMessage>
+        <p className="text-sm text-muted">{t("repairs.intake.noCompanyHint")}</p>
+        <div>
+          <LinkButton to="/companies/new">
+            {t("repairs.intake.noCompanyAction")}
+          </LinkButton>
+        </div>
+      </div>
+    );
+  }
+
+  const steps = intake.steps.map((id) => ({
     id,
     label: t(`repairs.intake.steps.${id}`),
   }));
 
-  const showBack = intake.step !== "customer" && intake.step !== "done";
+  const firstStep = intake.includeCompanyStep ? "company" : "customer";
+  const showBack = intake.step !== firstStep && intake.step !== "done";
   const showNav = intake.step !== "done";
 
   const primaryLabel =
@@ -38,6 +60,7 @@ export function RepairIntakeForm({ intake }: Props) {
         <StatusMessage tone="danger">{intake.error}</StatusMessage>
       ) : null}
 
+      {intake.step === "company" ? <IntakeCompanyStep intake={intake} /> : null}
       {intake.step === "customer" ? (
         <IntakeCustomerStep intake={intake} />
       ) : null}

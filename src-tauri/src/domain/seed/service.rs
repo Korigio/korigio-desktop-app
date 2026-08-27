@@ -49,7 +49,19 @@ pub fn seed_synthetic_data(
     let customer_ids = repository::insert_customers(&tx, customers, &now)?;
     let device_pairs = repository::insert_devices(&tx, devices, &customer_ids, &now)?;
     let repair_numbers = repository::allocate_repair_numbers(&tx, year, repairs)?;
-    repository::insert_repairs(&tx, repairs, &device_pairs, &repair_numbers, &now)?;
+    let company_id = if repairs > 0 {
+        repository::ensure_seed_company(&tx, &now)?
+    } else {
+        0
+    };
+    repository::insert_repairs(
+        &tx,
+        repairs,
+        &device_pairs,
+        &repair_numbers,
+        company_id,
+        &now,
+    )?;
     tx.commit()?;
 
     let elapsed_ms = started.elapsed().as_millis() as u64;

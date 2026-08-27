@@ -1,6 +1,7 @@
 //! Global search integration tests (temporary / in-memory DB only).
 
 use crate::db::Db;
+use crate::domain::companies::{CompanyInput, create_company};
 use crate::domain::customers::{CustomerInput, archive_customer, create_customer};
 use crate::domain::devices::{DeviceInput, archive_device, create_device};
 use crate::domain::repairs::{RepairInput, create_repair};
@@ -38,6 +39,24 @@ fn device(db: &Db, customer_id: i64, serial: &str) -> i64 {
     .id
 }
 
+
+fn company(db: &Db) -> i64 {
+    create_company(
+        db.conn(),
+        CompanyInput {
+            legal_name: "Test Company".into(),
+            trade_name: None,
+            tax_id: None,
+            address: None,
+            phone: None,
+            email: None,
+            website: None,
+        },
+    )
+    .expect("company")
+    .id
+}
+
 #[test]
 fn empty_or_whitespace_query_returns_empty_arrays() {
     let db = Db::open_in_memory().expect("db");
@@ -61,6 +80,7 @@ fn empty_or_whitespace_query_returns_empty_arrays() {
 #[test]
 fn mixed_hits_across_customers_devices_and_repairs() {
     let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
     let customer_id = customer_with_phone(&db, "Maria Lopez", "612345678");
     let device_id = device(&db, customer_id, "SN-MIXED-99");
     let repair = create_repair(
@@ -68,6 +88,7 @@ fn mixed_hits_across_customers_devices_and_repairs() {
         RepairInput {
             customer_id,
             device_id,
+            company_id,
             status: None,
             reported_problem: Some("Battery drain".into()),
             accessories_received: None,
@@ -120,6 +141,7 @@ fn mixed_hits_across_customers_devices_and_repairs() {
 #[test]
 fn archived_entities_are_excluded() {
     let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
     let active_id = customer_with_phone(&db, "Active User", "111-2222");
     let archived_customer_id = customer_with_phone(&db, "Archived User", "111-9999");
     archive_customer(db.conn(), archived_customer_id).expect("archive customer");
@@ -133,6 +155,7 @@ fn archived_entities_are_excluded() {
         RepairInput {
             customer_id: active_id,
             device_id: active_device,
+            company_id,
             status: None,
             reported_problem: Some("UniqueProblemXYZ".into()),
             accessories_received: None,
@@ -150,6 +173,7 @@ fn archived_entities_are_excluded() {
         RepairInput {
             customer_id: active_id,
             device_id: active_device,
+            company_id,
             status: None,
             reported_problem: Some("UniqueProblemXYZ archived".into()),
             accessories_received: None,

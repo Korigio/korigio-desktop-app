@@ -11,6 +11,7 @@ import type {
 type FormValues = {
   customerId: string;
   deviceId: string;
+  companyId: string;
   status: string;
   reportedProblem: string;
   accessoriesReceived: string;
@@ -26,6 +27,7 @@ type Options = {
   mode: "create" | "edit";
   defaultCustomerId?: number;
   defaultDeviceId?: number;
+  defaultCompanyId?: number;
   onSuccess?: (entity: Repair) => void;
   navigateOnSuccess?: boolean;
 };
@@ -34,10 +36,14 @@ function toValues(
   repair?: Repair,
   defaultCustomerId?: number,
   defaultDeviceId?: number,
+  defaultCompanyId?: number,
 ): FormValues {
   return {
     customerId: String(repair?.customerId ?? defaultCustomerId ?? ""),
     deviceId: String(repair?.deviceId ?? defaultDeviceId ?? ""),
+    companyId: String(
+      repair?.companyId ?? defaultCompanyId ?? "",
+    ),
     status: repair?.status ?? "received",
     reportedProblem: repair?.reportedProblem ?? "",
     accessoriesReceived: repair?.accessoriesReceived ?? "",
@@ -53,6 +59,7 @@ function toInput(value: FormValues): RepairInput {
   return {
     customerId: Number(value.customerId),
     deviceId: Number(value.deviceId),
+    companyId: Number(value.companyId),
     status: (value.status || undefined) as RepairStatus | undefined,
     reportedProblem: value.reportedProblem || null,
     accessoriesReceived: value.accessoriesReceived || null,
@@ -69,6 +76,7 @@ export function useRepairForm({
   mode,
   defaultCustomerId,
   defaultDeviceId,
+  defaultCompanyId,
   onSuccess,
   navigateOnSuccess = true,
 }: Options) {
@@ -79,7 +87,12 @@ export function useRepairForm({
   navigateOnSuccessRef.current = navigateOnSuccess;
 
   const form = useForm({
-    defaultValues: toValues(repair, defaultCustomerId, defaultDeviceId),
+    defaultValues: toValues(
+      repair,
+      defaultCustomerId,
+      defaultDeviceId,
+      defaultCompanyId,
+    ),
     onSubmit: async ({ value }) => {
       const input = toInput(value);
 
@@ -89,6 +102,9 @@ export function useRepairForm({
         }
         if (!Number.isFinite(input.deviceId) || input.deviceId <= 0) {
           throw new Error("Device is required");
+        }
+        if (!Number.isFinite(input.companyId) || input.companyId <= 0) {
+          throw new Error("Company is required");
         }
         const created = await repairsApi.create(input);
         onSuccessRef.current?.(created);

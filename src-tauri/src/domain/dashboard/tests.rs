@@ -4,6 +4,7 @@ use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
 
 use crate::db::Db;
+use crate::domain::companies::{CompanyInput, create_company};
 use crate::domain::customers::{CustomerInput, create_customer};
 use crate::domain::dashboard::constants::STALE_AFTER_DAYS;
 use crate::domain::dashboard::get_home_dashboard;
@@ -43,10 +44,29 @@ fn device(db: &Db, customer_id: i64, serial: &str) -> i64 {
     .id
 }
 
-fn sample_repair(customer_id: i64, device_id: i64) -> RepairInput {
+
+fn company(db: &Db) -> i64 {
+    create_company(
+        db.conn(),
+        CompanyInput {
+            legal_name: "Test Company".into(),
+            trade_name: None,
+            tax_id: None,
+            address: None,
+            phone: None,
+            email: None,
+            website: None,
+        },
+    )
+    .expect("company")
+    .id
+}
+
+fn sample_repair(customer_id: i64, device_id: i64, company_id: i64) -> RepairInput {
     RepairInput {
         customer_id,
         device_id,
+        company_id,
         status: None,
         reported_problem: Some("Screen cracked".into()),
         accessories_received: None,
@@ -58,13 +78,14 @@ fn sample_repair(customer_id: i64, device_id: i64) -> RepairInput {
     }
 }
 
-fn set_status(db: &Db, id: i64, customer_id: i64, device_id: i64, status: &str) {
+fn set_status(db: &Db, id: i64, customer_id: i64, device_id: i64, company_id: i64, status: &str) {
     update_repair(
         db.conn(),
         id,
         RepairInput {
             customer_id,
             device_id,
+            company_id,
             status: Some(status.into()),
             reported_problem: None,
             accessories_received: None,
@@ -106,15 +127,16 @@ fn empty_dashboard_returns_zero_counts_for_all_statuses() {
 #[test]
 fn status_counts_and_today_received() {
     let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
     let customer_id = customer(&db, "Alice", Some("555-0100"));
     let device_id = device(&db, customer_id, "SN-1");
 
-    let received = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("r1");
-    let diagnosis = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("r2");
-    set_status(&db, diagnosis.id, customer_id, device_id, "diagnosis");
+    let received = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("r1");
+    let diagnosis = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("r2");
+    set_status(&db, diagnosis.id, customer_id, device_id, company_id, "diagnosis");
 
-    let ready = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("r3");
-    set_status(&db, ready.id, customer_id, device_id, "ready");
+    let ready = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("r3");
+    set_status(&db, ready.id, customer_id, device_id, company_id, "ready");
 
     let dash = get_home_dashboard(db.conn()).expect("dashboard");
     let counts: Vec<(String, i64)> = dash
@@ -143,14 +165,15 @@ fn status_counts_and_today_received() {
 #[test]
 fn ready_list_orders_by_ready_at_ascending() {
     let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
     let customer_id = customer(&db, "Bob", None);
     let device_id = device(&db, customer_id, "SN-2");
 
-    let first = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("first");
-    set_status(&db, first.id, customer_id, device_id, "ready");
+    let first = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("first");
+    set_status(&db, first.id, customer_id, device_id, company_id, "ready");
 
-    let second = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("second");
-    set_status(&db, second.id, customer_id, device_id, "ready");
+    let second = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("second");
+    set_status(&db, second.id, customer_id, device_id, company_id, "ready");
 
     // Force older ready_at on the second repair so order is deterministic.
     let older = (OffsetDateTime::now_utc() - Duration::days(2))
@@ -182,20 +205,21 @@ fn ready_list_orders_by_ready_at_ascending() {
 #[test]
 fn stale_list_includes_old_open_repairs_excludes_fresh_and_terminal() {
     let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
     let customer_id = customer(&db, "Carol", None);
     let device_id = device(&db, customer_id, "SN-3");
 
-    let stale = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("stale");
-    set_status(&db, stale.id, customer_id, device_id, "in_repair");
+    let stale = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("stale");
+    set_status(&db, stale.id, customer_id, device_id, company_id, "in_repair");
 
-    let fresh = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("fresh");
-    set_status(&db, fresh.id, customer_id, device_id, "diagnosis");
+    let fresh = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("fresh");
+    set_status(&db, fresh.id, customer_id, device_id, company_id, "diagnosis");
 
-    let collected = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("col");
-    set_status(&db, collected.id, customer_id, device_id, "collected");
+    let collected = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("col");
+    set_status(&db, collected.id, customer_id, device_id, company_id, "collected");
 
-    let cancelled = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("can");
-    set_status(&db, cancelled.id, customer_id, device_id, "cancelled");
+    let cancelled = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("can");
+    set_status(&db, cancelled.id, customer_id, device_id, company_id, "cancelled");
 
     let old = (OffsetDateTime::now_utc() - Duration::days(i64::from(STALE_AFTER_DAYS) + 2))
         .format(&Rfc3339)
@@ -238,11 +262,12 @@ fn stale_list_includes_old_open_repairs_excludes_fresh_and_terminal() {
 #[test]
 fn archived_repairs_excluded_from_all_sections() {
     let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
     let customer_id = customer(&db, "Dan", None);
     let device_id = device(&db, customer_id, "SN-4");
 
-    let repair = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("repair");
-    set_status(&db, repair.id, customer_id, device_id, "ready");
+    let repair = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("repair");
+    set_status(&db, repair.id, customer_id, device_id, company_id, "ready");
 
     let old = (OffsetDateTime::now_utc() - Duration::days(i64::from(STALE_AFTER_DAYS) + 3))
         .format(&Rfc3339)
@@ -266,11 +291,12 @@ fn archived_repairs_excluded_from_all_sections() {
 #[test]
 fn today_collected_uses_collected_at_date_prefix() {
     let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
     let customer_id = customer(&db, "Eve", None);
     let device_id = device(&db, customer_id, "SN-5");
 
-    let repair = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("repair");
-    set_status(&db, repair.id, customer_id, device_id, "collected");
+    let repair = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("repair");
+    set_status(&db, repair.id, customer_id, device_id, company_id, "collected");
 
     let dash = get_home_dashboard(db.conn()).expect("dashboard");
     assert_eq!(dash.today.collected, 1);

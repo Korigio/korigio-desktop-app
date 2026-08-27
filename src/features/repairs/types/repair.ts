@@ -16,6 +16,8 @@ export type Repair = {
   repairNumber: string;
   customerId: number;
   deviceId: number;
+  /** Present after create; may be null on legacy rows. */
+  companyId: number | null;
   status: RepairStatus;
   receivedAt: string;
   reportedProblem: string | null;
@@ -35,6 +37,8 @@ export type Repair = {
 export type RepairInput = {
   customerId: number;
   deviceId: number;
+  /** Required on create; ignored on update. */
+  companyId: number;
   status?: RepairStatus | null;
   reportedProblem?: string | null;
   accessoriesReceived?: string | null;
@@ -68,6 +72,7 @@ export function repairToInput(
   return {
     customerId: repair.customerId,
     deviceId: repair.deviceId,
+    companyId: repair.companyId ?? 0,
     status: repair.status,
     reportedProblem: repair.reportedProblem,
     accessoriesReceived: repair.accessoriesReceived,

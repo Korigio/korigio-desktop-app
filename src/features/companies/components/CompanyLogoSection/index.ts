@@ -1,0 +1,1 @@
+export { CompanyLogoSection } from "./CompanyLogoSection";

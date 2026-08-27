@@ -30,7 +30,7 @@ export function IntakeDoneStep({ intake }: Props) {
 
       <div className="flex flex-wrap gap-2">
         <LinkButton to={`/repairs/${repair.id}/print`}>
-          {t("repairs.intake.done.printSlip")}
+          {t("repairs.intake.done.printEntrance")}
         </LinkButton>
         <LinkButton to={`/repairs/${repair.id}`} variant="secondary">
           {t("repairs.intake.done.openRepair")}

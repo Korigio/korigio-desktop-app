@@ -13,6 +13,7 @@ use crate::error::AppError;
 pub struct ValidatedCreateRepairInput {
     pub customer_id: i64,
     pub device_id: i64,
+    pub company_id: i64,
     pub status: String,
     pub reported_problem: Option<String>,
     pub accessories_received: Option<String>,
@@ -48,6 +49,12 @@ pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepai
             message: "Device is required.".into(),
         });
     }
+    if input.company_id <= 0 {
+        return Err(AppError::Validation {
+            field: Some("companyId".into()),
+            message: "Company is required.".into(),
+        });
+    }
 
     let fields = validate_text_fields(input)?;
     let status = normalize_status(input.status.as_deref(), None)?;
@@ -56,6 +63,7 @@ pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepai
     Ok(ValidatedCreateRepairInput {
         customer_id: input.customer_id,
         device_id: input.device_id,
+        company_id: input.company_id,
         status,
         reported_problem: fields.reported_problem,
         accessories_received: fields.accessories_received,
@@ -210,6 +218,7 @@ mod tests {
         RepairInput {
             customer_id: 1,
             device_id: 2,
+            company_id: 3,
             status: None,
             reported_problem: None,
             accessories_received: None,
@@ -218,6 +227,19 @@ mod tests {
             work_performed: None,
             notes: None,
             expected_pickup_at: None,
+        }
+    }
+
+    #[test]
+    fn rejects_missing_company_id() {
+        let mut input = base_input();
+        input.company_id = 0;
+        let err = validate_create_input(&input).expect_err("company required");
+        match err {
+            AppError::Validation { field, .. } => {
+                assert_eq!(field.as_deref(), Some("companyId"));
+            }
+            other => panic!("unexpected error: {other:?}"),
         }
     }
 

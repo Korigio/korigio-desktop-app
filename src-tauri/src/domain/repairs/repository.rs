@@ -35,15 +35,16 @@ pub fn insert_repair(
 ) -> Result<Repair, AppError> {
     tx.execute(
         "INSERT INTO repairs (
-            repair_number, customer_id, device_id, status, received_at,
+            repair_number, customer_id, device_id, company_id, status, received_at,
             reported_problem, accessories_received, device_condition,
             diagnosis_notes, work_performed, notes, expected_pickup_at,
             ready_at, collected_at, created_at, updated_at, archived_at
-         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, NULL, NULL, ?13, ?14, NULL)",
+         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, NULL, NULL, ?14, ?15, NULL)",
         params![
             repair_number,
             input.customer_id,
             input.device_id,
+            input.company_id,
             input.status,
             received_at,
             input.reported_problem,
@@ -114,7 +115,7 @@ pub fn update_repair(
 
 pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, AppError> {
     let mut stmt = conn.prepare(
-        "SELECT id, repair_number, customer_id, device_id, status, received_at,
+        "SELECT id, repair_number, customer_id, device_id, company_id, status, received_at,
                 reported_problem, accessories_received, device_condition,
                 diagnosis_notes, work_performed, notes, expected_pickup_at,
                 ready_at, collected_at, created_at, updated_at, archived_at
@@ -125,7 +126,7 @@ pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, Ap
 }
 
 const REPAIR_SELECT_COLS: &str = "repairs.id, repairs.repair_number, repairs.customer_id,
-        repairs.device_id, repairs.status, repairs.received_at,
+        repairs.device_id, repairs.company_id, repairs.status, repairs.received_at,
         repairs.reported_problem, repairs.accessories_received, repairs.device_condition,
         repairs.diagnosis_notes, repairs.work_performed, repairs.notes,
         repairs.expected_pickup_at, repairs.ready_at, repairs.collected_at,
@@ -189,7 +190,7 @@ pub fn list_repairs(
     let select_cols = if needs_join {
         REPAIR_SELECT_COLS
     } else {
-        "id, repair_number, customer_id, device_id, status, received_at,
+        "id, repair_number, customer_id, device_id, company_id, status, received_at,
                 reported_problem, accessories_received, device_condition,
                 diagnosis_notes, work_performed, notes, expected_pickup_at,
                 ready_at, collected_at, created_at, updated_at, archived_at"
@@ -350,19 +351,20 @@ fn map_repair(row: &rusqlite::Row<'_>) -> rusqlite::Result<Repair> {
         repair_number: row.get(1)?,
         customer_id: row.get(2)?,
         device_id: row.get(3)?,
-        status: row.get(4)?,
-        received_at: row.get(5)?,
-        reported_problem: row.get(6)?,
-        accessories_received: row.get(7)?,
-        device_condition: row.get(8)?,
-        diagnosis_notes: row.get(9)?,
-        work_performed: row.get(10)?,
-        notes: row.get(11)?,
-        expected_pickup_at: row.get(12)?,
-        ready_at: row.get(13)?,
-        collected_at: row.get(14)?,
-        created_at: row.get(15)?,
-        updated_at: row.get(16)?,
-        archived_at: row.get(17)?,
+        company_id: row.get(4)?,
+        status: row.get(5)?,
+        received_at: row.get(6)?,
+        reported_problem: row.get(7)?,
+        accessories_received: row.get(8)?,
+        device_condition: row.get(9)?,
+        diagnosis_notes: row.get(10)?,
+        work_performed: row.get(11)?,
+        notes: row.get(12)?,
+        expected_pickup_at: row.get(13)?,
+        ready_at: row.get(14)?,
+        collected_at: row.get(15)?,
+        created_at: row.get(16)?,
+        updated_at: row.get(17)?,
+        archived_at: row.get(18)?,
     })
 }

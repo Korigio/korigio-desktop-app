@@ -10,6 +10,7 @@
     "home": "Inicio",
     "customers": "Clientes",
     "devices": "Dispositivos",
+    "companies": "Empresas",
     "repairs": "Reparaciones",
     "diagnosisTemplates": "Plantillas de diagnóstico",
     "intake": "Recepción",
@@ -139,6 +140,60 @@
       "identityHint": "Indique al menos tipo, fabricante, modelo o número de serie."
     }
   },
+  "companies": {
+    "title": "Empresas",
+    "subtitle": "Perfiles de empresa del taller para recepción y comprobantes",
+    "createTitle": "Nueva empresa",
+    "createSubtitle": "Datos del taller que aparecen en el comprobante de recepción",
+    "editTitle": "Editar empresa",
+    "search": "Buscar",
+    "searchPlaceholder": "Razón social, NIF/CIF o teléfono",
+    "includeArchived": "Incluir archivadas",
+    "empty": "No hay empresas",
+    "notFound": "Empresa no encontrada",
+    "invalidId": "Identificador de empresa no válido",
+    "backToList": "Volver a empresas",
+    "archivedEditHint": "Desarchive la empresa para poder editarla.",
+    "fields": {
+      "legalName": "Razón social",
+      "tradeName": "Nombre comercial",
+      "taxId": "NIF/CIF",
+      "address": "Dirección",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "website": "Sitio web",
+      "default": "Predeterminada",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Activa",
+      "archived": "Archivada",
+      "default": "Predeterminada",
+      "notDefault": "No predeterminada"
+    },
+    "actions": {
+      "new": "Nueva empresa",
+      "create": "Crear empresa",
+      "save": "Guardar",
+      "edit": "Editar",
+      "archive": "Archivar",
+      "unarchive": "Desarchivar",
+      "setDefault": "Marcar como predeterminada"
+    },
+    "validation": {
+      "legalNameRequired": "La razón social es obligatoria."
+    },
+    "logo": {
+      "title": "Logotipo",
+      "alt": "Logotipo de la empresa",
+      "empty": "Aún no hay logotipo.",
+      "upload": "Subir logotipo",
+      "replace": "Cambiar logotipo",
+      "clear": "Quitar logotipo",
+      "attachFailed": "No se pudo adjuntar el logotipo.",
+      "clearFailed": "No se pudo quitar el logotipo."
+    }
+  },
   "repairs": {
     "title": "Reparaciones",
     "subtitle": "Buscar, crear y gestionar reparaciones",
@@ -158,6 +213,7 @@
     "fields": {
       "repairNumber": "Número",
       "status": "Estado",
+      "company": "Empresa",
       "customer": "Cliente",
       "customerPlaceholder": "Seleccione un cliente",
       "device": "Dispositivo",
@@ -193,6 +249,7 @@
       "changeStatus": "Cambiar estado"
     },
     "validation": {
+      "companyRequired": "La empresa es obligatoria.",
       "customerRequired": "El cliente es obligatorio.",
       "deviceRequired": "El dispositivo es obligatorio."
     },
@@ -201,16 +258,24 @@
       "subtitle": "Entrada rápida con teclado para nuevas reparaciones en mostrador",
       "start": "Iniciar recepción",
       "shortcutHint": "Consejo: Ctrl+Mayús+N abre la recepción desde cualquier lugar. Ctrl/Cmd+Intro continúa o crea.",
+      "noCompany": "Aún no hay empresa",
+      "noCompanyHint": "Cree un perfil de empresa antes de recibir reparaciones. Aparece en el comprobante de recepción.",
+      "noCompanyAction": "Crear empresa",
       "noCustomers": "No hay clientes",
       "noDevices": "No hay dispositivos",
       "selectCustomerFirst": "Seleccione un cliente primero",
       "problemRequired": "El problema reportado es obligatorio.",
       "steps": {
+        "company": "Empresa",
         "customer": "Cliente",
         "device": "Dispositivo",
         "details": "Detalles",
         "review": "Revisar",
         "done": "Listo"
+      },
+      "company": {
+        "heading": "¿Qué empresa recibe este dispositivo?",
+        "hint": "Elija el taller que se encargará de esta reparación."
       },
       "nav": {
         "back": "Atrás",
@@ -227,7 +292,7 @@
       "done": {
         "heading": "Reparación creada",
         "repairCreated": "Reparación {number} creada.",
-        "printSlip": "Imprimir comprobante",
+        "printEntrance": "Imprimir comprobante de recepción",
         "openRepair": "Abrir reparación",
         "startAnother": "Empezar otra"
       }
@@ -367,6 +432,40 @@
     },
     "errors": {
       "loadFailed": "No se pudo cargar el informe."
+    },
+    "entrance": {
+      "title": "Comprobante de recepción",
+      "acknowledgment": "El cliente abajo firmante entrega el dispositivo indicado para su reparación y reconoce la recepción de este documento de custodia.",
+      "logoAlt": "Logotipo de la empresa",
+      "sections": {
+        "customer": "Cliente",
+        "device": "Dispositivo",
+        "custody": "Datos de recepción"
+      },
+      "fields": {
+        "taxId": "NIF/CIF",
+        "address": "Dirección",
+        "phone": "Teléfono",
+        "email": "Correo",
+        "website": "Sitio web",
+        "repairNumber": "N.º de reparación",
+        "date": "Fecha de recepción",
+        "name": "Nombre",
+        "deviceType": "Tipo",
+        "manufacturer": "Fabricante",
+        "model": "Modelo",
+        "serialNumber": "Número de serie",
+        "reportedProblem": "Problema reportado",
+        "accessories": "Accesorios",
+        "condition": "Estado",
+        "notes": "Notas",
+        "expectedPickup": "Posible recogida"
+      },
+      "signatures": {
+        "client": "Firma del cliente",
+        "shop": "Firma del taller",
+        "nameDate": "Nombre y fecha"
+      }
     }
   },
   "images": {

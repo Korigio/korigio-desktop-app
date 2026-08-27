@@ -10,6 +10,7 @@
     "home": "Start",
     "customers": "Kunden",
     "devices": "Geräte",
+    "companies": "Firmen",
     "repairs": "Reparaturen",
     "diagnosisTemplates": "Diagnosevorlagen",
     "intake": "Annahme",
@@ -139,6 +140,60 @@
       "identityHint": "Mindestens Typ, Hersteller, Modell oder Seriennummer angeben."
     }
   },
+  "companies": {
+    "title": "Firmen",
+    "subtitle": "Firmenprofile der Werkstatt für Annahme und Belege",
+    "createTitle": "Neue Firma",
+    "createSubtitle": "Werkstattdaten für den Annahmebeleg",
+    "editTitle": "Firma bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Firmenname, Steuernummer oder Telefon",
+    "includeArchived": "Archivierte einbeziehen",
+    "empty": "Keine Firmen gefunden",
+    "notFound": "Firma nicht gefunden",
+    "invalidId": "Ungültige Firmen-ID",
+    "backToList": "Zurück zu Firmen",
+    "archivedEditHint": "Firma zuerst wiederherstellen, um zu bearbeiten.",
+    "fields": {
+      "legalName": "Firmenname",
+      "tradeName": "Handelsname",
+      "taxId": "Steuernummer",
+      "address": "Adresse",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "website": "Website",
+      "default": "Standard",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Aktiv",
+      "archived": "Archiviert",
+      "default": "Standard",
+      "notDefault": "Nicht Standard"
+    },
+    "actions": {
+      "new": "Neue Firma",
+      "create": "Firma anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "unarchive": "Wiederherstellen",
+      "setDefault": "Als Standard setzen"
+    },
+    "validation": {
+      "legalNameRequired": "Firmenname ist erforderlich."
+    },
+    "logo": {
+      "title": "Logo",
+      "alt": "Firmenlogo",
+      "empty": "Noch kein Logo hochgeladen.",
+      "upload": "Logo hochladen",
+      "replace": "Logo ersetzen",
+      "clear": "Logo entfernen",
+      "attachFailed": "Logo konnte nicht hinzugefügt werden.",
+      "clearFailed": "Logo konnte nicht entfernt werden."
+    }
+  },
   "repairs": {
     "title": "Reparaturen",
     "subtitle": "Reparaturen suchen, anlegen und verwalten",
@@ -158,6 +213,7 @@
     "fields": {
       "repairNumber": "Nummer",
       "status": "Status",
+      "company": "Firma",
       "customer": "Kunde",
       "customerPlaceholder": "Kunde auswählen",
       "device": "Gerät",
@@ -193,6 +249,7 @@
       "changeStatus": "Status ändern"
     },
     "validation": {
+      "companyRequired": "Firma ist erforderlich.",
       "customerRequired": "Kunde ist erforderlich.",
       "deviceRequired": "Gerät ist erforderlich."
     },
@@ -201,16 +258,24 @@
       "subtitle": "Schnelle Tastatureingabe für neue Reparaturen an der Theke",
       "start": "Annahme starten",
       "shortcutHint": "Tipp: Strg+Umschalt+N öffnet die Annahme überall. Strg/Cmd+Eingabe für Weiter oder Anlegen.",
+      "noCompany": "Noch keine Firma",
+      "noCompanyHint": "Legen Sie zuerst ein Firmenprofil an, bevor Sie Reparaturen annehmen. Es erscheint auf dem Annahmebeleg.",
+      "noCompanyAction": "Firma anlegen",
       "noCustomers": "Keine Kunden gefunden",
       "noDevices": "Keine Geräte gefunden",
       "selectCustomerFirst": "Zuerst Kunde auswählen",
       "problemRequired": "Gemeldetes Problem ist erforderlich.",
       "steps": {
+        "company": "Firma",
         "customer": "Kunde",
         "device": "Gerät",
         "details": "Details",
         "review": "Prüfung",
         "done": "Fertig"
+      },
+      "company": {
+        "heading": "Welche Firma nimmt dieses Gerät an?",
+        "hint": "Wählen Sie die Werkstatt, die diese Reparatur bearbeitet."
       },
       "nav": {
         "back": "Zurück",
@@ -227,7 +292,7 @@
       "done": {
         "heading": "Reparatur angelegt",
         "repairCreated": "Reparatur {number} angelegt.",
-        "printSlip": "Beleg drucken",
+        "printEntrance": "Annahmebeleg drucken",
         "openRepair": "Reparatur öffnen",
         "startAnother": "Weitere Annahme"
       }
@@ -367,6 +432,40 @@
     },
     "errors": {
       "loadFailed": "Druckbericht konnte nicht geladen werden."
+    },
+    "entrance": {
+      "title": "Geräteannahmebeleg",
+      "acknowledgment": "Der unterzeichnende Kunde übergibt das oben genannte Gerät zur Reparatur und bestätigt den Erhalt dieses Verwahrungsbelegs.",
+      "logoAlt": "Firmenlogo",
+      "sections": {
+        "customer": "Kunde",
+        "device": "Gerät",
+        "custody": "Annamedaten"
+      },
+      "fields": {
+        "taxId": "Steuernummer",
+        "address": "Adresse",
+        "phone": "Telefon",
+        "email": "E-Mail",
+        "website": "Website",
+        "repairNumber": "Reparatur-Nr.",
+        "date": "Eingegangen",
+        "name": "Name",
+        "deviceType": "Typ",
+        "manufacturer": "Hersteller",
+        "model": "Modell",
+        "serialNumber": "Seriennummer",
+        "reportedProblem": "Gemeldetes Problem",
+        "accessories": "Zubehör",
+        "condition": "Zustand",
+        "notes": "Notizen",
+        "expectedPickup": "Mögliche Abholung"
+      },
+      "signatures": {
+        "client": "Unterschrift Kunde",
+        "shop": "Unterschrift Werkstatt",
+        "nameDate": "Name und Datum"
+      }
     }
   },
   "images": {

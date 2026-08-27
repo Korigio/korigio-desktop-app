@@ -10,6 +10,7 @@
     "home": "Home",
     "customers": "Customers",
     "devices": "Devices",
+    "companies": "Companies",
     "repairs": "Repairs",
     "diagnosisTemplates": "Diagnosis templates",
     "intake": "Intake",
@@ -139,6 +140,60 @@
       "identityHint": "Enter at least a type, manufacturer, model, or serial number."
     }
   },
+  "companies": {
+    "title": "Companies",
+    "subtitle": "Workshop company profiles for intake and receipts",
+    "createTitle": "New company",
+    "createSubtitle": "Shop details shown on intake receipts",
+    "editTitle": "Edit company",
+    "search": "Search",
+    "searchPlaceholder": "Legal name, tax ID or phone",
+    "includeArchived": "Include archived",
+    "empty": "No companies found",
+    "notFound": "Company not found",
+    "invalidId": "Invalid company id",
+    "backToList": "Back to companies",
+    "archivedEditHint": "Unarchive the company before editing.",
+    "fields": {
+      "legalName": "Legal name",
+      "tradeName": "Trade name",
+      "taxId": "Tax ID",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
+      "default": "Default",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "archived": "Archived",
+      "default": "Default",
+      "notDefault": "Not default"
+    },
+    "actions": {
+      "new": "New company",
+      "create": "Create company",
+      "save": "Save",
+      "edit": "Edit",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "setDefault": "Set as default"
+    },
+    "validation": {
+      "legalNameRequired": "Legal name is required."
+    },
+    "logo": {
+      "title": "Logo",
+      "alt": "Company logo",
+      "empty": "No logo uploaded yet.",
+      "upload": "Upload logo",
+      "replace": "Replace logo",
+      "clear": "Remove logo",
+      "attachFailed": "Could not attach logo.",
+      "clearFailed": "Could not remove logo."
+    }
+  },
   "repairs": {
     "title": "Repairs",
     "subtitle": "Search, create and manage repairs",
@@ -158,6 +213,7 @@
     "fields": {
       "repairNumber": "Number",
       "status": "Status",
+      "company": "Company",
       "customer": "Customer",
       "customerPlaceholder": "Select a customer",
       "device": "Device",
@@ -193,6 +249,7 @@
       "changeStatus": "Change status"
     },
     "validation": {
+      "companyRequired": "Company is required.",
       "customerRequired": "Customer is required.",
       "deviceRequired": "Device is required."
     },
@@ -201,16 +258,24 @@
       "subtitle": "Fast keyboard entry for new repairs at the counter",
       "start": "Start repair intake",
       "shortcutHint": "Tip: Ctrl+Shift+N opens intake from anywhere. Ctrl/Cmd+Enter continues or creates.",
+      "noCompany": "No company yet",
+      "noCompanyHint": "Create a company profile before taking in repairs. It appears on intake receipts.",
+      "noCompanyAction": "Create company",
       "noCustomers": "No customers found",
       "noDevices": "No devices found",
       "selectCustomerFirst": "Select a customer first",
       "problemRequired": "Reported problem is required.",
       "steps": {
+        "company": "Company",
         "customer": "Customer",
         "device": "Device",
         "details": "Details",
         "review": "Review",
         "done": "Done"
+      },
+      "company": {
+        "heading": "Which company is receiving this device?",
+        "hint": "Choose the shop that will handle this repair."
       },
       "nav": {
         "back": "Back",
@@ -227,7 +292,7 @@
       "done": {
         "heading": "Repair created",
         "repairCreated": "Repair {number} created.",
-        "printSlip": "Print slip",
+        "printEntrance": "Print intake receipt",
         "openRepair": "Open repair",
         "startAnother": "Start another"
       }
@@ -367,6 +432,40 @@
     },
     "errors": {
       "loadFailed": "Could not load the print report."
+    },
+    "entrance": {
+      "title": "Device intake receipt",
+      "acknowledgment": "The undersigned customer hands over the device listed above for repair and acknowledges receipt of this custody document.",
+      "logoAlt": "Company logo",
+      "sections": {
+        "customer": "Customer",
+        "device": "Device",
+        "custody": "Intake details"
+      },
+      "fields": {
+        "taxId": "Tax ID",
+        "address": "Address",
+        "phone": "Phone",
+        "email": "Email",
+        "website": "Website",
+        "repairNumber": "Repair no.",
+        "date": "Received",
+        "name": "Name",
+        "deviceType": "Type",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serialNumber": "Serial number",
+        "reportedProblem": "Reported problem",
+        "accessories": "Accessories",
+        "condition": "Condition",
+        "notes": "Notes",
+        "expectedPickup": "Possible pickup"
+      },
+      "signatures": {
+        "client": "Customer signature",
+        "shop": "Shop signature",
+        "nameDate": "Name and date"
+      }
     }
   },
   "images": {

@@ -1,4 +1,5 @@
 pub mod backup;
+pub mod companies;
 pub mod customers;
 pub mod dashboard;
 pub mod devices;
