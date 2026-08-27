@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Repair Manager",
+    "name": "Servioo",
     "running": "Anwendung läuft",
     "backendOk": "Backend verbunden",
     "backendChecking": "Backend wird geprüft…",
@@ -11,6 +11,8 @@
     "customers": "Kunden",
     "devices": "Geräte",
     "repairs": "Reparaturen",
+    "intake": "Annahme",
+    "search": "Suche",
     "settings": "Einstellungen"
   },
   "common": {
@@ -24,6 +26,19 @@
   "home": {
     "title": "Start",
     "refresh": "Verbindung prüfen"
+  },
+  "search": {
+    "title": "Suche",
+    "subtitle": "Kunden, Geräte und Reparaturen an einem Ort finden",
+    "placeholder": "Name, Telefon, Serie, Reparaturnummer…",
+    "prompt": "Tippen, um Kunden, Geräte und Reparaturen zu suchen.",
+    "empty": "Keine Ergebnisse gefunden",
+    "sectionEmpty": "Keine Treffer in diesem Bereich",
+    "sections": {
+      "customers": "Kunden",
+      "devices": "Geräte",
+      "repairs": "Reparaturen"
+    }
   },
   "customers": {
     "title": "Kunden",
@@ -161,6 +176,23 @@
     "validation": {
       "customerRequired": "Kunde ist erforderlich.",
       "deviceRequired": "Gerät ist erforderlich."
+    },
+    "intake": {
+      "title": "Reparatur-Annahme",
+      "subtitle": "Schnelle Tastatureingabe für neue Reparaturen an der Theke",
+      "start": "Annahme starten",
+      "saveAndNext": "Speichern und weiter",
+      "success": "Reparatur {number} angelegt.",
+      "shortcutHint": "Tipp: Strg+Umschalt+N öffnet die Annahme überall. Strg+Eingabe speichert.",
+      "noCustomers": "Keine Kunden gefunden",
+      "noDevices": "Keine Geräte gefunden",
+      "selectCustomerFirst": "Zuerst Kunde auswählen",
+      "quickCreateCustomer": "Neuen Kunden anlegen…",
+      "quickCreateCustomerTitle": "Kunde schnell anlegen",
+      "quickCreateDevice": "Neues Gerät anlegen…",
+      "quickCreateDeviceTitle": "Gerät schnell anlegen",
+      "cancelQuickCreate": "Abbrechen",
+      "problemRequired": "Gemeldetes Problem ist erforderlich."
     }
   },
   "settings": {

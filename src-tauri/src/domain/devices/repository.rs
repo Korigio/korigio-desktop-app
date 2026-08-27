@@ -1,5 +1,6 @@
 use rusqlite::{Connection, OptionalExtension, params};
 
+use crate::db::repository::like_pattern;
 use crate::domain::devices::types::Device;
 use crate::domain::devices::validation::ValidatedDeviceInput;
 use crate::error::AppError;
@@ -97,19 +98,6 @@ pub fn set_archived_at(
         return Err(AppError::NotFound);
     }
     get_device_by_id(conn, id)?.ok_or(AppError::NotFound)
-}
-
-fn like_pattern(search: Option<&str>) -> Option<String> {
-    search
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .map(|s| {
-            let escaped = s
-                .replace('\\', "\\\\")
-                .replace('%', "\\%")
-                .replace('_', "\\_");
-            format!("%{escaped}%")
-        })
 }
 
 pub fn list_devices(

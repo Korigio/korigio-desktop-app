@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Repair Manager",
+    "name": "Servioo",
     "running": "Application running",
     "backendOk": "Backend connected",
     "backendChecking": "Checking backend…",
@@ -11,6 +11,8 @@
     "customers": "Customers",
     "devices": "Devices",
     "repairs": "Repairs",
+    "intake": "Intake",
+    "search": "Search",
     "settings": "Settings"
   },
   "common": {
@@ -24,6 +26,19 @@
   "home": {
     "title": "Home",
     "refresh": "Check connection"
+  },
+  "search": {
+    "title": "Search",
+    "subtitle": "Find customers, devices and repairs in one place",
+    "placeholder": "Name, phone, serial, repair number…",
+    "prompt": "Type to search customers, devices and repairs.",
+    "empty": "No results found",
+    "sectionEmpty": "No matches in this section",
+    "sections": {
+      "customers": "Customers",
+      "devices": "Devices",
+      "repairs": "Repairs"
+    }
   },
   "customers": {
     "title": "Customers",
@@ -161,6 +176,23 @@
     "validation": {
       "customerRequired": "Customer is required.",
       "deviceRequired": "Device is required."
+    },
+    "intake": {
+      "title": "Repair intake",
+      "subtitle": "Fast keyboard entry for new repairs at the counter",
+      "start": "Start repair intake",
+      "saveAndNext": "Save and next",
+      "success": "Repair {number} created.",
+      "shortcutHint": "Tip: Ctrl+Shift+N opens intake from anywhere. Ctrl+Enter saves.",
+      "noCustomers": "No customers found",
+      "noDevices": "No devices found",
+      "selectCustomerFirst": "Select a customer first",
+      "quickCreateCustomer": "Create new customer…",
+      "quickCreateCustomerTitle": "Quick create customer",
+      "quickCreateDevice": "Create new device…",
+      "quickCreateDeviceTitle": "Quick create device",
+      "cancelQuickCreate": "Cancel",
+      "problemRequired": "Reported problem is required."
     }
   },
   "settings": {

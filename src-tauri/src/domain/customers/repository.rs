@@ -1,5 +1,6 @@
 use rusqlite::{Connection, OptionalExtension, params};
 
+use crate::db::repository::like_pattern;
 use crate::domain::customers::types::Customer;
 use crate::domain::customers::validation::ValidatedCustomerInput;
 use crate::error::AppError;
@@ -101,16 +102,7 @@ pub fn list_customers(
     limit: u32,
     offset: u32,
 ) -> Result<(Vec<Customer>, i64), AppError> {
-    let pattern = search
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .map(|s| {
-            let escaped = s
-                .replace('\\', "\\\\")
-                .replace('%', "\\%")
-                .replace('_', "\\_");
-            format!("%{escaped}%")
-        });
+    let pattern = like_pattern(search);
 
     let total: i64 = match (&pattern, include_archived) {
         (None, false) => conn.query_row(
