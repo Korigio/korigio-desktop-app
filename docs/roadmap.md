@@ -20,9 +20,9 @@ Do not combine phases without permission. Do not implement unsolicited features.
 | 11 | Printing | **Done** — first A4 report (core + diagnosis) |
 | 12 | Security hardening | **Done** — CSP/capabilities audit; no at-rest encryption for v1 |
 | 13 | Performance hardening | **Done** — synthetic seed + measured baseline |
-| 14 | Windows installer | NSIS offline WebView2 setup.exe |
-| 15 | GitHub Actions | Windows release artifact |
-| 16 | Production QA | Checklist and audit |
+| 14 | Windows installer | **Done** — NSIS offline WebView2 setup.exe |
+| 15 | GitHub Actions | **Done** — Windows release artifact workflow |
+| 16 | Production QA | **Done** — Checklist and audit |
 
 ## Required output after every phase
 
