@@ -41,4 +41,4 @@ No shell, HTTP, or broad filesystem plugin. Asset protocol scope is limited to `
 
 ## Installer (Phase 14)
 
-Offline WebView2 bootstrapper so corporate PCs without CDN access can install.
+Offline WebView2 bootstrapper so corporate PCs without CDN access can install. See [installer.md](installer.md). Uninstall must **not** delete AppData (customer data).
