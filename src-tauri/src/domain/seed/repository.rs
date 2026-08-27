@@ -176,6 +176,7 @@ pub fn local_calendar_year() -> i32 {
 }
 
 /// Count rows in a table (active + archived). Used by tests / verification.
+#[cfg(test)]
 pub fn count_rows(conn: &Connection, table: &str) -> Result<i64, AppError> {
     // Whitelist table names — never interpolate user input.
     let sql = match table {
