@@ -19,6 +19,7 @@ export function useRepairDiagnosis(repairId: number) {
   const [saving, setSaving] = useState(false);
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -46,6 +47,7 @@ export function useRepairDiagnosis(repairId: number) {
       );
       setDiagnosis(null);
       setDraftItems([]);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -58,11 +60,13 @@ export function useRepairDiagnosis(repairId: number) {
   const applyTemplate = useCallback(async () => {
     const templateId = Number(selectedTemplateId);
     if (!Number.isFinite(templateId) || templateId <= 0) {
+      setError("Select a template first.");
       return;
     }
 
     setApplying(true);
     setError(null);
+    setSuccess(null);
     try {
       const template = await diagnosisTemplatesApi.get(templateId);
       const result = { items: templateItemsToResult(template.body.items) };
@@ -73,6 +77,7 @@ export function useRepairDiagnosis(repairId: number) {
       });
       setDiagnosis(saved);
       setDraftItems(saved.result.items);
+      setSuccess("Template applied. Fill the checklist and save.");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to apply template",
@@ -84,6 +89,7 @@ export function useRepairDiagnosis(repairId: number) {
 
   const setItemValue = useCallback(
     (index: number, value: boolean | string) => {
+      setSuccess(null);
       setDraftItems((prev) =>
         prev.map((item, i) => (i === index ? { ...item, value } : item)),
       );
@@ -92,8 +98,14 @@ export function useRepairDiagnosis(repairId: number) {
   );
 
   const save = useCallback(async () => {
+    if (draftItems.length === 0) {
+      setError("Nothing to save. Apply a template first.");
+      return;
+    }
+
     setSaving(true);
     setError(null);
+    setSuccess(null);
     try {
       const saved = await repairDiagnosisApi.upsert({
         repairId,
@@ -102,6 +114,19 @@ export function useRepairDiagnosis(repairId: number) {
       });
       setDiagnosis(saved);
       setDraftItems(saved.result.items);
+      setSuccess("Diagnosis saved.");
+
+      // Confirm persistence (surfaces get/upsert IPC mismatches immediately).
+      const verified = await repairDiagnosisApi.get(repairId);
+      if (!verified) {
+        setError(
+          "Saved, but could not reload diagnosis. Try refreshing the page.",
+        );
+        setSuccess(null);
+      } else {
+        setDiagnosis(verified);
+        setDraftItems(verified.result.items);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save diagnosis");
     } finally {
@@ -120,6 +145,7 @@ export function useRepairDiagnosis(repairId: number) {
     saving,
     applying,
     error,
+    success,
     applyTemplate,
     save,
   };

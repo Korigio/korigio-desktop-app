@@ -211,6 +211,11 @@
     "repairSectionTitle": "Diagnosis",
     "repairEmpty": "No diagnosis recorded yet.",
     "noTemplates": "No diagnosis templates available.",
+    "applySuccess": "Template applied. Fill the checklist and save.",
+    "saveSuccess": "Diagnosis saved.",
+    "saveReloadFailed": "Saved, but could not reload diagnosis. Try refreshing the page.",
+    "selectTemplateFirst": "Select a template first.",
+    "nothingToSave": "Nothing to save. Apply a template first.",
     "fields": {
       "name": "Name",
       "items": "Checklist items",

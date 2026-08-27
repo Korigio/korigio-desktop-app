@@ -211,6 +211,11 @@
     "repairSectionTitle": "Diagnose",
     "repairEmpty": "Noch keine Diagnose erfasst.",
     "noTemplates": "Keine Diagnosevorlagen verfügbar.",
+    "applySuccess": "Vorlage angewendet. Checkliste ausfüllen und speichern.",
+    "saveSuccess": "Diagnose gespeichert.",
+    "saveReloadFailed": "Gespeichert, aber Diagnose konnte nicht neu geladen werden. Seite aktualisieren.",
+    "selectTemplateFirst": "Zuerst eine Vorlage wählen.",
+    "nothingToSave": "Nichts zu speichern. Zuerst eine Vorlage anwenden.",
     "fields": {
       "name": "Name",
       "items": "Checklistenpunkte",

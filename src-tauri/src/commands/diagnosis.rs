@@ -72,7 +72,7 @@ pub fn get_repair_diagnosis(
     Ok(diagnosis::get_repair_diagnosis(db.conn(), repair_id)?)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "camelCase")]
 pub fn upsert_repair_diagnosis(
     state: State<'_, DbState>,
     input: RepairDiagnosisInput,

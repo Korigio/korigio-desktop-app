@@ -1,16 +1,18 @@
 import type { useDiagnosisTemplateForm } from "@/features/diagnosis/hooks/useDiagnosisTemplateForm";
 import { newTemplateItemId } from "@/features/diagnosis/types/diagnosis";
-import { Button, FormField, SelectField, TextField } from "@/ui";
+import { Button, FormField, SelectField, StatusMessage, TextField } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
-  form: ReturnType<typeof useDiagnosisTemplateForm>;
+  form: ReturnType<typeof useDiagnosisTemplateForm>["form"];
+  submitError?: string | null;
   submitLabel: string;
   disabled?: boolean;
 };
 
 export function DiagnosisTemplateForm({
   form,
+  submitError = null,
   submitLabel,
   disabled = false,
 }: Props) {
@@ -25,6 +27,10 @@ export function DiagnosisTemplateForm({
         void form.handleSubmit();
       }}
     >
+      {submitError ? (
+        <StatusMessage tone="danger">{submitError}</StatusMessage>
+      ) : null}
+
       <form.Field
         name="name"
         validators={{
@@ -180,14 +186,9 @@ export function DiagnosisTemplateForm({
       </form.Field>
 
       <div>
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting] as const}
-        >
-          {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              disabled={disabled || !canSubmit || isSubmitting}
-            >
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
+            <Button type="submit" disabled={disabled || isSubmitting}>
               {isSubmitting ? t("common.saving") : submitLabel}
             </Button>
           )}

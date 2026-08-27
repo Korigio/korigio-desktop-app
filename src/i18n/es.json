@@ -211,6 +211,11 @@
     "repairSectionTitle": "Diagnóstico",
     "repairEmpty": "Aún no hay diagnóstico registrado.",
     "noTemplates": "No hay plantillas de diagnóstico disponibles.",
+    "applySuccess": "Plantilla aplicada. Complete la lista y guarde.",
+    "saveSuccess": "Diagnóstico guardado.",
+    "saveReloadFailed": "Guardado, pero no se pudo recargar el diagnóstico. Actualice la página.",
+    "selectTemplateFirst": "Seleccione una plantilla primero.",
+    "nothingToSave": "No hay nada que guardar. Aplique una plantilla primero.",
     "fields": {
       "name": "Nombre",
       "items": "Ítems de la lista",

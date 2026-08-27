@@ -5,7 +5,7 @@ import { useI18n } from "@/shared/hooks/useI18n";
 
 export function DiagnosisTemplateCreatePage() {
   const { t } = useI18n();
-  const form = useDiagnosisTemplateForm({ mode: "create" });
+  const { form, submitError } = useDiagnosisTemplateForm({ mode: "create" });
 
   return (
     <Page>
@@ -15,6 +15,7 @@ export function DiagnosisTemplateCreatePage() {
       />
       <DiagnosisTemplateForm
         form={form}
+        submitError={submitError}
         submitLabel={t("diagnosis.actions.create")}
       />
     </Page>

@@ -38,7 +38,10 @@ function DiagnosisTemplateEditForm({
   template: DiagnosisTemplate;
 }) {
   const { t } = useI18n();
-  const form = useDiagnosisTemplateForm({ mode: "edit", template });
+  const { form, submitError } = useDiagnosisTemplateForm({
+    mode: "edit",
+    template,
+  });
 
   return (
     <Page>
@@ -48,6 +51,7 @@ function DiagnosisTemplateEditForm({
       />
       <DiagnosisTemplateForm
         form={form}
+        submitError={submitError}
         submitLabel={t("diagnosis.actions.save")}
       />
     </Page>

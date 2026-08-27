@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "react-router";
+import { useState } from "react";
 import { diagnosisTemplatesApi } from "@/features/diagnosis/api/diagnosisApi";
 import {
   newTemplateItemId,
@@ -41,34 +42,43 @@ function toValues(template?: DiagnosisTemplate): DiagnosisTemplateFormValues {
 
 export function useDiagnosisTemplateForm({ template, mode }: Options) {
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: toValues(template),
     onSubmit: async ({ value }) => {
+      setSubmitError(null);
       const input: DiagnosisTemplateInput = {
         name: value.name.trim(),
         body: {
           items: value.items.map((item) => ({
-            id: item.id.trim(),
+            id: item.id.trim() || newTemplateItemId(),
             label: item.label.trim(),
             kind: item.kind,
           })),
         },
       };
 
-      if (mode === "create") {
-        await diagnosisTemplatesApi.create(input);
-        navigate("/diagnosis-templates");
-        return;
-      }
+      try {
+        if (mode === "create") {
+          await diagnosisTemplatesApi.create(input);
+          navigate("/diagnosis-templates");
+          return;
+        }
 
-      if (!template) {
-        throw new Error("Missing template for edit");
+        if (!template) {
+          throw new Error("Missing template for edit");
+        }
+        await diagnosisTemplatesApi.update(template.id, input);
+        navigate("/diagnosis-templates");
+      } catch (err) {
+        setSubmitError(
+          err instanceof Error ? err.message : "Failed to save template",
+        );
+        throw err;
       }
-      await diagnosisTemplatesApi.update(template.id, input);
-      navigate("/diagnosis-templates");
     },
   });
 
-  return form;
+  return { form, submitError };
 }

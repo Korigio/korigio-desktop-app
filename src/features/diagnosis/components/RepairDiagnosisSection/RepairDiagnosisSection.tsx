@@ -26,6 +26,10 @@ export function RepairDiagnosisSection({ repairId }: Props) {
         <StatusMessage tone="danger">{diagnosisState.error}</StatusMessage>
       ) : null}
 
+      {diagnosisState.success ? (
+        <StatusMessage tone="success">{diagnosisState.success}</StatusMessage>
+      ) : null}
+
       {diagnosisState.loading ? (
         <StatusMessage>{t("common.loading")}</StatusMessage>
       ) : diagnosisState.diagnosis === null ? (
