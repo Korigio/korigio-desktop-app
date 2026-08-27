@@ -1,8 +1,8 @@
 [package]
 name = "repair-manager"
 version = "0.1.0"
-description = "Repair Manager desktop application"
-authors = ["Repair Manager"]
+description = "Servioo desktop application"
+authors = ["Servioo"]
 edition = "2021"
 
 [lib]
@@ -18,7 +18,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rusqlite = { version = "0.32", features = ["bundled"] }
 thiserror = "2"
-time = { version = "0.3", features = ["formatting", "parsing", "serde"] }
+time = { version = "0.3", features = ["formatting", "parsing", "serde", "local-offset"] }
+sys-locale = "0.3"
 
 [dev-dependencies]
 tempfile = "3"

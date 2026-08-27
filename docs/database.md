@@ -17,7 +17,7 @@ Resolved through Tauri `app.path().app_data_dir()` (OS AppData / Application Sup
   logs/
 ```
 
-The app data directory is already scoped to this application by Tauri (identifier `com.repairmanager.desktop`). Do not store mutable data under the install directory.
+The app data directory is already scoped to this application by Tauri (identifier `com.servioo.desktop`). Do not store mutable data under the install directory.
 
 ## Migrations
 

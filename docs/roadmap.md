@@ -9,11 +9,11 @@ Do not combine phases without permission. Do not implement unsolicited features.
 | 0 | Requirements and architecture | Docs, ADRs, Cursor rules (this phase) |
 | 1 | Minimal skeleton | **Done** — Tauri + React + Vite + Tailwind tokens + Router placeholder |
 | 2 | Database foundation | **Done** — SQLite, migrations, AppData, connection, tests |
-| 3 | Customer domain | CRUD, search, archive, Form + Table examples |
-| 4 | Device domain | Devices linked to customers, serial search |
-| 5 | Repair order domain | Numbers, status, core fields |
-| 6 | Repair workflow UI | Fast keyboard data entry |
-| 7 | Search | DB-side multi-field search + indexes |
+| 3 | Customer domain | **Done** — CRUD, search, archive, Form + Table examples |
+| 4 | Device domain | **Done** — devices linked to customers, serial search, archive |
+| 5 | Repair order domain | **Done** — numbers, status, core fields |
+| 6 | Repair workflow UI | **Done** — keyboard intake flow, search comboboxes, Save & next |
+| 7 | Search | **Done** — global search, multi-field repairs list, indexes |
 | 8 | Diagnosis templates | Reusable templates |
 | 9 | Images | FS storage, thumbs, lazy load |
 | 10 | Backup and restore | Manual + validation + safety backup |

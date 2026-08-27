@@ -1,9 +1,9 @@
 ---
-description: Repair Manager project-wide stack, phases, and hard constraints
+description: Servioo project-wide stack, phases, and hard constraints
 alwaysApply: true
 ---
 
-# Repair Manager — project rules
+# Servioo — project rules
 
 ## Stack (locked)
 
@@ -17,6 +17,13 @@ Do **not** introduce: Electron, Next.js, MUI, Ant Design, Chakra, local HTTP API
 - After each phase: full 12-point report, then STOP.
 - Do not start the next phase without explicit approval.
 - Docs: `docs/roadmap.md`, `docs/architecture.md`, `docs/coding-standards.md`, `docs/decisions/`.
+
+## Mandatory agent split
+
+- **Always** split non-trivial work via `.cursor/agents/`: `/phase-orchestrator` → `/backend` → `/frontend` → `/i18n` → `/verifier`.
+- The parent/main agent must **not** own full-stack implementation in one context.
+- Each subagent stays in its lane (no Rust in `/frontend`, no React in `/backend`, strings via `/i18n`).
+- Tiny typo/docs-only edits, or an explicit user override, are the only exceptions.
 
 ## Architecture
 

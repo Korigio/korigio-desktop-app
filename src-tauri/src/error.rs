@@ -14,7 +14,7 @@ pub enum AppError {
     Migration { message: String },
 
     #[error("Application data path is unavailable")]
-    #[allow(dead_code)] // reserved for explicit path errors
+    #[allow(dead_code)]
     DataPath { message: String },
 
     #[error("I/O error")]
@@ -25,10 +25,18 @@ pub enum AppError {
 
     #[error("Internal error")]
     Internal { message: String },
+
+    #[error("Validation error")]
+    Validation {
+        field: Option<String>,
+        message: String,
+    },
+
+    #[error("Not found")]
+    NotFound,
 }
 
 impl AppError {
-    /// Stable machine-readable code for the frontend.
     pub fn code(&self) -> &'static str {
         match self {
             Self::Database { .. } => "database",
@@ -36,24 +44,32 @@ impl AppError {
             Self::DataPath { .. } => "data_path",
             Self::Io { .. } => "io",
             Self::Internal { .. } => "internal",
+            Self::Validation { .. } => "validation",
+            Self::NotFound => "not_found",
         }
     }
 
-    /// User-facing message (no internal SQL / path details).
-    pub fn user_message(&self) -> &'static str {
+    pub fn user_message(&self) -> String {
         match self {
             Self::Database { .. } => {
-                "The database operation could not be completed. Your existing data has not been changed unexpectedly. Please try again."
+                "The database operation could not be completed. Your existing data has not been changed unexpectedly. Please try again.".into()
             }
             Self::Migration { .. } => {
-                "The application database could not be updated. Please restart the application. If the problem continues, restore a backup."
+                "The application database could not be updated. Please restart the application. If the problem continues, restore a backup.".into()
             }
             Self::DataPath { .. } | Self::Io { .. } => {
-                "The application could not access its data folder. Check disk permissions and try again."
+                "The application could not access its data folder. Check disk permissions and try again.".into()
             }
-            Self::Internal { .. } => {
-                "Something went wrong. Please try again."
-            }
+            Self::Internal { .. } => "Something went wrong. Please try again.".into(),
+            Self::Validation { message, .. } => message.clone(),
+            Self::NotFound => "The requested record was not found.".into(),
+        }
+    }
+
+    pub fn field(&self) -> Option<&str> {
+        match self {
+            Self::Validation { field, .. } => field.as_deref(),
+            _ => None,
         }
     }
 }
@@ -70,23 +86,21 @@ impl From<std::io::Error> for AppError {
     }
 }
 
-/// Payload returned to the frontend via Tauri commands.
 #[derive(Debug, Serialize)]
 pub struct CommandError {
     pub code: String,
     pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub field: Option<String>,
 }
 
 impl From<AppError> for CommandError {
     fn from(value: AppError) -> Self {
-        // Log technical detail without PII (errors here are structural).
-        eprintln!(
-            "app_error code={} detail={value:?}",
-            value.code()
-        );
+        eprintln!("app_error code={} detail={value:?}", value.code());
         Self {
             code: value.code().to_string(),
-            message: value.user_message().to_string(),
+            field: value.field().map(str::to_string),
+            message: value.user_message(),
         }
     }
 }

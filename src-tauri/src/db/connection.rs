@@ -51,7 +51,6 @@ impl Db {
         Ok(())
     }
 
-    #[allow(dead_code)] // Phase 3+ repositories
     pub fn conn(&self) -> &Connection {
         &self.conn
     }

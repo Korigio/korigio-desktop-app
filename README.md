@@ -1,6 +1,6 @@
-# Repair Manager
+# Servioo
 
-Offline Windows desktop app for small repair workshops (Tauri 2 + React + Rust + SQLite).
+Offline Windows desktop app for small repair workshops (Tauri 2 + React + Rust + SQLite). Product name: **Servioo**.
 
 ## Docs
 
@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 2 — database foundation (SQLite in AppData). No customer UI yet.
+Phase 7 — search (global /search, multi-field repairs, indexes).
