@@ -44,6 +44,13 @@ impl Db {
         Ok(db)
     }
 
+    /// Open a real on-disk database under a temporary AppData root (image/backup tests).
+    #[allow(dead_code)]
+    pub fn open_temp(app_data_dir: PathBuf) -> Result<Self, AppError> {
+        let paths = AppPaths::from_app_data_dir(app_data_dir)?;
+        Self::open(paths)
+    }
+
     fn configure(&self) -> Result<(), AppError> {
         self.conn.pragma_update(None, "foreign_keys", true)?;
         self.conn.pragma_update(None, "journal_mode", "WAL")?;
@@ -55,7 +62,6 @@ impl Db {
         &self.conn
     }
 
-    #[allow(dead_code)] // Phase 3+ path helpers
     pub fn paths(&self) -> &AppPaths {
         &self.paths
     }
@@ -63,6 +69,33 @@ impl Db {
     #[allow(dead_code)] // tests + diagnostics
     pub fn database_path(&self) -> &Path {
         &self.paths.database
+    }
+
+    /// Flush WAL so the main database file can be replaced safely.
+    pub fn checkpoint_wal(&self) -> Result<(), AppError> {
+        self.conn
+            .execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")?;
+        Ok(())
+    }
+
+    /// Drop the live connection so AppData files can be overwritten during restore.
+    pub fn close_connection_for_restore(&mut self) -> Result<(), AppError> {
+        let dummy = Connection::open_in_memory()?;
+        let old = std::mem::replace(&mut self.conn, dummy);
+        match old.close() {
+            Ok(()) => Ok(()),
+            Err((_conn, err)) => Err(AppError::from(err)),
+        }
+    }
+
+    /// Re-open `database.sqlite` after a restore file swap (runs migrations).
+    pub fn reopen_after_restore(&mut self) -> Result<(), AppError> {
+        let conn = Connection::open(&self.paths.database)?;
+        let old = std::mem::replace(&mut self.conn, conn);
+        drop(old);
+        self.configure()?;
+        migrate::run(&self.conn)?;
+        Ok(())
     }
 
     /// Lightweight health check used by smoke commands/tests.

@@ -40,7 +40,12 @@ impl AppPaths {
         for dir in [&self.root, &self.images, &self.thumbs, &self.backups, &self.logs] {
             fs::create_dir_all(dir)?;
         }
+        fs::create_dir_all(self.backups_auto())?;
         Ok(())
+    }
+
+    pub fn backups_auto(&self) -> PathBuf {
+        self.backups.join("auto")
     }
 
     #[allow(dead_code)]

@@ -12,10 +12,19 @@ Resolved through Tauri `app.path().app_data_dir()` (OS AppData / Application Sup
 {appDataDir}/
   database.sqlite
   images/
+    {repair_id}/
+      {uuid}.jpg|png
   thumbs/
+    {repair_id}/
+      {uuid}.jpg
   backups/
+    auto/
+    Servioo-*.backup
+    Servioo-safety-*.backup
   logs/
 ```
+
+Image binaries live on disk; `repair_images` stores **relative** paths under the AppData root (e.g. `images/12/….jpg`, `thumbs/12/….jpg`). Thumbs are ~320px JPEG. Caps: JPEG/PNG, 10 MB/file, 30 images/repair.
 
 The app data directory is already scoped to this application by Tauri (identifier `com.servioo.desktop`). Do not store mutable data under the install directory.
 

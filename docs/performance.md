@@ -30,5 +30,5 @@ Treat as targets to measure, not marketing claims.
 ## Measurement
 
 - Phase 1: note `tauri dev` / release start qualitatively.
-- Phase 13: synthetic dataset (e.g. 10k customers, 20k devices, 50k repairs) and measure start, search, RAM, DB size, common workflows.
+- Phase 13: synthetic dataset + recorded baselines — see [performance-results.md](performance-results.md).
 - Optimize only from measurements.

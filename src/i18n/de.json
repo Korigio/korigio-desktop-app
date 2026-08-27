@@ -11,6 +11,7 @@
     "customers": "Kunden",
     "devices": "Geräte",
     "repairs": "Reparaturen",
+    "diagnosisTemplates": "Diagnosevorlagen",
     "intake": "Annahme",
     "search": "Suche",
     "settings": "Einstellungen"
@@ -170,6 +171,7 @@
       "create": "Reparatur anlegen",
       "save": "Speichern",
       "edit": "Bearbeiten",
+      "print": "Drucken",
       "cancel": "Reparatur stornieren",
       "changeStatus": "Status ändern"
     },
@@ -195,6 +197,54 @@
       "problemRequired": "Gemeldetes Problem ist erforderlich."
     }
   },
+  "diagnosis": {
+    "title": "Diagnosevorlagen",
+    "subtitle": "Wiederverwendbare Checklisten für Reparaturdiagnosen",
+    "createTitle": "Neue Diagnosevorlage",
+    "createSubtitle": "Checklistenpunkte für häufige Diagnosen festlegen",
+    "editTitle": "Diagnosevorlage bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Vorlagenname",
+    "empty": "Keine Diagnosevorlagen gefunden",
+    "notFound": "Diagnosevorlage nicht gefunden",
+    "invalidId": "Ungültige Diagnosevorlagen-ID",
+    "deleteFailed": "Diagnosevorlage konnte nicht gelöscht werden.",
+    "repairSectionTitle": "Diagnose",
+    "repairEmpty": "Noch keine Diagnose erfasst.",
+    "noTemplates": "Keine Diagnosevorlagen verfügbar.",
+    "applySuccess": "Vorlage angewendet. Checkliste ausfüllen und speichern.",
+    "saveSuccess": "Diagnose gespeichert.",
+    "saveReloadFailed": "Gespeichert, aber Diagnose konnte nicht neu geladen werden. Seite aktualisieren.",
+    "selectTemplateFirst": "Zuerst eine Vorlage wählen.",
+    "nothingToSave": "Nichts zu speichern. Zuerst eine Vorlage anwenden.",
+    "fields": {
+      "name": "Name",
+      "items": "Checklistenpunkte",
+      "updatedAt": "Aktualisiert",
+      "itemLabel": "Bezeichnung",
+      "itemKind": "Typ",
+      "template": "Vorlage"
+    },
+    "kinds": {
+      "checkbox": "Kontrollkästchen",
+      "text": "Text"
+    },
+    "actions": {
+      "new": "Neue Vorlage",
+      "create": "Vorlage anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "addItem": "Punkt hinzufügen",
+      "removeItem": "Entfernen",
+      "applyTemplate": "Vorlage anwenden"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich.",
+      "itemsRequired": "Mindestens einen Checklistenpunkt hinzufügen.",
+      "labelRequired": "Bezeichnung ist erforderlich."
+    }
+  },
   "settings": {
     "title": "Einstellungen",
     "subtitle": "Anwendungseinstellungen für diesen Computer",
@@ -206,6 +256,108 @@
       "es": "Spanisch",
       "en": "Englisch",
       "error": "Spracheinstellung konnte nicht gespeichert werden."
+    },
+    "backup": {
+      "title": "Sicherung und Wiederherstellung",
+      "subtitle": "Erstellen Sie portable Sicherungen von Datenbank und Fotos. Die Wiederherstellung ersetzt aktuelle Daten nach einer Sicherheitssicherung.",
+      "localList": "Lokale Sicherungen",
+      "empty": "Noch keine lokalen Sicherungen.",
+      "createSuccess": "Sicherung erstellt: {path}",
+      "restoreConfirm": "Die Wiederherstellung ersetzt die aktuelle Datenbank und Fotos. Zuerst wird eine Sicherheitssicherung erstellt. Fortfahren?",
+      "restoreSuccess": "Wiederhergestellt von {from}. Sicherheitssicherung: {safety}",
+      "actions": {
+        "create": "Sicherung erstellen",
+        "restore": "Sicherung wiederherstellen"
+      },
+      "kind": {
+        "manual": "Manuell",
+        "auto": "Automatisch",
+        "safety": "Sicherheit"
+      },
+      "errors": {
+        "listFailed": "Sicherungen konnten nicht geladen werden.",
+        "createFailed": "Sicherung konnte nicht erstellt werden.",
+        "restoreFailed": "Sicherung konnte nicht wiederhergestellt werden.",
+        "invalidPackage": "Dieses Sicherungspaket ist ungültig."
+      }
+    },
+    "devSeed": {
+      "title": "Entwickler-Testdaten",
+      "subtitle": "Synthetische Kunden, Geräte und Reparaturen für Leistungstests. Nur in Debug-Builds.",
+      "success": "{customers} Kunden, {devices} Geräte, {repairs} Reparaturen in {ms} ms eingefügt.",
+      "error": "Seeding fehlgeschlagen.",
+      "fullConfirm": "Ca. 10k Kunden, 20k Geräte und 50k Reparaturen einfügen? Das kann dauern und die Datenbank vergrößern.",
+      "actions": {
+        "small": "Stichprobe (100 / 200 / 500)",
+        "full": "Vollständiger Satz (10k / 20k / 50k)"
+      }
+    }
+  },
+  "print": {
+    "title": "Reparaturbericht",
+    "emptyValue": "—",
+    "yes": "Ja",
+    "no": "Nein",
+    "noDiagnosis": "Keine Diagnose-Checkliste für diese Reparatur.",
+    "sections": {
+      "customer": "Kunde",
+      "device": "Gerät",
+      "repair": "Reparatur",
+      "diagnosis": "Diagnose"
+    },
+    "fields": {
+      "status": "Status",
+      "name": "Name",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "address": "Adresse",
+      "deviceType": "Typ",
+      "manufacturer": "Hersteller",
+      "model": "Modell",
+      "serialNumber": "Seriennummer",
+      "receivedAt": "Eingegangen",
+      "reportedProblem": "Gemeldetes Problem",
+      "accessoriesReceived": "Zubehör",
+      "deviceCondition": "Zustand",
+      "diagnosisNotes": "Diagnosenotizen",
+      "workPerformed": "Durchgeführte Arbeit",
+      "notes": "Notizen",
+      "readyAt": "Fertig",
+      "collectedAt": "Abgeholt"
+    },
+    "actions": {
+      "print": "Drucken",
+      "close": "Zurück zur Reparatur"
+    },
+    "errors": {
+      "loadFailed": "Druckbericht konnte nicht geladen werden."
+    }
+  },
+  "images": {
+    "sectionTitle": "Fotos",
+    "empty": "Noch keine Fotos. JPEG- oder PNG-Dateien von der Festplatte hinzufügen.",
+    "thumbAlt": "Reparaturfoto",
+    "thumbMissing": "Vorschau nicht verfügbar",
+    "lightboxTitle": "Foto in voller Größe",
+    "addSuccess": "Fotos hinzugefügt.",
+    "captionSaved": "Beschriftung gespeichert.",
+    "deleteConfirm": "Dieses Foto von der Reparatur löschen?",
+    "deleteSuccess": "Foto gelöscht.",
+    "fields": {
+      "caption": "Beschriftung"
+    },
+    "actions": {
+      "add": "Fotos hinzufügen",
+      "saveCaption": "Beschriftung speichern",
+      "delete": "Löschen"
+    },
+    "errors": {
+      "loadFailed": "Fotos konnten nicht geladen werden.",
+      "attachFailed": "Fotos konnten nicht hinzugefügt werden.",
+      "updateFailed": "Foto konnte nicht aktualisiert werden.",
+      "deleteFailed": "Foto konnte nicht gelöscht werden.",
+      "resolveFailed": "Foto konnte nicht geöffnet werden.",
+      "limitReached": "Diese Reparatur hat bereits die maximale Anzahl Fotos."
     }
   }
 }

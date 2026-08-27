@@ -1,0 +1,1 @@
+export { NewDiagnosisTemplateButton } from "./NewDiagnosisTemplateButton";

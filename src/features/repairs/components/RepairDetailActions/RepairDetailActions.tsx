@@ -25,6 +25,9 @@ export function RepairDetailActions({
           {t("repairs.actions.edit")}
         </LinkButton>
       ) : null}
+      <LinkButton to={`/repairs/${repair.id}/print`} variant="secondary">
+        {t("repairs.actions.print")}
+      </LinkButton>
       {!isCancelled && !isArchived ? (
         <Button
           type="button"

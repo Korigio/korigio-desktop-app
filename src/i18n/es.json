@@ -11,6 +11,7 @@
     "customers": "Clientes",
     "devices": "Dispositivos",
     "repairs": "Reparaciones",
+    "diagnosisTemplates": "Plantillas de diagnóstico",
     "intake": "Recepción",
     "search": "Buscar",
     "settings": "Ajustes"
@@ -170,6 +171,7 @@
       "create": "Crear reparación",
       "save": "Guardar",
       "edit": "Editar",
+      "print": "Imprimir",
       "cancel": "Cancelar reparación",
       "changeStatus": "Cambiar estado"
     },
@@ -195,6 +197,54 @@
       "problemRequired": "El problema reportado es obligatorio."
     }
   },
+  "diagnosis": {
+    "title": "Plantillas de diagnóstico",
+    "subtitle": "Listas reutilizables para diagnósticos de reparación",
+    "createTitle": "Nueva plantilla de diagnóstico",
+    "createSubtitle": "Defina los ítems de la lista para diagnósticos habituales",
+    "editTitle": "Editar plantilla de diagnóstico",
+    "search": "Buscar",
+    "searchPlaceholder": "Nombre de la plantilla",
+    "empty": "No hay plantillas de diagnóstico",
+    "notFound": "Plantilla de diagnóstico no encontrada",
+    "invalidId": "Identificador de plantilla no válido",
+    "deleteFailed": "No se pudo eliminar la plantilla de diagnóstico.",
+    "repairSectionTitle": "Diagnóstico",
+    "repairEmpty": "Aún no hay diagnóstico registrado.",
+    "noTemplates": "No hay plantillas de diagnóstico disponibles.",
+    "applySuccess": "Plantilla aplicada. Complete la lista y guarde.",
+    "saveSuccess": "Diagnóstico guardado.",
+    "saveReloadFailed": "Guardado, pero no se pudo recargar el diagnóstico. Actualice la página.",
+    "selectTemplateFirst": "Seleccione una plantilla primero.",
+    "nothingToSave": "No hay nada que guardar. Aplique una plantilla primero.",
+    "fields": {
+      "name": "Nombre",
+      "items": "Ítems de la lista",
+      "updatedAt": "Actualizado",
+      "itemLabel": "Etiqueta",
+      "itemKind": "Tipo",
+      "template": "Plantilla"
+    },
+    "kinds": {
+      "checkbox": "Casilla",
+      "text": "Texto"
+    },
+    "actions": {
+      "new": "Nueva plantilla",
+      "create": "Crear plantilla",
+      "save": "Guardar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "addItem": "Añadir ítem",
+      "removeItem": "Quitar",
+      "applyTemplate": "Aplicar plantilla"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio.",
+      "itemsRequired": "Añada al menos un ítem a la lista.",
+      "labelRequired": "La etiqueta es obligatoria."
+    }
+  },
   "settings": {
     "title": "Ajustes",
     "subtitle": "Preferencias de la aplicación en este equipo",
@@ -206,6 +256,108 @@
       "es": "Español",
       "en": "Inglés",
       "error": "No se pudo guardar la preferencia de idioma."
+    },
+    "backup": {
+      "title": "Copia de seguridad y restauración",
+      "subtitle": "Cree copias portátiles de la base de datos y las fotos. La restauración reemplaza los datos actuales tras una copia de seguridad de seguridad.",
+      "localList": "Copias locales",
+      "empty": "Aún no hay copias locales.",
+      "createSuccess": "Copia creada: {path}",
+      "restoreConfirm": "La restauración reemplazará la base de datos y las fotos actuales. Primero se creará una copia de seguridad de seguridad. ¿Continuar?",
+      "restoreSuccess": "Restaurado desde {from}. Copia de seguridad: {safety}",
+      "actions": {
+        "create": "Crear copia",
+        "restore": "Restaurar copia"
+      },
+      "kind": {
+        "manual": "Manual",
+        "auto": "Automática",
+        "safety": "Seguridad"
+      },
+      "errors": {
+        "listFailed": "No se pudieron listar las copias.",
+        "createFailed": "No se pudo crear la copia.",
+        "restoreFailed": "No se pudo restaurar la copia.",
+        "invalidPackage": "Este paquete de copia no es válido."
+      }
+    },
+    "devSeed": {
+      "title": "Datos de prueba (desarrollo)",
+      "subtitle": "Inserta clientes, dispositivos y reparaciones sintéticos para pruebas de rendimiento. Solo en builds de depuración.",
+      "success": "Insertados {customers} clientes, {devices} dispositivos, {repairs} reparaciones en {ms} ms.",
+      "error": "Error al insertar datos.",
+      "fullConfirm": "¿Insertar ~10k clientes, 20k dispositivos y 50k reparaciones? Puede tardar y aumentar la base de datos.",
+      "actions": {
+        "small": "Muestra (100 / 200 / 500)",
+        "full": "Conjunto completo (10k / 20k / 50k)"
+      }
+    }
+  },
+  "print": {
+    "title": "Informe de reparación",
+    "emptyValue": "—",
+    "yes": "Sí",
+    "no": "No",
+    "noDiagnosis": "No hay lista de diagnóstico en esta reparación.",
+    "sections": {
+      "customer": "Cliente",
+      "device": "Dispositivo",
+      "repair": "Reparación",
+      "diagnosis": "Diagnóstico"
+    },
+    "fields": {
+      "status": "Estado",
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "address": "Dirección",
+      "deviceType": "Tipo",
+      "manufacturer": "Fabricante",
+      "model": "Modelo",
+      "serialNumber": "Número de serie",
+      "receivedAt": "Recibido",
+      "reportedProblem": "Problema reportado",
+      "accessoriesReceived": "Accesorios",
+      "deviceCondition": "Estado del dispositivo",
+      "diagnosisNotes": "Notas de diagnóstico",
+      "workPerformed": "Trabajo realizado",
+      "notes": "Notas",
+      "readyAt": "Listo",
+      "collectedAt": "Entregado"
+    },
+    "actions": {
+      "print": "Imprimir",
+      "close": "Volver a la reparación"
+    },
+    "errors": {
+      "loadFailed": "No se pudo cargar el informe."
+    }
+  },
+  "images": {
+    "sectionTitle": "Fotos",
+    "empty": "Aún no hay fotos. Añada archivos JPEG o PNG desde el disco.",
+    "thumbAlt": "Foto de la reparación",
+    "thumbMissing": "Vista previa no disponible",
+    "lightboxTitle": "Foto a tamaño completo",
+    "addSuccess": "Fotos añadidas.",
+    "captionSaved": "Leyenda guardada.",
+    "deleteConfirm": "¿Eliminar esta foto de la reparación?",
+    "deleteSuccess": "Foto eliminada.",
+    "fields": {
+      "caption": "Leyenda"
+    },
+    "actions": {
+      "add": "Añadir fotos",
+      "saveCaption": "Guardar leyenda",
+      "delete": "Eliminar"
+    },
+    "errors": {
+      "loadFailed": "No se pudieron cargar las fotos.",
+      "attachFailed": "No se pudieron añadir las fotos.",
+      "updateFailed": "No se pudo actualizar la foto.",
+      "deleteFailed": "No se pudo eliminar la foto.",
+      "resolveFailed": "No se pudo abrir la foto.",
+      "limitReached": "Esta reparación ya tiene el máximo de fotos."
     }
   }
 }
