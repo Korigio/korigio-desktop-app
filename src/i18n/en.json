@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Repair Manager",
+    "name": "Servioo",
     "running": "Application running",
     "backendOk": "Backend connected",
     "backendChecking": "Checking backend…",

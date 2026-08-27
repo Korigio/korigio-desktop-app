@@ -1,6 +1,6 @@
-# Repair Manager
+# Servioo
 
-Offline Windows desktop app for small repair workshops (Tauri 2 + React + Rust + SQLite).
+Offline Windows desktop app for small repair workshops (Tauri 2 + React + Rust + SQLite). Product name: **Servioo**.
 
 ## Docs
 

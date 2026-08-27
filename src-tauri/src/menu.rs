@@ -23,9 +23,9 @@ pub fn install_app_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
 
     #[cfg(target_os = "macos")]
     let app_submenu = {
-        SubmenuBuilder::new(app, "Repair Manager")
+        SubmenuBuilder::new(app, "Servioo")
             .about(Some(AboutMetadata {
-                name: Some("Repair Manager".into()),
+                name: Some("Servioo".into()),
                 ..Default::default()
             }))
             .separator()

@@ -62,5 +62,5 @@ pub fn run() {
             commands::global_search,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Repair Manager");
+        .expect("error while running Servioo");
 }
