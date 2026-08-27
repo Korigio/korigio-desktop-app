@@ -1,27 +1,44 @@
 # Security
 
-The app stores personal customer data. Security is designed from Phase 0; hardening lands mainly in Phase 12.
+## Principles
 
-## Baseline (all phases)
-
-- Validate every Tauri command input in Rust.
-- Parameterized SQL only.
-- Least-privilege Tauri capabilities; no shell execution; filesystem scoped to AppData paths we own.
+- Validate all command inputs in Rust.
+- Parameterized SQL only (no string-built queries with user data).
+- Least-privilege Tauri capabilities; no shell access from the UI.
 - Content Security Policy for the WebView.
-- No secrets in source control.
-- Do not log phones, addresses, private notes, or full customer records.
-- Mutable data only under AppData.
+- Never commit secrets.
+- Never log customer PII (names, phones, emails, addresses, serials, free-text notes).
 
-## Encryption
+## Data location
 
-At-rest DB encryption is **deferred** until Phase 12 after measuring impact. See [ADR 004](decisions/004-encryption-deferred.md).
+All mutable data lives under the OS application data directory (AppData). Install directory is read-only from the app’s perspective.
 
-Options to evaluate then: none + OS account protection, SQLCipher, DPAPI-wrapped keys. Never invent cryptography.
+## Authentication
 
-## Auth
+Single-workstation tool for v1: **no required login**. Optional unlock later only with an ADR.
 
-v1 assumption: single workstation, no required login. Optional unlock password may be added later without redesigning domains.
+## Encryption (Phase 12)
 
-## Installer
+**v1 decision:** no at-rest SQLite encryption. Rely on OS account protection (and BitLocker when the shop enables it). See [ADR 004](decisions/004-encryption-deferred.md).
 
-Customer installer uses embedded WebView2 offline installer — no network required for install when WebView2 is missing.
+Backups stay portable/unencrypted until a future ADR. Do not invent cryptography.
+
+## Capabilities audit (Phase 12)
+
+[`src-tauri/capabilities/default.json`](../src-tauri/capabilities/default.json) grants only:
+
+| Permission | Why |
+| --- | --- |
+| `core:default` | Required Tauri window/event IPC |
+| `core:path:default` | Path helpers for AppData / `convertFileSrc` |
+| `dialog:default` / `allow-open` / `allow-save` | File pickers for images + backup create/restore |
+
+No shell, HTTP, or broad filesystem plugin. Asset protocol scope is limited to `$APPDATA/images/**` and `$APPDATA/thumbs/**` in `tauri.conf.json`.
+
+## CSP
+
+`default-src 'self'`; images allow `asset:` / localhost asset hosts / `data:` / `blob:` for thumbs; scripts `'self'` only; styles `'self' 'unsafe-inline'` (tokenized Tailwind / component styles).
+
+## Installer (Phase 14)
+
+Offline WebView2 bootstrapper so corporate PCs without CDN access can install.
