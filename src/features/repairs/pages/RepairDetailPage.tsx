@@ -1,4 +1,5 @@
 import { RepairDiagnosisSection } from "@/features/diagnosis/components/RepairDiagnosisSection";
+import { RepairImagesSection } from "@/features/images/components/RepairImagesSection";
 import { RepairDetailActions } from "@/features/repairs/components/RepairDetailActions";
 import { RepairDetailFields } from "@/features/repairs/components/RepairDetailFields";
 import { RepairLoadState } from "@/features/repairs/components/RepairLoadState";
@@ -37,6 +38,7 @@ export function RepairDetailPage({ repairId }: Props) {
       />
       <RepairDetailFields repair={repair} />
       <RepairDiagnosisSection repairId={repair.id} />
+      <RepairImagesSection repairId={repair.id} />
     </Page>
   );
 }

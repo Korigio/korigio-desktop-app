@@ -10,6 +10,7 @@ import {
  * Prefer `index`, `route`, `layout`, and `prefix` from `@react-router/dev/routes`.
  */
 export default [
+  route("repairs/:id/print", "./routes/repairs/print.tsx"),
   layout("./routes/app-shell.tsx", [
     index("./routes/home.tsx"),
     route("search", "./routes/search.tsx"),
