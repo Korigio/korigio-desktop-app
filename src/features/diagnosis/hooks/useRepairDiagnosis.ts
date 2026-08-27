@@ -9,8 +9,10 @@ import {
   type DiagnosisTemplate,
   type RepairDiagnosis,
 } from "@/features/diagnosis/types/diagnosis";
+import { useI18n } from "@/shared/hooks/useI18n";
 
 export function useRepairDiagnosis(repairId: number) {
+  const { t } = useI18n();
   const [diagnosis, setDiagnosis] = useState<RepairDiagnosis | null>(null);
   const [templates, setTemplates] = useState<DiagnosisTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
@@ -60,7 +62,7 @@ export function useRepairDiagnosis(repairId: number) {
   const applyTemplate = useCallback(async () => {
     const templateId = Number(selectedTemplateId);
     if (!Number.isFinite(templateId) || templateId <= 0) {
-      setError("Select a template first.");
+      setError(t("diagnosis.selectTemplateFirst"));
       return;
     }
 
@@ -77,7 +79,7 @@ export function useRepairDiagnosis(repairId: number) {
       });
       setDiagnosis(saved);
       setDraftItems(saved.result.items);
-      setSuccess("Template applied. Fill the checklist and save.");
+      setSuccess(t("diagnosis.applySuccess"));
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to apply template",
@@ -85,7 +87,7 @@ export function useRepairDiagnosis(repairId: number) {
     } finally {
       setApplying(false);
     }
-  }, [repairId, selectedTemplateId]);
+  }, [repairId, selectedTemplateId, t]);
 
   const setItemValue = useCallback(
     (index: number, value: boolean | string) => {
@@ -99,7 +101,7 @@ export function useRepairDiagnosis(repairId: number) {
 
   const save = useCallback(async () => {
     if (draftItems.length === 0) {
-      setError("Nothing to save. Apply a template first.");
+      setError(t("diagnosis.nothingToSave"));
       return;
     }
 
@@ -114,25 +116,21 @@ export function useRepairDiagnosis(repairId: number) {
       });
       setDiagnosis(saved);
       setDraftItems(saved.result.items);
-      setSuccess("Diagnosis saved.");
 
-      // Confirm persistence (surfaces get/upsert IPC mismatches immediately).
       const verified = await repairDiagnosisApi.get(repairId);
       if (!verified) {
-        setError(
-          "Saved, but could not reload diagnosis. Try refreshing the page.",
-        );
-        setSuccess(null);
+        setError(t("diagnosis.saveReloadFailed"));
       } else {
         setDiagnosis(verified);
         setDraftItems(verified.result.items);
+        setSuccess(t("diagnosis.saveSuccess"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save diagnosis");
     } finally {
       setSaving(false);
     }
-  }, [repairId, diagnosis?.templateId, draftItems]);
+  }, [repairId, diagnosis?.templateId, draftItems, t]);
 
   return {
     diagnosis,
