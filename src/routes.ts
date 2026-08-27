@@ -12,6 +12,7 @@ import {
 export default [
   layout("./routes/app-shell.tsx", [
     index("./routes/home.tsx"),
+    route("search", "./routes/search.tsx"),
     route("customers", "./routes/customers/list.tsx"),
     route("customers/new", "./routes/customers/new.tsx"),
     route("customers/:id", "./routes/customers/detail.tsx"),

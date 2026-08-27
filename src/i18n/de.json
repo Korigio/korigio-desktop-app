@@ -12,6 +12,7 @@
     "devices": "Geräte",
     "repairs": "Reparaturen",
     "intake": "Annahme",
+    "search": "Suche",
     "settings": "Einstellungen"
   },
   "common": {
@@ -25,6 +26,19 @@
   "home": {
     "title": "Start",
     "refresh": "Verbindung prüfen"
+  },
+  "search": {
+    "title": "Suche",
+    "subtitle": "Kunden, Geräte und Reparaturen an einem Ort finden",
+    "placeholder": "Name, Telefon, Serie, Reparaturnummer…",
+    "prompt": "Tippen, um Kunden, Geräte und Reparaturen zu suchen.",
+    "empty": "Keine Ergebnisse gefunden",
+    "sectionEmpty": "Keine Treffer in diesem Bereich",
+    "sections": {
+      "customers": "Kunden",
+      "devices": "Geräte",
+      "repairs": "Reparaturen"
+    }
   },
   "customers": {
     "title": "Kunden",

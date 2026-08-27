@@ -13,7 +13,7 @@ Do not combine phases without permission. Do not implement unsolicited features.
 | 4 | Device domain | **Done** — devices linked to customers, serial search, archive |
 | 5 | Repair order domain | **Done** — numbers, status, core fields |
 | 6 | Repair workflow UI | **Done** — keyboard intake flow, search comboboxes, Save & next |
-| 7 | Search | DB-side multi-field search + indexes |
+| 7 | Search | **Done** — global search, multi-field repairs list, indexes |
 | 8 | Diagnosis templates | Reusable templates |
 | 9 | Images | FS storage, thumbs, lazy load |
 | 10 | Backup and restore | Manual + validation + safety backup |

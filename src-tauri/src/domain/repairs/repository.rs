@@ -1,5 +1,6 @@
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
 
+use crate::db::repository::like_pattern;
 use crate::domain::repairs::types::Repair;
 use crate::domain::repairs::validation::{ValidatedCreateRepairInput, ValidatedUpdateRepairInput};
 use crate::error::AppError;
@@ -120,18 +121,21 @@ pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, Ap
     Ok(repair)
 }
 
-fn like_pattern(search: Option<&str>) -> Option<String> {
-    search
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .map(|s| {
-            let escaped = s
-                .replace('\\', "\\\\")
-                .replace('%', "\\%")
-                .replace('_', "\\_");
-            format!("%{escaped}%")
-        })
-}
+const REPAIR_SELECT_COLS: &str = "repairs.id, repairs.repair_number, repairs.customer_id,
+        repairs.device_id, repairs.status, repairs.received_at,
+        repairs.reported_problem, repairs.accessories_received, repairs.device_condition,
+        repairs.diagnosis_notes, repairs.work_performed, repairs.notes, repairs.ready_at,
+        repairs.collected_at, repairs.created_at, repairs.updated_at, repairs.archived_at";
+
+const SEARCH_MATCH_SQL: &str = "(
+            repairs.repair_number LIKE {ph} ESCAPE '\\'
+            OR IFNULL(repairs.reported_problem, '') LIKE {ph} ESCAPE '\\'
+            OR customers.name LIKE {ph} ESCAPE '\\'
+            OR IFNULL(customers.phone, '') LIKE {ph} ESCAPE '\\'
+            OR IFNULL(devices.serial_number, '') LIKE {ph} ESCAPE '\\'
+            OR IFNULL(devices.manufacturer, '') LIKE {ph} ESCAPE '\\'
+            OR IFNULL(devices.model, '') LIKE {ph} ESCAPE '\\'
+        )";
 
 pub fn list_repairs(
     conn: &Connection,
@@ -143,30 +147,57 @@ pub fn list_repairs(
     offset: u32,
 ) -> Result<(Vec<Repair>, i64), AppError> {
     let pattern = like_pattern(search);
+    let needs_join = pattern.is_some();
 
-    let mut where_parts = vec!["archived_at IS NULL".to_string()];
+    let mut where_parts = vec!["repairs.archived_at IS NULL".to_string()];
     if customer_id.is_some() {
-        where_parts.push("customer_id = ?1".into());
+        where_parts.push("repairs.customer_id = ?1".into());
     }
     if device_id.is_some() {
         let idx = 1 + usize::from(customer_id.is_some());
-        where_parts.push(format!("device_id = ?{idx}"));
+        where_parts.push(format!("repairs.device_id = ?{idx}"));
     }
     if status.is_some() {
         let idx = 1
             + usize::from(customer_id.is_some())
             + usize::from(device_id.is_some());
-        where_parts.push(format!("status = ?{idx}"));
+        where_parts.push(format!("repairs.status = ?{idx}"));
     }
     if pattern.is_some() {
         let idx = 1
             + usize::from(customer_id.is_some())
             + usize::from(device_id.is_some())
             + usize::from(status.is_some());
-        where_parts.push(format!("repair_number LIKE ?{idx} ESCAPE '\\'"));
+        let ph = format!("?{idx}");
+        where_parts.push(SEARCH_MATCH_SQL.replace("{ph}", &ph));
     }
 
     let where_sql = format!("WHERE {}", where_parts.join(" AND "));
+    let from_sql = if needs_join {
+        "FROM repairs
+         INNER JOIN customers ON customers.id = repairs.customer_id
+         INNER JOIN devices ON devices.id = repairs.device_id"
+    } else {
+        "FROM repairs"
+    };
+
+    // Without a join, column names need no table prefix in SELECT.
+    let select_cols = if needs_join {
+        REPAIR_SELECT_COLS
+    } else {
+        "id, repair_number, customer_id, device_id, status, received_at,
+                reported_problem, accessories_received, device_condition,
+                diagnosis_notes, work_performed, notes, ready_at, collected_at,
+                created_at, updated_at, archived_at"
+    };
+
+    // When not joining, drop the `repairs.` prefix from WHERE for clarity/consistency
+    // with the unprefixed FROM — rewrite archived/customer/device/status filters.
+    let where_sql = if needs_join {
+        where_sql
+    } else {
+        where_sql.replace("repairs.", "")
+    };
 
     let param_count = usize::from(customer_id.is_some())
         + usize::from(device_id.is_some())
@@ -175,17 +206,22 @@ pub fn list_repairs(
     let limit_ph = format!("?{}", param_count + 1);
     let offset_ph = format!("?{}", param_count + 2);
 
-    let count_sql = format!("SELECT COUNT(*) FROM repairs {where_sql}");
+    let count_sql = format!("SELECT COUNT(*) {from_sql} {where_sql}");
     let list_sql = format!(
-        "SELECT id, repair_number, customer_id, device_id, status, received_at,
-                reported_problem, accessories_received, device_condition,
-                diagnosis_notes, work_performed, notes, ready_at, collected_at,
-                created_at, updated_at, archived_at
-         FROM repairs
+        "SELECT {select_cols}
+         {from_sql}
          {where_sql}
          ORDER BY received_at DESC, id DESC
          LIMIT {limit_ph} OFFSET {offset_ph}"
     );
+
+    // Unprefixed ORDER BY is fine; with join use repairs.received_at / repairs.id.
+    let list_sql = if needs_join {
+        list_sql
+            .replace("ORDER BY received_at DESC, id DESC", "ORDER BY repairs.received_at DESC, repairs.id DESC")
+    } else {
+        list_sql
+    };
 
     let total = query_count(conn, &count_sql, customer_id, device_id, status, pattern.as_deref())?;
 

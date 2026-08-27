@@ -29,4 +29,4 @@ npm run build
 
 ## Status
 
-Phase 6 — repair workflow UI (keyboard intake, Save & next).
+Phase 7 — search (global /search, multi-field repairs, indexes).
