@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { useRef } from "react";
 import { useNavigate } from "react-router";
 import { devicesApi } from "@/features/devices/api/devicesApi";
 import type { Device, DeviceInput } from "@/features/devices/types/device";
@@ -17,6 +18,8 @@ type Options = {
   device?: Device;
   mode: "create" | "edit";
   defaultCustomerId?: number;
+  onSuccess?: (entity: Device) => void;
+  navigateOnSuccess?: boolean;
 };
 
 function toValues(device?: Device, defaultCustomerId?: number): FormValues {
@@ -31,8 +34,18 @@ function toValues(device?: Device, defaultCustomerId?: number): FormValues {
   };
 }
 
-export function useDeviceForm({ device, mode, defaultCustomerId }: Options) {
+export function useDeviceForm({
+  device,
+  mode,
+  defaultCustomerId,
+  onSuccess,
+  navigateOnSuccess = true,
+}: Options) {
   const navigate = useNavigate();
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const navigateOnSuccessRef = useRef(navigateOnSuccess);
+  navigateOnSuccessRef.current = navigateOnSuccess;
 
   const form = useForm({
     defaultValues: toValues(device, defaultCustomerId),
@@ -54,7 +67,10 @@ export function useDeviceForm({ device, mode, defaultCustomerId }: Options) {
 
       if (mode === "create") {
         const created = await devicesApi.create(input);
-        navigate(`/devices/${created.id}`);
+        onSuccessRef.current?.(created);
+        if (navigateOnSuccessRef.current) {
+          navigate(`/devices/${created.id}`);
+        }
         return;
       }
 
@@ -62,7 +78,10 @@ export function useDeviceForm({ device, mode, defaultCustomerId }: Options) {
         throw new Error("Missing device for edit");
       }
       const updated = await devicesApi.update(device.id, input);
-      navigate(`/devices/${updated.id}`);
+      onSuccessRef.current?.(updated);
+      if (navigateOnSuccessRef.current) {
+        navigate(`/devices/${updated.id}`);
+      }
     },
   });
 

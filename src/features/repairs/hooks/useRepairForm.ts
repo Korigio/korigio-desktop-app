@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { useRef } from "react";
 import { useNavigate } from "react-router";
 import { repairsApi } from "@/features/repairs/api/repairsApi";
 import type {
@@ -14,6 +15,7 @@ type FormValues = {
   reportedProblem: string;
   accessoriesReceived: string;
   deviceCondition: string;
+  expectedPickupAt: string;
   diagnosisNotes: string;
   workPerformed: string;
   notes: string;
@@ -24,6 +26,8 @@ type Options = {
   mode: "create" | "edit";
   defaultCustomerId?: number;
   defaultDeviceId?: number;
+  onSuccess?: (entity: Repair) => void;
+  navigateOnSuccess?: boolean;
 };
 
 function toValues(
@@ -38,6 +42,7 @@ function toValues(
     reportedProblem: repair?.reportedProblem ?? "",
     accessoriesReceived: repair?.accessoriesReceived ?? "",
     deviceCondition: repair?.deviceCondition ?? "",
+    expectedPickupAt: repair?.expectedPickupAt ?? "",
     diagnosisNotes: repair?.diagnosisNotes ?? "",
     workPerformed: repair?.workPerformed ?? "",
     notes: repair?.notes ?? "",
@@ -52,6 +57,7 @@ function toInput(value: FormValues): RepairInput {
     reportedProblem: value.reportedProblem || null,
     accessoriesReceived: value.accessoriesReceived || null,
     deviceCondition: value.deviceCondition || null,
+    expectedPickupAt: value.expectedPickupAt || null,
     diagnosisNotes: value.diagnosisNotes || null,
     workPerformed: value.workPerformed || null,
     notes: value.notes || null,
@@ -63,8 +69,14 @@ export function useRepairForm({
   mode,
   defaultCustomerId,
   defaultDeviceId,
+  onSuccess,
+  navigateOnSuccess = true,
 }: Options) {
   const navigate = useNavigate();
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const navigateOnSuccessRef = useRef(navigateOnSuccess);
+  navigateOnSuccessRef.current = navigateOnSuccess;
 
   const form = useForm({
     defaultValues: toValues(repair, defaultCustomerId, defaultDeviceId),
@@ -79,7 +91,10 @@ export function useRepairForm({
           throw new Error("Device is required");
         }
         const created = await repairsApi.create(input);
-        navigate(`/repairs/${created.id}`);
+        onSuccessRef.current?.(created);
+        if (navigateOnSuccessRef.current) {
+          navigate(`/repairs/${created.id}`);
+        }
         return;
       }
 
@@ -87,7 +102,10 @@ export function useRepairForm({
         throw new Error("Missing repair for edit");
       }
       const updated = await repairsApi.update(repair.id, input);
-      navigate(`/repairs/${updated.id}`);
+      onSuccessRef.current?.(updated);
+      if (navigateOnSuccessRef.current) {
+        navigate(`/repairs/${updated.id}`);
+      }
     },
   });
 

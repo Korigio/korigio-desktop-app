@@ -54,6 +54,7 @@ fn sample_repair(customer_id: i64, device_id: i64) -> RepairInput {
         diagnosis_notes: None,
         work_performed: None,
         notes: None,
+        expected_pickup_at: None,
     }
 }
 
@@ -71,6 +72,7 @@ fn set_status(db: &Db, id: i64, customer_id: i64, device_id: i64, status: &str) 
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("status");

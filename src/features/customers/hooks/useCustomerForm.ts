@@ -1,4 +1,5 @@
 import { useForm } from "@tanstack/react-form";
+import { useRef } from "react";
 import { useNavigate } from "react-router";
 import { customersApi } from "@/features/customers/api/customersApi";
 import type { Customer, CustomerInput } from "@/features/customers/types/customer";
@@ -6,6 +7,8 @@ import type { Customer, CustomerInput } from "@/features/customers/types/custome
 type Options = {
   customer?: Customer;
   mode: "create" | "edit";
+  onSuccess?: (entity: Customer) => void;
+  navigateOnSuccess?: boolean;
 };
 
 function toInput(customer?: Customer): CustomerInput {
@@ -18,8 +21,17 @@ function toInput(customer?: Customer): CustomerInput {
   };
 }
 
-export function useCustomerForm({ customer, mode }: Options) {
+export function useCustomerForm({
+  customer,
+  mode,
+  onSuccess,
+  navigateOnSuccess = true,
+}: Options) {
   const navigate = useNavigate();
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const navigateOnSuccessRef = useRef(navigateOnSuccess);
+  navigateOnSuccessRef.current = navigateOnSuccess;
 
   const form = useForm({
     defaultValues: toInput(customer),
@@ -34,7 +46,10 @@ export function useCustomerForm({ customer, mode }: Options) {
 
       if (mode === "create") {
         const created = await customersApi.create(input);
-        navigate(`/customers/${created.id}`);
+        onSuccessRef.current?.(created);
+        if (navigateOnSuccessRef.current) {
+          navigate(`/customers/${created.id}`);
+        }
         return;
       }
 
@@ -42,7 +57,10 @@ export function useCustomerForm({ customer, mode }: Options) {
         throw new Error("Missing customer for edit");
       }
       const updated = await customersApi.update(customer.id, input);
-      navigate(`/customers/${updated.id}`);
+      onSuccessRef.current?.(updated);
+      if (navigateOnSuccessRef.current) {
+        navigate(`/customers/${updated.id}`);
+      }
     },
   });
 

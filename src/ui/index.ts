@@ -16,6 +16,8 @@ export { SearchField } from "./molecules/SearchField";
 export type { SearchFieldProps } from "./molecules/SearchField";
 export { SearchCombobox } from "./molecules/SearchCombobox";
 export type { SearchComboboxProps } from "./molecules/SearchCombobox";
+export { Dialog } from "./molecules/Dialog";
+export type { DialogProps } from "./molecules/Dialog";
 export { CheckboxField } from "./molecules/CheckboxField";
 export type { CheckboxFieldProps } from "./molecules/CheckboxField";
 export { PaginationBar } from "./molecules/PaginationBar";
@@ -24,6 +26,12 @@ export { LinkButton } from "./molecules/LinkButton";
 export type { LinkButtonProps } from "./molecules/LinkButton";
 export { DefinitionList } from "./molecules/DefinitionList";
 export type { DefinitionListProps, DefinitionItem } from "./molecules/DefinitionList";
+export { Stepper, WizardNav } from "./molecules/Stepper";
+export type {
+  StepperProps,
+  StepperStep,
+  WizardNavProps,
+} from "./molecules/Stepper";
 export { DataTable } from "./organisms/DataTable";
 export type { DataTableProps } from "./organisms/DataTable";
 export { AppShell } from "./templates/AppShell";

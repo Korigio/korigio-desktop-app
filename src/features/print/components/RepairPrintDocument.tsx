@@ -72,6 +72,8 @@ export function RepairPrintDocument({ report }: Props) {
           <dd>{dash(repair.accessoriesReceived, empty)}</dd>
           <dt>{t("print.fields.deviceCondition")}</dt>
           <dd>{dash(repair.deviceCondition, empty)}</dd>
+          <dt>{t("repairs.fields.expectedPickupAt")}</dt>
+          <dd>{dash(repair.expectedPickupAt, empty)}</dd>
           <dt>{t("print.fields.diagnosisNotes")}</dt>
           <dd>{dash(repair.diagnosisNotes, empty)}</dd>
           <dt>{t("print.fields.workPerformed")}</dt>

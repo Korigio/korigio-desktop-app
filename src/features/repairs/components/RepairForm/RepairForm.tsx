@@ -17,18 +17,32 @@ import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
   form: ReturnType<typeof useRepairForm>;
-  submitLabel: string;
+  submitLabel?: string;
   disabled?: boolean;
   lockCustomer?: boolean;
   lockDevice?: boolean;
+  hideSubmit?: boolean;
+  hideStatus?: boolean;
+  hideWorkshopFields?: boolean;
+  hideCustomerField?: boolean;
+  hideDeviceField?: boolean;
+  lockedCustomerLabel?: string;
+  lockedDeviceLabel?: string;
 };
 
 export function RepairForm({
   form,
-  submitLabel,
+  submitLabel = "",
   disabled = false,
   lockCustomer = false,
   lockDevice = false,
+  hideSubmit = false,
+  hideStatus = false,
+  hideWorkshopFields = false,
+  hideCustomerField = false,
+  hideDeviceField = false,
+  lockedCustomerLabel,
+  lockedDeviceLabel,
 }: Props) {
   const { t } = useI18n();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -36,11 +50,11 @@ export function RepairForm({
   const [devices, setDevices] = useState<Device[]>([]);
   const [devicesError, setDevicesError] = useState<string | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState(
-    () => form.options.defaultValues?.customerId ?? "",
+    () => form.state.values.customerId ?? "",
   );
 
   useEffect(() => {
-    if (lockCustomer) {
+    if (lockCustomer || hideCustomerField) {
       return;
     }
     let cancelled = false;
@@ -61,10 +75,10 @@ export function RepairForm({
     return () => {
       cancelled = true;
     };
-  }, [lockCustomer]);
+  }, [lockCustomer, hideCustomerField]);
 
   useEffect(() => {
-    if (lockDevice) {
+    if (lockDevice || hideDeviceField) {
       return;
     }
     const customerId = Number(selectedCustomerId);
@@ -90,7 +104,7 @@ export function RepairForm({
     return () => {
       cancelled = true;
     };
-  }, [selectedCustomerId, lockDevice]);
+  }, [selectedCustomerId, lockDevice, hideDeviceField]);
 
   return (
     <form
@@ -98,134 +112,156 @@ export function RepairForm({
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        void form.handleSubmit();
+        if (!hideSubmit) {
+          void form.handleSubmit();
+        }
       }}
     >
-      <form.Field
-        name="customerId"
-        validators={{
-          onChange: ({ value }) =>
-            !value.trim() ? t("repairs.validation.customerRequired") : undefined,
-        }}
-      >
-        {(field) => (
-          <FormField
-            label={t("repairs.fields.customer")}
-            htmlFor={field.name}
-            error={
-              typeof field.state.meta.errors[0] === "string"
-                ? field.state.meta.errors[0]
-                : undefined
-            }
-          >
-            {lockCustomer ? (
-              <TextField
-                id={field.name}
-                name={field.name}
-                value={`#${field.state.value}`}
-                disabled
-                readOnly
-              />
-            ) : (
+      {!hideCustomerField ? (
+        <form.Field
+          name="customerId"
+          validators={{
+            onChange: ({ value }) =>
+              !value.trim()
+                ? t("repairs.validation.customerRequired")
+                : undefined,
+          }}
+        >
+          {(field) => (
+            <FormField
+              label={t("repairs.fields.customer")}
+              htmlFor={field.name}
+              error={
+                typeof field.state.meta.errors[0] === "string"
+                  ? field.state.meta.errors[0]
+                  : undefined
+              }
+            >
+              {lockCustomer ? (
+                <TextField
+                  id={field.name}
+                  name={field.name}
+                  value={
+                    lockedCustomerLabel?.trim() ||
+                    (field.state.value ? `#${field.state.value}` : "")
+                  }
+                  disabled
+                  readOnly
+                />
+              ) : (
+                <SelectField
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  disabled={disabled}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => {
+                    const nextCustomerId = event.target.value;
+                    field.handleChange(nextCustomerId);
+                    form.setFieldValue("deviceId", "");
+                    setSelectedCustomerId(nextCustomerId);
+                  }}
+                >
+                  <option value="">
+                    {t("repairs.fields.customerPlaceholder")}
+                  </option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={String(customer.id)}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+            </FormField>
+          )}
+        </form.Field>
+      ) : null}
+
+      {customersError ? (
+        <StatusMessage tone="danger">{customersError}</StatusMessage>
+      ) : null}
+
+      {!hideDeviceField ? (
+        <form.Field
+          name="deviceId"
+          validators={{
+            onChange: ({ value }) =>
+              !value.trim()
+                ? t("repairs.validation.deviceRequired")
+                : undefined,
+          }}
+        >
+          {(field) => (
+            <FormField
+              label={t("repairs.fields.device")}
+              htmlFor={field.name}
+              error={
+                typeof field.state.meta.errors[0] === "string"
+                  ? field.state.meta.errors[0]
+                  : undefined
+              }
+            >
+              {lockDevice ? (
+                <TextField
+                  id={field.name}
+                  name={field.name}
+                  value={
+                    lockedDeviceLabel?.trim() ||
+                    (field.state.value ? `#${field.state.value}` : "")
+                  }
+                  disabled
+                  readOnly
+                />
+              ) : (
+                <SelectField
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  disabled={disabled || !selectedCustomerId}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                >
+                  <option value="">
+                    {t("repairs.fields.devicePlaceholder")}
+                  </option>
+                  {devices.map((device) => (
+                    <option key={device.id} value={String(device.id)}>
+                      {deviceLabel(device)}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+            </FormField>
+          )}
+        </form.Field>
+      ) : null}
+
+      {devicesError ? (
+        <StatusMessage tone="danger">{devicesError}</StatusMessage>
+      ) : null}
+
+      {!hideStatus ? (
+        <form.Field name="status">
+          {(field) => (
+            <FormField label={t("repairs.fields.status")} htmlFor={field.name}>
               <SelectField
                 id={field.name}
                 name={field.name}
                 value={field.state.value}
                 disabled={disabled}
                 onBlur={field.handleBlur}
-                onChange={(event) => {
-                  const nextCustomerId = event.target.value;
-                  field.handleChange(nextCustomerId);
-                  form.setFieldValue("deviceId", "");
-                  setSelectedCustomerId(nextCustomerId);
-                }}
-              >
-                <option value="">{t("repairs.fields.customerPlaceholder")}</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={String(customer.id)}>
-                    {customer.name}
-                  </option>
-                ))}
-              </SelectField>
-            )}
-          </FormField>
-        )}
-      </form.Field>
-
-      {customersError ? (
-        <StatusMessage tone="danger">{customersError}</StatusMessage>
-      ) : null}
-
-      <form.Field
-        name="deviceId"
-        validators={{
-          onChange: ({ value }) =>
-            !value.trim() ? t("repairs.validation.deviceRequired") : undefined,
-        }}
-      >
-        {(field) => (
-          <FormField
-            label={t("repairs.fields.device")}
-            htmlFor={field.name}
-            error={
-              typeof field.state.meta.errors[0] === "string"
-                ? field.state.meta.errors[0]
-                : undefined
-            }
-          >
-            {lockDevice ? (
-              <TextField
-                id={field.name}
-                name={field.name}
-                value={`#${field.state.value}`}
-                disabled
-                readOnly
-              />
-            ) : (
-              <SelectField
-                id={field.name}
-                name={field.name}
-                value={field.state.value}
-                disabled={disabled || !selectedCustomerId}
-                onBlur={field.handleBlur}
                 onChange={(event) => field.handleChange(event.target.value)}
               >
-                <option value="">{t("repairs.fields.devicePlaceholder")}</option>
-                {devices.map((device) => (
-                  <option key={device.id} value={String(device.id)}>
-                    {deviceLabel(device)}
+                {REPAIR_STATUSES.map((code) => (
+                  <option key={code} value={code}>
+                    {t(`repairs.status.${code}`)}
                   </option>
                 ))}
               </SelectField>
-            )}
-          </FormField>
-        )}
-      </form.Field>
-
-      {devicesError ? (
-        <StatusMessage tone="danger">{devicesError}</StatusMessage>
+            </FormField>
+          )}
+        </form.Field>
       ) : null}
-
-      <form.Field name="status">
-        {(field) => (
-          <FormField label={t("repairs.fields.status")} htmlFor={field.name}>
-            <SelectField
-              id={field.name}
-              name={field.name}
-              value={field.state.value}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            >
-              {REPAIR_STATUSES.map((code) => (
-                <option key={code} value={code}>
-                  {t(`repairs.status.${code}`)}
-                </option>
-              ))}
-            </SelectField>
-          </FormField>
-        )}
-      </form.Field>
 
       <form.Field name="reportedProblem">
         {(field) => (
@@ -281,15 +317,16 @@ export function RepairForm({
         )}
       </form.Field>
 
-      <form.Field name="diagnosisNotes">
+      <form.Field name="expectedPickupAt">
         {(field) => (
           <FormField
-            label={t("repairs.fields.diagnosisNotes")}
+            label={t("repairs.fields.expectedPickupAt")}
             htmlFor={field.name}
           >
-            <TextArea
+            <TextField
               id={field.name}
               name={field.name}
+              type="date"
               value={field.state.value ?? ""}
               disabled={disabled}
               onBlur={field.handleBlur}
@@ -299,23 +336,45 @@ export function RepairForm({
         )}
       </form.Field>
 
-      <form.Field name="workPerformed">
-        {(field) => (
-          <FormField
-            label={t("repairs.fields.workPerformed")}
-            htmlFor={field.name}
-          >
-            <TextArea
-              id={field.name}
-              name={field.name}
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+      {!hideWorkshopFields ? (
+        <>
+          <form.Field name="diagnosisNotes">
+            {(field) => (
+              <FormField
+                label={t("repairs.fields.diagnosisNotes")}
+                htmlFor={field.name}
+              >
+                <TextArea
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value ?? ""}
+                  disabled={disabled}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              </FormField>
+            )}
+          </form.Field>
+
+          <form.Field name="workPerformed">
+            {(field) => (
+              <FormField
+                label={t("repairs.fields.workPerformed")}
+                htmlFor={field.name}
+              >
+                <TextArea
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value ?? ""}
+                  disabled={disabled}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              </FormField>
+            )}
+          </form.Field>
+        </>
+      ) : null}
 
       <form.Field name="notes">
         {(field) => (
@@ -332,20 +391,22 @@ export function RepairForm({
         )}
       </form.Field>
 
-      <div>
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting] as const}
-        >
-          {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              disabled={disabled || !canSubmit || isSubmitting}
-            >
-              {isSubmitting ? t("common.saving") : submitLabel}
-            </Button>
-          )}
-        </form.Subscribe>
-      </div>
+      {!hideSubmit ? (
+        <div>
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting] as const}
+          >
+            {([canSubmit, isSubmitting]) => (
+              <Button
+                type="submit"
+                disabled={disabled || !canSubmit || isSubmitting}
+              >
+                {isSubmitting ? t("common.saving") : submitLabel}
+              </Button>
+            )}
+          </form.Subscribe>
+        </div>
+      ) : null}
     </form>
   );
 }

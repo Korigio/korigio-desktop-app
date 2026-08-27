@@ -4,11 +4,17 @@ import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
   form: ReturnType<typeof useCustomerForm>;
-  submitLabel: string;
+  submitLabel?: string;
   disabled?: boolean;
+  hideSubmit?: boolean;
 };
 
-export function CustomerForm({ form, submitLabel, disabled }: Props) {
+export function CustomerForm({
+  form,
+  submitLabel = "",
+  disabled,
+  hideSubmit = false,
+}: Props) {
   const { t } = useI18n();
 
   return (
@@ -17,7 +23,9 @@ export function CustomerForm({ form, submitLabel, disabled }: Props) {
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        void form.handleSubmit();
+        if (!hideSubmit) {
+          void form.handleSubmit();
+        }
       }}
     >
       <form.Field
@@ -110,15 +118,22 @@ export function CustomerForm({ form, submitLabel, disabled }: Props) {
         )}
       </form.Field>
 
-      <div>
-        <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
-          {([canSubmit, isSubmitting]) => (
-            <Button type="submit" disabled={disabled || !canSubmit || isSubmitting}>
-              {isSubmitting ? t("common.saving") : submitLabel}
-            </Button>
-          )}
-        </form.Subscribe>
-      </div>
+      {!hideSubmit ? (
+        <div>
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting] as const}
+          >
+            {([canSubmit, isSubmitting]) => (
+              <Button
+                type="submit"
+                disabled={disabled || !canSubmit || isSubmitting}
+              >
+                {isSubmitting ? t("common.saving") : submitLabel}
+              </Button>
+            )}
+          </form.Subscribe>
+        </div>
+      ) : null}
     </form>
   );
 }

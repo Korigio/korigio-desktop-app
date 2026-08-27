@@ -75,6 +75,7 @@ fn mixed_hits_across_customers_devices_and_repairs() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("repair");
@@ -139,6 +140,7 @@ fn archived_entities_are_excluded() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("active repair");
@@ -155,6 +157,7 @@ fn archived_entities_are_excluded() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("to-archive repair");

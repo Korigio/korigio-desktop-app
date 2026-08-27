@@ -14,23 +14,29 @@ import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
   form: ReturnType<typeof useDeviceForm>;
-  submitLabel: string;
+  submitLabel?: string;
   disabled?: boolean;
   lockCustomer?: boolean;
+  hideSubmit?: boolean;
+  hideCustomerField?: boolean;
+  lockedCustomerLabel?: string;
 };
 
 export function DeviceForm({
   form,
-  submitLabel,
+  submitLabel = "",
   disabled = false,
   lockCustomer = false,
+  hideSubmit = false,
+  hideCustomerField = false,
+  lockedCustomerLabel,
 }: Props) {
   const { t } = useI18n();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customersError, setCustomersError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (lockCustomer) {
+    if (lockCustomer || hideCustomerField) {
       return;
     }
     let cancelled = false;
@@ -51,7 +57,7 @@ export function DeviceForm({
     return () => {
       cancelled = true;
     };
-  }, [lockCustomer]);
+  }, [lockCustomer, hideCustomerField]);
 
   return (
     <form
@@ -59,54 +65,65 @@ export function DeviceForm({
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        void form.handleSubmit();
+        if (!hideSubmit) {
+          void form.handleSubmit();
+        }
       }}
     >
-      <form.Field
-        name="customerId"
-        validators={{
-          onChange: ({ value }) =>
-            !value.trim() ? t("devices.validation.customerRequired") : undefined,
-        }}
-      >
-        {(field) => (
-          <FormField
-            label={t("devices.fields.customer")}
-            htmlFor={field.name}
-            error={
-              typeof field.state.meta.errors[0] === "string"
-                ? field.state.meta.errors[0]
-                : undefined
-            }
-          >
-            {lockCustomer ? (
-              <TextField
-                id={field.name}
-                name={field.name}
-                value={`#${field.state.value}`}
-                disabled
-                readOnly
-              />
-            ) : (
-              <SelectField
-                id={field.name}
-                name={field.name}
-                value={field.state.value}
-                disabled={disabled}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-              >
-                <option value="">{t("devices.fields.customerPlaceholder")}</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={String(customer.id)}>
-                    {customer.name}
+      {!hideCustomerField ? (
+        <form.Field
+          name="customerId"
+          validators={{
+            onChange: ({ value }) =>
+              !value.trim()
+                ? t("devices.validation.customerRequired")
+                : undefined,
+          }}
+        >
+          {(field) => (
+            <FormField
+              label={t("devices.fields.customer")}
+              htmlFor={field.name}
+              error={
+                typeof field.state.meta.errors[0] === "string"
+                  ? field.state.meta.errors[0]
+                  : undefined
+              }
+            >
+              {lockCustomer ? (
+                <TextField
+                  id={field.name}
+                  name={field.name}
+                  value={
+                    lockedCustomerLabel?.trim() ||
+                    (field.state.value ? `#${field.state.value}` : "")
+                  }
+                  disabled
+                  readOnly
+                />
+              ) : (
+                <SelectField
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  disabled={disabled}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                >
+                  <option value="">
+                    {t("devices.fields.customerPlaceholder")}
                   </option>
-                ))}
-              </SelectField>
-            )}
-          </FormField>
-        )}
-      </form.Field>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={String(customer.id)}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+            </FormField>
+          )}
+        </form.Field>
+      ) : null}
 
       {customersError ? (
         <StatusMessage tone="danger">{customersError}</StatusMessage>
@@ -213,20 +230,22 @@ export function DeviceForm({
 
       <p className="text-sm text-muted">{t("devices.validation.identityHint")}</p>
 
-      <div>
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting] as const}
-        >
-          {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              disabled={disabled || !canSubmit || isSubmitting}
-            >
-              {isSubmitting ? t("common.saving") : submitLabel}
-            </Button>
-          )}
-        </form.Subscribe>
-      </div>
+      {!hideSubmit ? (
+        <div>
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting] as const}
+          >
+            {([canSubmit, isSubmitting]) => (
+              <Button
+                type="submit"
+                disabled={disabled || !canSubmit || isSubmitting}
+              >
+                {isSubmitting ? t("common.saving") : submitLabel}
+              </Button>
+            )}
+          </form.Subscribe>
+        </div>
+      ) : null}
     </form>
   );
 }

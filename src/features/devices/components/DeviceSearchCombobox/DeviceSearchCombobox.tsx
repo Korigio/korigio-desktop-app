@@ -6,6 +6,7 @@ import { useI18n } from "@/shared/hooks/useI18n";
 type Props = {
   combobox: DeviceSearchComboboxState;
   disabled?: boolean;
+  clearLabel?: string;
   quickCreateLabel?: string;
   onQuickCreate?: () => void;
 };
@@ -13,6 +14,7 @@ type Props = {
 export function DeviceSearchCombobox({
   combobox,
   disabled = false,
+  clearLabel,
   quickCreateLabel,
   onQuickCreate,
 }: Props) {
@@ -20,6 +22,7 @@ export function DeviceSearchCombobox({
 
   return (
     <SearchCombobox
+      inputRef={combobox.inputRef}
       label={t("repairs.fields.device")}
       query={combobox.query}
       onQueryChange={combobox.setQuery}
@@ -29,6 +32,7 @@ export function DeviceSearchCombobox({
       onSelect={combobox.select}
       selectedLabel={combobox.selectedLabel}
       onClearSelection={combobox.clear}
+      clearLabel={clearLabel}
       loading={combobox.loading}
       disabled={disabled}
       emptyMessage={

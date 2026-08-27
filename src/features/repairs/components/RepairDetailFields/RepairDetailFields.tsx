@@ -63,6 +63,10 @@ export function RepairDetailFields({ repair }: Props) {
           value: repair.deviceCondition ?? EMPTY,
         },
         {
+          label: t("repairs.fields.expectedPickupAt"),
+          value: repair.expectedPickupAt ?? EMPTY,
+        },
+        {
           label: t("repairs.fields.diagnosisNotes"),
           value: repair.diagnosisNotes ?? EMPTY,
         },

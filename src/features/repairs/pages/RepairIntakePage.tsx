@@ -7,22 +7,22 @@ import { useI18n } from "@/shared/hooks/useI18n";
 export function RepairIntakePage() {
   const { t } = useI18n();
   const intake = useRepairIntake();
-  const { focusCustomerSearch, submit } = intake;
-
-  useEffect(() => {
-    focusCustomerSearch();
-  }, [focusCustomerSearch]);
+  const { step, submitting, continuePrimary } = intake;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        event.preventDefault();
-        void submit();
+      if (!(event.ctrlKey || event.metaKey) || event.key !== "Enter") {
+        return;
       }
+      if (step === "done" || submitting) {
+        return;
+      }
+      event.preventDefault();
+      void continuePrimary();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [submit]);
+  }, [continuePrimary, step, submitting]);
 
   return (
     <Page>

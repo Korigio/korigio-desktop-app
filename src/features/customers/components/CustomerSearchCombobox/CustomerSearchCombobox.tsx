@@ -5,12 +5,14 @@ import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
   combobox: CustomerSearchComboboxState;
+  clearLabel?: string;
   quickCreateLabel?: string;
   onQuickCreate?: () => void;
 };
 
 export function CustomerSearchCombobox({
   combobox,
+  clearLabel,
   quickCreateLabel,
   onQuickCreate,
 }: Props) {
@@ -28,6 +30,7 @@ export function CustomerSearchCombobox({
       onSelect={combobox.select}
       selectedLabel={combobox.selectedLabel}
       onClearSelection={combobox.clear}
+      clearLabel={clearLabel}
       loading={combobox.loading}
       emptyMessage={t("repairs.intake.noCustomers")}
       footerAction={

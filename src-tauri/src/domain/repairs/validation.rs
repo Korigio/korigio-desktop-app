@@ -1,3 +1,6 @@
+use time::Date;
+use time::format_description;
+
 use crate::domain::repairs::constants::{
     ACCESSORIES_RECEIVED_MAX_LEN, DEFAULT_STATUS, DEVICE_CONDITION_MAX_LEN,
     DIAGNOSIS_NOTES_MAX_LEN, NOTES_MAX_LEN, REPAIR_STATUSES, REPORTED_PROBLEM_MAX_LEN,
@@ -17,6 +20,7 @@ pub struct ValidatedCreateRepairInput {
     pub diagnosis_notes: Option<String>,
     pub work_performed: Option<String>,
     pub notes: Option<String>,
+    pub expected_pickup_at: Option<String>,
 }
 
 #[derive(Debug)]
@@ -28,6 +32,7 @@ pub struct ValidatedUpdateRepairInput {
     pub diagnosis_notes: Option<String>,
     pub work_performed: Option<String>,
     pub notes: Option<String>,
+    pub expected_pickup_at: Option<String>,
 }
 
 pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepairInput, AppError> {
@@ -46,6 +51,7 @@ pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepai
 
     let fields = validate_text_fields(input)?;
     let status = normalize_status(input.status.as_deref(), None)?;
+    let expected_pickup_at = validate_expected_pickup_at(&input.expected_pickup_at)?;
 
     Ok(ValidatedCreateRepairInput {
         customer_id: input.customer_id,
@@ -57,6 +63,7 @@ pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepai
         diagnosis_notes: fields.diagnosis_notes,
         work_performed: fields.work_performed,
         notes: fields.notes,
+        expected_pickup_at,
     })
 }
 
@@ -66,6 +73,7 @@ pub fn validate_update_input(
 ) -> Result<ValidatedUpdateRepairInput, AppError> {
     let fields = validate_text_fields(input)?;
     let status = normalize_status(input.status.as_deref(), Some(existing_status))?;
+    let expected_pickup_at = validate_expected_pickup_at(&input.expected_pickup_at)?;
 
     Ok(ValidatedUpdateRepairInput {
         status,
@@ -75,6 +83,7 @@ pub fn validate_update_input(
         diagnosis_notes: fields.diagnosis_notes,
         work_performed: fields.work_performed,
         notes: fields.notes,
+        expected_pickup_at,
     })
 }
 
@@ -116,6 +125,36 @@ fn validate_text_fields(input: &RepairInput) -> Result<ValidatedTextFields, AppE
         )?,
         notes: normalize_optional(&input.notes, "notes", NOTES_MAX_LEN)?,
     })
+}
+
+/// Optional date-only field. Empty/whitespace → None. Present values must be `YYYY-MM-DD`.
+fn validate_expected_pickup_at(value: &Option<String>) -> Result<Option<String>, AppError> {
+    match value {
+        None => Ok(None),
+        Some(raw) => {
+            let trimmed = raw.trim();
+            if trimmed.is_empty() {
+                return Ok(None);
+            }
+            let format = format_description::parse_borrowed::<2>("[year]-[month]-[day]").map_err(
+                |err| AppError::Internal {
+                    message: format!("date format parse failed: {err}"),
+                },
+            )?;
+            match Date::parse(trimmed, &format) {
+                Ok(date) => {
+                    let formatted = date.format(&format).map_err(|err| AppError::Internal {
+                        message: format!("date format failed: {err}"),
+                    })?;
+                    Ok(Some(formatted))
+                }
+                Err(_) => Err(AppError::Validation {
+                    field: Some("expectedPickupAt".into()),
+                    message: "Expected pickup date must be YYYY-MM-DD.".into(),
+                }),
+            }
+        }
+    }
 }
 
 fn normalize_status(
@@ -167,9 +206,8 @@ fn normalize_optional(
 mod tests {
     use super::*;
 
-    #[test]
-    fn defaults_status_on_create() {
-        let ok = validate_create_input(&RepairInput {
+    fn base_input() -> RepairInput {
+        RepairInput {
             customer_id: 1,
             device_id: 2,
             status: None,
@@ -179,25 +217,65 @@ mod tests {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
-        })
-        .expect("valid");
+            expected_pickup_at: None,
+        }
+    }
+
+    #[test]
+    fn defaults_status_on_create() {
+        let ok = validate_create_input(&base_input()).expect("valid");
         assert_eq!(ok.status, DEFAULT_STATUS);
+        assert!(ok.expected_pickup_at.is_none());
     }
 
     #[test]
     fn rejects_invalid_status() {
-        let err = validate_create_input(&RepairInput {
-            customer_id: 1,
-            device_id: 2,
-            status: Some("broken".into()),
-            reported_problem: None,
-            accessories_received: None,
-            device_condition: None,
-            diagnosis_notes: None,
-            work_performed: None,
-            notes: None,
-        })
-        .expect_err("invalid");
+        let mut input = base_input();
+        input.status = Some("broken".into());
+        let err = validate_create_input(&input).expect_err("invalid");
         assert!(matches!(err, AppError::Validation { .. }));
+    }
+
+    #[test]
+    fn accepts_valid_expected_pickup_at() {
+        let mut input = base_input();
+        input.expected_pickup_at = Some("2026-09-15".into());
+        let ok = validate_create_input(&input).expect("valid");
+        assert_eq!(ok.expected_pickup_at.as_deref(), Some("2026-09-15"));
+    }
+
+    #[test]
+    fn empty_expected_pickup_at_becomes_none() {
+        let mut input = base_input();
+        input.expected_pickup_at = Some("  ".into());
+        let ok = validate_create_input(&input).expect("valid");
+        assert!(ok.expected_pickup_at.is_none());
+    }
+
+    #[test]
+    fn rejects_invalid_expected_pickup_at_format() {
+        let mut input = base_input();
+        input.expected_pickup_at = Some("15-09-2026".into());
+        let err = validate_create_input(&input).expect_err("invalid date");
+        match err {
+            AppError::Validation { field, .. } => {
+                assert_eq!(field.as_deref(), Some("expectedPickupAt"));
+            }
+            other => panic!("unexpected error: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_nonexistent_calendar_date() {
+        let mut input = base_input();
+        input.expected_pickup_at = Some("2026-02-30".into());
+        let err = validate_create_input(&input).expect_err("invalid calendar date");
+        assert!(matches!(
+            err,
+            AppError::Validation {
+                field: Some(ref f),
+                ..
+            } if f == "expectedPickupAt"
+        ));
     }
 }

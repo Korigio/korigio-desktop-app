@@ -24,7 +24,9 @@
     "actions": "Aktionen",
     "prev": "Zurück",
     "next": "Weiter",
-    "page": "Seite"
+    "page": "Seite",
+    "clearSelection": "Auswahl löschen",
+    "close": "Schließen"
   },
   "home": {
     "title": "Start",
@@ -167,6 +169,7 @@
       "diagnosisNotes": "Diagnose-Notizen",
       "workPerformed": "Durchgeführte Arbeit",
       "notes": "Notizen",
+      "expectedPickupAt": "Mögliches Abholdatum",
       "readyAt": "Abholbereit am",
       "collectedAt": "Abgeholt am"
     },
@@ -197,18 +200,37 @@
       "title": "Reparatur-Annahme",
       "subtitle": "Schnelle Tastatureingabe für neue Reparaturen an der Theke",
       "start": "Annahme starten",
-      "saveAndNext": "Speichern und weiter",
-      "success": "Reparatur {number} angelegt.",
-      "shortcutHint": "Tipp: Strg+Umschalt+N öffnet die Annahme überall. Strg+Eingabe speichert.",
+      "shortcutHint": "Tipp: Strg+Umschalt+N öffnet die Annahme überall. Strg/Cmd+Eingabe für Weiter oder Anlegen.",
       "noCustomers": "Keine Kunden gefunden",
       "noDevices": "Keine Geräte gefunden",
       "selectCustomerFirst": "Zuerst Kunde auswählen",
-      "quickCreateCustomer": "Neuen Kunden anlegen…",
-      "quickCreateCustomerTitle": "Kunde schnell anlegen",
-      "quickCreateDevice": "Neues Gerät anlegen…",
-      "quickCreateDeviceTitle": "Gerät schnell anlegen",
-      "cancelQuickCreate": "Abbrechen",
-      "problemRequired": "Gemeldetes Problem ist erforderlich."
+      "problemRequired": "Gemeldetes Problem ist erforderlich.",
+      "steps": {
+        "customer": "Kunde",
+        "device": "Gerät",
+        "details": "Details",
+        "review": "Prüfung",
+        "done": "Fertig"
+      },
+      "nav": {
+        "back": "Zurück",
+        "continue": "Weiter",
+        "create": "Reparatur anlegen"
+      },
+      "actions": {
+        "createCustomer": "Neuer Kunde",
+        "createDevice": "Neues Gerät"
+      },
+      "review": {
+        "heading": "Prüfen und anlegen"
+      },
+      "done": {
+        "heading": "Reparatur angelegt",
+        "repairCreated": "Reparatur {number} angelegt.",
+        "printSlip": "Beleg drucken",
+        "openRepair": "Reparatur öffnen",
+        "startAnother": "Weitere Annahme"
+      }
     }
   },
   "diagnosis": {

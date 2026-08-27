@@ -16,6 +16,7 @@ export type RepairPrintReport = {
     reportedProblem: string | null;
     accessoriesReceived: string | null;
     deviceCondition: string | null;
+    expectedPickupAt: string | null;
     diagnosisNotes: string | null;
     workPerformed: string | null;
     notes: string | null;

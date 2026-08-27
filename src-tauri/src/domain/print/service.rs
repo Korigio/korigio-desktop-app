@@ -45,6 +45,7 @@ pub fn get_repair_print_report(
             diagnosis_notes: repair.diagnosis_notes,
             work_performed: repair.work_performed,
             notes: repair.notes,
+            expected_pickup_at: repair.expected_pickup_at,
             ready_at: repair.ready_at,
             collected_at: repair.collected_at,
         },

@@ -23,6 +23,7 @@ pub struct PrintRepairCore {
     pub diagnosis_notes: Option<String>,
     pub work_performed: Option<String>,
     pub notes: Option<String>,
+    pub expected_pickup_at: Option<String>,
     pub ready_at: Option<String>,
     pub collected_at: Option<String>,
 }

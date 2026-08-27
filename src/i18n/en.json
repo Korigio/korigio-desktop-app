@@ -24,7 +24,9 @@
     "actions": "Actions",
     "prev": "Previous",
     "next": "Next",
-    "page": "Page"
+    "page": "Page",
+    "clearSelection": "Clear selection",
+    "close": "Close"
   },
   "home": {
     "title": "Home",
@@ -167,6 +169,7 @@
       "diagnosisNotes": "Diagnosis notes",
       "workPerformed": "Work performed",
       "notes": "Notes",
+      "expectedPickupAt": "Possible pickup date",
       "readyAt": "Ready date",
       "collectedAt": "Collected date"
     },
@@ -197,18 +200,37 @@
       "title": "Repair intake",
       "subtitle": "Fast keyboard entry for new repairs at the counter",
       "start": "Start repair intake",
-      "saveAndNext": "Save and next",
-      "success": "Repair {number} created.",
-      "shortcutHint": "Tip: Ctrl+Shift+N opens intake from anywhere. Ctrl+Enter saves.",
+      "shortcutHint": "Tip: Ctrl+Shift+N opens intake from anywhere. Ctrl/Cmd+Enter continues or creates.",
       "noCustomers": "No customers found",
       "noDevices": "No devices found",
       "selectCustomerFirst": "Select a customer first",
-      "quickCreateCustomer": "Create new customer…",
-      "quickCreateCustomerTitle": "Quick create customer",
-      "quickCreateDevice": "Create new device…",
-      "quickCreateDeviceTitle": "Quick create device",
-      "cancelQuickCreate": "Cancel",
-      "problemRequired": "Reported problem is required."
+      "problemRequired": "Reported problem is required.",
+      "steps": {
+        "customer": "Customer",
+        "device": "Device",
+        "details": "Details",
+        "review": "Review",
+        "done": "Done"
+      },
+      "nav": {
+        "back": "Back",
+        "continue": "Continue",
+        "create": "Create repair"
+      },
+      "actions": {
+        "createCustomer": "New customer",
+        "createDevice": "New device"
+      },
+      "review": {
+        "heading": "Review and create"
+      },
+      "done": {
+        "heading": "Repair created",
+        "repairCreated": "Repair {number} created.",
+        "printSlip": "Print slip",
+        "openRepair": "Open repair",
+        "startAnother": "Start another"
+      }
     }
   },
   "diagnosis": {

@@ -37,9 +37,9 @@ pub fn insert_repair(
         "INSERT INTO repairs (
             repair_number, customer_id, device_id, status, received_at,
             reported_problem, accessories_received, device_condition,
-            diagnosis_notes, work_performed, notes, ready_at, collected_at,
-            created_at, updated_at, archived_at
-         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, NULL, NULL, ?12, ?13, NULL)",
+            diagnosis_notes, work_performed, notes, expected_pickup_at,
+            ready_at, collected_at, created_at, updated_at, archived_at
+         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, NULL, NULL, ?13, ?14, NULL)",
         params![
             repair_number,
             input.customer_id,
@@ -52,6 +52,7 @@ pub fn insert_repair(
             input.diagnosis_notes,
             input.work_performed,
             input.notes,
+            input.expected_pickup_at,
             now,
             now,
         ],
@@ -79,10 +80,11 @@ pub fn update_repair(
             diagnosis_notes = ?5,
             work_performed = ?6,
             notes = ?7,
-            ready_at = ?8,
-            collected_at = ?9,
-            updated_at = ?10
-         WHERE id = ?11 AND archived_at IS NULL",
+            expected_pickup_at = ?8,
+            ready_at = ?9,
+            collected_at = ?10,
+            updated_at = ?11
+         WHERE id = ?12 AND archived_at IS NULL",
         params![
             input.status,
             input.reported_problem,
@@ -91,6 +93,7 @@ pub fn update_repair(
             input.diagnosis_notes,
             input.work_performed,
             input.notes,
+            input.expected_pickup_at,
             ready_at,
             collected_at,
             now,
@@ -113,8 +116,8 @@ pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, Ap
     let mut stmt = conn.prepare(
         "SELECT id, repair_number, customer_id, device_id, status, received_at,
                 reported_problem, accessories_received, device_condition,
-                diagnosis_notes, work_performed, notes, ready_at, collected_at,
-                created_at, updated_at, archived_at
+                diagnosis_notes, work_performed, notes, expected_pickup_at,
+                ready_at, collected_at, created_at, updated_at, archived_at
          FROM repairs WHERE id = ?1",
     )?;
     let repair = stmt.query_row(params![id], map_repair).optional()?;
@@ -124,8 +127,9 @@ pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, Ap
 const REPAIR_SELECT_COLS: &str = "repairs.id, repairs.repair_number, repairs.customer_id,
         repairs.device_id, repairs.status, repairs.received_at,
         repairs.reported_problem, repairs.accessories_received, repairs.device_condition,
-        repairs.diagnosis_notes, repairs.work_performed, repairs.notes, repairs.ready_at,
-        repairs.collected_at, repairs.created_at, repairs.updated_at, repairs.archived_at";
+        repairs.diagnosis_notes, repairs.work_performed, repairs.notes,
+        repairs.expected_pickup_at, repairs.ready_at, repairs.collected_at,
+        repairs.created_at, repairs.updated_at, repairs.archived_at";
 
 const SEARCH_MATCH_SQL: &str = "(
             repairs.repair_number LIKE {ph} ESCAPE '\\'
@@ -187,8 +191,8 @@ pub fn list_repairs(
     } else {
         "id, repair_number, customer_id, device_id, status, received_at,
                 reported_problem, accessories_received, device_condition,
-                diagnosis_notes, work_performed, notes, ready_at, collected_at,
-                created_at, updated_at, archived_at"
+                diagnosis_notes, work_performed, notes, expected_pickup_at,
+                ready_at, collected_at, created_at, updated_at, archived_at"
     };
 
     // When not joining, drop the `repairs.` prefix from WHERE for clarity/consistency
@@ -354,10 +358,11 @@ fn map_repair(row: &rusqlite::Row<'_>) -> rusqlite::Result<Repair> {
         diagnosis_notes: row.get(9)?,
         work_performed: row.get(10)?,
         notes: row.get(11)?,
-        ready_at: row.get(12)?,
-        collected_at: row.get(13)?,
-        created_at: row.get(14)?,
-        updated_at: row.get(15)?,
-        archived_at: row.get(16)?,
+        expected_pickup_at: row.get(12)?,
+        ready_at: row.get(13)?,
+        collected_at: row.get(14)?,
+        created_at: row.get(15)?,
+        updated_at: row.get(16)?,
+        archived_at: row.get(17)?,
     })
 }

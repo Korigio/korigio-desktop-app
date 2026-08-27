@@ -95,6 +95,7 @@ fn seed_repair(db: &Db) -> i64 {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("repair")

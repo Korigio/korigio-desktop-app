@@ -21,6 +21,7 @@ export type Repair = {
   reportedProblem: string | null;
   accessoriesReceived: string | null;
   deviceCondition: string | null;
+  expectedPickupAt: string | null;
   diagnosisNotes: string | null;
   workPerformed: string | null;
   notes: string | null;
@@ -38,6 +39,7 @@ export type RepairInput = {
   reportedProblem?: string | null;
   accessoriesReceived?: string | null;
   deviceCondition?: string | null;
+  expectedPickupAt?: string | null;
   diagnosisNotes?: string | null;
   workPerformed?: string | null;
   notes?: string | null;
@@ -70,6 +72,7 @@ export function repairToInput(
     reportedProblem: repair.reportedProblem,
     accessoriesReceived: repair.accessoriesReceived,
     deviceCondition: repair.deviceCondition,
+    expectedPickupAt: repair.expectedPickupAt,
     diagnosisNotes: repair.diagnosisNotes,
     workPerformed: repair.workPerformed,
     notes: repair.notes,

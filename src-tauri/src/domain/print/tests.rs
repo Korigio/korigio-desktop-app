@@ -52,6 +52,7 @@ fn seed_repair(db: &Db) -> (i64, String) {
             diagnosis_notes: Some("Board check".into()),
             work_performed: Some("Replaced SSD".into()),
             notes: Some("Rush".into()),
+            expected_pickup_at: None,
         },
     )
     .expect("repair");

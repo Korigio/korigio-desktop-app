@@ -60,6 +60,7 @@ fn sample_repair(customer_id: i64, device_id: i64) -> RepairInput {
         diagnosis_notes: None,
         work_performed: None,
         notes: None,
+        expected_pickup_at: None,
     }
 }
 
@@ -125,6 +126,7 @@ fn rejects_wrong_device_ownership() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect_err("ownership");
@@ -264,6 +266,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("create");
@@ -349,6 +352,7 @@ fn update_status_sets_ready_at_once() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("ready");
@@ -368,6 +372,7 @@ fn update_status_sets_ready_at_once() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("in_repair");
@@ -386,6 +391,7 @@ fn update_status_sets_ready_at_once() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("ready again");
@@ -418,6 +424,7 @@ fn update_keeps_customer_and_device_ownership() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect("update");
@@ -447,8 +454,125 @@ fn rejects_invalid_status_on_update() {
             diagnosis_notes: None,
             work_performed: None,
             notes: None,
+            expected_pickup_at: None,
         },
     )
     .expect_err("invalid status");
     assert!(matches!(err, AppError::Validation { .. }));
+}
+
+#[test]
+fn create_and_update_persist_expected_pickup_at() {
+    let db = Db::open_in_memory().expect("db");
+    let customer_id = customer(&db, "Owner");
+    let device_id = device(&db, customer_id, "SN-1");
+
+    let mut input = sample_repair(customer_id, device_id);
+    input.expected_pickup_at = Some("2026-09-15".into());
+    let created = create_repair(db.conn(), input).expect("create");
+    assert_eq!(created.expected_pickup_at.as_deref(), Some("2026-09-15"));
+    assert!(created.ready_at.is_none());
+
+    let fetched = get_repair(db.conn(), created.id).expect("get");
+    assert_eq!(fetched.expected_pickup_at.as_deref(), Some("2026-09-15"));
+
+    let updated = update_repair(
+        db.conn(),
+        created.id,
+        RepairInput {
+            customer_id,
+            device_id,
+            status: None,
+            reported_problem: None,
+            accessories_received: None,
+            device_condition: None,
+            diagnosis_notes: None,
+            work_performed: None,
+            notes: None,
+            expected_pickup_at: Some("2026-10-01".into()),
+        },
+    )
+    .expect("update");
+    assert_eq!(updated.expected_pickup_at.as_deref(), Some("2026-10-01"));
+    assert!(updated.ready_at.is_none());
+}
+
+#[test]
+fn omit_expected_pickup_at_stores_null() {
+    let db = Db::open_in_memory().expect("db");
+    let customer_id = customer(&db, "Owner");
+    let device_id = device(&db, customer_id, "SN-1");
+
+    let created = create_repair(db.conn(), sample_repair(customer_id, device_id)).expect("create");
+    assert!(created.expected_pickup_at.is_none());
+
+    let cleared = update_repair(
+        db.conn(),
+        created.id,
+        RepairInput {
+            customer_id,
+            device_id,
+            status: None,
+            reported_problem: Some("Screen cracked".into()),
+            accessories_received: None,
+            device_condition: None,
+            diagnosis_notes: None,
+            work_performed: None,
+            notes: None,
+            expected_pickup_at: None,
+        },
+    )
+    .expect("clear");
+    assert!(cleared.expected_pickup_at.is_none());
+}
+
+#[test]
+fn rejects_invalid_expected_pickup_at_on_create() {
+    let db = Db::open_in_memory().expect("db");
+    let customer_id = customer(&db, "Owner");
+    let device_id = device(&db, customer_id, "SN-1");
+
+    let mut input = sample_repair(customer_id, device_id);
+    input.expected_pickup_at = Some("09/15/2026".into());
+    let err = create_repair(db.conn(), input).expect_err("invalid date");
+    match err {
+        AppError::Validation { field, .. } => {
+            assert_eq!(field.as_deref(), Some("expectedPickupAt"));
+        }
+        other => panic!("unexpected error: {other:?}"),
+    }
+}
+
+#[test]
+fn expected_pickup_at_does_not_affect_ready_at() {
+    let db = Db::open_in_memory().expect("db");
+    let customer_id = customer(&db, "Owner");
+    let device_id = device(&db, customer_id, "SN-1");
+
+    let mut input = sample_repair(customer_id, device_id);
+    input.expected_pickup_at = Some("2026-09-20".into());
+    let created = create_repair(db.conn(), input).expect("create");
+    assert!(created.ready_at.is_none());
+    assert_eq!(created.expected_pickup_at.as_deref(), Some("2026-09-20"));
+
+    let ready = update_repair(
+        db.conn(),
+        created.id,
+        RepairInput {
+            customer_id,
+            device_id,
+            status: Some("ready".into()),
+            reported_problem: None,
+            accessories_received: None,
+            device_condition: None,
+            diagnosis_notes: None,
+            work_performed: None,
+            notes: None,
+            expected_pickup_at: Some("2026-09-20".into()),
+        },
+    )
+    .expect("ready");
+    assert!(ready.ready_at.is_some());
+    assert_ne!(ready.ready_at.as_deref(), Some("2026-09-20"));
+    assert_eq!(ready.expected_pickup_at.as_deref(), Some("2026-09-20"));
 }

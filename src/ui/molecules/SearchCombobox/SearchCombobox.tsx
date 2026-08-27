@@ -6,6 +6,7 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from "react";
+import { X } from "lucide-react";
 import { FormField } from "@/ui/molecules/FormField";
 import { TextField } from "@/ui/atoms/TextField";
 import { cn } from "@/shared/utils/cn";
@@ -20,6 +21,7 @@ export type SearchComboboxProps<T> = {
   onSelect: (item: T) => void;
   selectedLabel?: string | null;
   onClearSelection?: () => void;
+  clearLabel?: string;
   loading?: boolean;
   emptyMessage?: string;
   disabled?: boolean;
@@ -41,6 +43,7 @@ export function SearchCombobox<T>({
   onSelect,
   selectedLabel = null,
   onClearSelection,
+  clearLabel,
   loading = false,
   emptyMessage,
   disabled = false,
@@ -55,6 +58,7 @@ export function SearchCombobox<T>({
 
   const displayValue = selectedLabel ?? query;
   const showList = open && !disabled && !selectedLabel;
+  const showClear = Boolean(selectedLabel && onClearSelection);
 
   useEffect(() => {
     setHighlightIndex(0);
@@ -75,12 +79,17 @@ export function SearchCombobox<T>({
     setOpen(false);
   };
 
+  const clearSelection = () => {
+    onClearSelection?.();
+    setOpen(false);
+  };
+
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (selectedLabel) {
       if (event.key === "Backspace" || event.key === "Delete") {
         event.preventDefault();
         onClearSelection?.();
-        setOpen(true);
+        setOpen(false);
       }
       return;
     }
@@ -119,31 +128,55 @@ export function SearchCombobox<T>({
   return (
     <div ref={containerRef} className={cn("relative", className)}>
       <FormField label={label} htmlFor={listId}>
-        <TextField
-          ref={inputRef}
-          id={listId}
-          type="search"
-          role="combobox"
-          aria-expanded={showList}
-          aria-controls={`${listId}-listbox`}
-          aria-autocomplete="list"
-          autoComplete="off"
-          disabled={disabled}
-          value={displayValue}
-          onFocus={() => {
-            if (!selectedLabel) {
+        <div className="relative">
+          <TextField
+            ref={inputRef}
+            id={listId}
+            type="search"
+            role="combobox"
+            aria-expanded={showList}
+            aria-controls={`${listId}-listbox`}
+            aria-autocomplete="list"
+            autoComplete="off"
+            disabled={disabled}
+            value={displayValue}
+            className={showClear ? "pr-10" : undefined}
+            onClick={() => {
+              if (!disabled && !selectedLabel) {
+                setOpen(true);
+              }
+            }}
+            onChange={(event) => {
+              if (selectedLabel) {
+                return;
+              }
+              onQueryChange(event.target.value);
               setOpen(true);
-            }
-          }}
-          onChange={(event) => {
-            if (selectedLabel) {
-              return;
-            }
-            onQueryChange(event.target.value);
-            setOpen(true);
-          }}
-          onKeyDown={onKeyDown}
-        />
+            }}
+            onKeyDown={onKeyDown}
+          />
+          {showClear ? (
+            <button
+              type="button"
+              className={cn(
+                "absolute right-1.5 top-1/2 -translate-y-1/2",
+                "inline-flex size-7 items-center justify-center rounded-md text-muted",
+                "hover:bg-background hover:text-foreground",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                "disabled:cursor-not-allowed disabled:opacity-50",
+              )}
+              aria-label={clearLabel}
+              title={clearLabel}
+              disabled={disabled}
+              onClick={(event) => {
+                event.preventDefault();
+                clearSelection();
+              }}
+            >
+              <X className="size-4" aria-hidden />
+            </button>
+          ) : null}
+        </div>
       </FormField>
 
       {showList ? (
