@@ -1,5 +1,6 @@
 mod backup;
 mod customers;
+mod dashboard;
 mod devices;
 mod diagnosis;
 mod images;
@@ -12,6 +13,7 @@ mod system;
 
 pub use backup::*;
 pub use customers::*;
+pub use dashboard::*;
 pub use devices::*;
 pub use diagnosis::*;
 pub use images::*;

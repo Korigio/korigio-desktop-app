@@ -14,7 +14,9 @@
     "diagnosisTemplates": "Diagnosis templates",
     "intake": "Intake",
     "search": "Search",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
   },
   "common": {
     "loading": "Loading…",
@@ -26,7 +28,19 @@
   },
   "home": {
     "title": "Home",
-    "refresh": "Check connection"
+    "dashboard": {
+      "title": "Workshop desk",
+      "subtitle": "What needs attention right now",
+      "loadFailed": "Could not load the dashboard.",
+      "pipeline": "Open repairs by status",
+      "todayLine": "Today: {received} received · {collected} collected",
+      "readyTitle": "Ready for pickup",
+      "readyEmpty": "No repairs waiting for pickup.",
+      "readyAt": "Ready {date}",
+      "staleTitle": "Stale (no update in {days}+ days)",
+      "staleEmpty": "No stale open repairs.",
+      "daysInStatus": "{days}d"
+    }
   },
   "search": {
     "title": "Search",

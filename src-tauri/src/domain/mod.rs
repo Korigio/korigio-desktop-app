@@ -1,5 +1,6 @@
 pub mod backup;
 pub mod customers;
+pub mod dashboard;
 pub mod devices;
 pub mod diagnosis;
 pub mod images;

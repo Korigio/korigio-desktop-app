@@ -14,7 +14,9 @@
     "diagnosisTemplates": "Diagnosevorlagen",
     "intake": "Annahme",
     "search": "Suche",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "collapse": "Seitenleiste einklappen",
+    "expand": "Seitenleiste ausklappen"
   },
   "common": {
     "loading": "Laden…",
@@ -26,7 +28,19 @@
   },
   "home": {
     "title": "Start",
-    "refresh": "Verbindung prüfen"
+    "dashboard": {
+      "title": "Werkstatt-Schalter",
+      "subtitle": "Was jetzt Aufmerksamkeit braucht",
+      "loadFailed": "Dashboard konnte nicht geladen werden.",
+      "pipeline": "Offene Reparaturen nach Status",
+      "todayLine": "Heute: {received} eingegangen · {collected} abgeholt",
+      "readyTitle": "Bereit zur Abholung",
+      "readyEmpty": "Keine Reparaturen warten auf Abholung.",
+      "readyAt": "Fertig {date}",
+      "staleTitle": "Liegengeblieben (keine Aktualisierung seit {days}+ Tagen)",
+      "staleEmpty": "Keine liegengebliebenen offenen Reparaturen.",
+      "daysInStatus": "{days}d"
+    }
   },
   "search": {
     "title": "Suche",

@@ -5,21 +5,39 @@ import type {
   RepairListResult,
   RepairStatus,
 } from "@/features/repairs/types/repair";
-import { repairToInput } from "@/features/repairs/types/repair";
+import { REPAIR_STATUSES, repairToInput } from "@/features/repairs/types/repair";
 
 type Options = {
   customerId?: number;
   deviceId?: number;
+  initialStatus?: RepairStatus | "";
 };
+
+function parseStatus(value: string | undefined | null): RepairStatus | "" {
+  if (!value) {
+    return "";
+  }
+  return (REPAIR_STATUSES as readonly string[]).includes(value)
+    ? (value as RepairStatus)
+    : "";
+}
 
 export function useRepairList(options: Options = {}) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<RepairStatus | "">("");
+  const [status, setStatus] = useState<RepairStatus | "">(
+    () => parseStatus(options.initialStatus),
+  );
   const [page, setPage] = useState(1);
   const [result, setResult] = useState<RepairListResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusUpdatingId, setStatusUpdatingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const next = parseStatus(options.initialStatus);
+    setStatus(next);
+    setPage(1);
+  }, [options.initialStatus]);
 
   const reload = useCallback(async () => {
     setLoading(true);

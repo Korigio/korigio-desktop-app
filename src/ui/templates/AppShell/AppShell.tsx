@@ -1,128 +1,196 @@
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router";
+import type { LucideIcon } from "lucide-react";
+import {
+  ClipboardList,
+  Home,
+  MonitorSmartphone,
+  PanelLeft,
+  PanelLeftClose,
+  Settings,
+  Users,
+  Wrench,
+} from "lucide-react";
 import { NativeMenuBridge } from "@/app/NativeMenuBridge";
 import { AutoBackupOnStartup } from "@/features/settings/components/AutoBackupOnStartup";
+import { Button } from "@/ui/atoms/Button";
+import { LinkButton } from "@/ui/molecules/LinkButton";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { cn } from "@/shared/utils/cn";
 
+const SIDEBAR_COLLAPSED_KEY = "servioo.sidebarCollapsed";
+
+type NavItemConfig = {
+  to: string;
+  end?: boolean;
+  labelKey: string;
+  icon: LucideIcon;
+};
+
+const NAV_ITEMS: NavItemConfig[] = [
+  { to: "/", end: true, labelKey: "nav.home", icon: Home },
+  { to: "/customers", labelKey: "nav.customers", icon: Users },
+  { to: "/devices", labelKey: "nav.devices", icon: MonitorSmartphone },
+  { to: "/repairs", labelKey: "nav.repairs", icon: Wrench },
+  {
+    to: "/diagnosis-templates",
+    labelKey: "nav.diagnosisTemplates",
+    icon: ClipboardList,
+  },
+  { to: "/settings", labelKey: "nav.settings", icon: Settings },
+];
+
+function readSidebarCollapsed(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function persistSidebarCollapsed(collapsed: boolean) {
+  try {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+  } catch {
+    // Ignore quota / private-mode failures.
+  }
+}
+
+type NavItemProps = {
+  to: string;
+  end?: boolean;
+  label: string;
+  icon: LucideIcon;
+  collapsed: boolean;
+};
+
+function NavItem({ to, end, label, icon: Icon, collapsed }: NavItemProps) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      title={collapsed ? label : undefined}
+      aria-label={collapsed ? label : undefined}
+      className={({ isActive }) =>
+        cn(
+          "inline-flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm",
+          collapsed && "md:justify-center md:px-2",
+          isActive
+            ? "bg-primary text-primary-foreground"
+            : "text-foreground hover:bg-background",
+        )
+      }
+    >
+      <Icon className="size-4 shrink-0" aria-hidden />
+      <span className={cn(collapsed && "md:hidden")}>{label}</span>
+    </NavLink>
+  );
+}
+
 export function AppShell() {
   const { t } = useI18n();
+  const [collapsed, setCollapsed] = useState(readSidebarCollapsed);
+
+  function toggleCollapsed() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      persistSidebarCollapsed(next);
+      return next;
+    });
+  }
+
+  const toggleLabel = collapsed ? t("nav.expand") : t("nav.collapse");
+  const ToggleIcon = collapsed ? PanelLeft : PanelLeftClose;
 
   return (
-    <div className="flex min-h-full bg-background text-foreground">
+    <div className="flex min-h-full flex-col bg-background text-foreground md:flex-row">
       <NativeMenuBridge />
       <AutoBackupOnStartup />
-      <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-surface p-4">
-        <p className="text-lg font-semibold">{t("app.name")}</p>
-        <nav className="mt-6 flex flex-col gap-1">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
+      <aside
+        className={cn(
+          "shrink-0 border-b border-border bg-surface p-3 transition-[width] duration-200 ease-out md:border-b-0 md:border-r md:p-3",
+          collapsed ? "md:w-14" : "md:w-56 md:p-4",
+        )}
+      >
+        <div
+          className={cn(
+            "flex items-center gap-2",
+            collapsed ? "md:justify-center" : "justify-between",
+          )}
+        >
+          <p
+            className={cn(
+              "text-lg font-semibold",
+              collapsed && "md:hidden",
+            )}
           >
-            {t("nav.home")}
-          </NavLink>
-          <NavLink
-            to="/search"
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
+            {t("app.name")}
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            className="hidden size-8 shrink-0 p-0 md:inline-flex"
+            aria-label={toggleLabel}
+            title={toggleLabel}
+            onClick={toggleCollapsed}
           >
-            {t("nav.search")}
-          </NavLink>
-          <NavLink
-            to="/customers"
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
-          >
-            {t("nav.customers")}
-          </NavLink>
-          <NavLink
-            to="/devices"
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
-          >
-            {t("nav.devices")}
-          </NavLink>
-          <NavLink
-            to="/repairs/intake"
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
-          >
-            {t("nav.intake")}
-          </NavLink>
-          <NavLink
-            to="/repairs"
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
-          >
-            {t("nav.repairs")}
-          </NavLink>
-          <NavLink
-            to="/diagnosis-templates"
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
-          >
-            {t("nav.diagnosisTemplates")}
-          </NavLink>
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              cn(
-                "rounded-md px-3 py-2 text-sm",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-background",
-              )
-            }
-          >
-            {t("nav.settings")}
-          </NavLink>
+            <ToggleIcon className="size-4" aria-hidden />
+          </Button>
+        </div>
+        <nav
+          className={cn(
+            "mt-3 flex gap-1 overflow-x-auto pb-1 md:mt-6 md:flex-col md:overflow-visible md:pb-0",
+            collapsed && "md:items-stretch",
+          )}
+        >
+          {NAV_ITEMS.map((item) => (
+            <NavItem
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              label={t(item.labelKey)}
+              icon={item.icon}
+              collapsed={collapsed}
+            />
+          ))}
         </nav>
       </aside>
-      <div className="min-w-0 flex-1">
-        <Outlet />
+
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
+        <header className="sticky top-0 z-20 border-b border-border bg-surface/95 px-3 py-2 backdrop-blur-sm sm:px-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <LinkButton
+              to="/repairs/intake"
+              className="px-3 py-1.5 text-xs sm:text-sm"
+            >
+              {t("repairs.intake.start")}
+            </LinkButton>
+            <LinkButton
+              to="/search"
+              variant="secondary"
+              className="px-3 py-1.5 text-xs sm:text-sm"
+            >
+              {t("nav.search")}
+            </LinkButton>
+            <LinkButton
+              to="/customers/new"
+              variant="secondary"
+              className="px-3 py-1.5 text-xs sm:text-sm"
+            >
+              {t("customers.actions.new")}
+            </LinkButton>
+            <LinkButton
+              to="/repairs/new"
+              variant="secondary"
+              className="px-3 py-1.5 text-xs sm:text-sm"
+            >
+              {t("repairs.actions.new")}
+            </LinkButton>
+          </div>
+        </header>
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

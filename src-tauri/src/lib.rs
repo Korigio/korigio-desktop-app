@@ -60,6 +60,7 @@ pub fn run() {
             commands::get_repair,
             commands::create_repair,
             commands::update_repair,
+            commands::get_home_dashboard,
             commands::global_search,
             commands::list_diagnosis_templates,
             commands::get_diagnosis_template,

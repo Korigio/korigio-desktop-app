@@ -15,8 +15,8 @@
         "title": "Servioo",
         "width": 1100,
         "height": 720,
-        "minWidth": 900,
-        "minHeight": 600
+        "minWidth": 640,
+        "minHeight": 480
       }
     ],
     "security": {
@@ -29,7 +29,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "nsis"],
+    "targets": ["app", "dmg", "nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

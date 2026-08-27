@@ -8,7 +8,7 @@ Locked in [`src-tauri/tauri.conf.json`](../src-tauri/tauri.conf.json):
 
 | Setting | Value | Why |
 | --- | --- | --- |
-| `bundle.targets` | `["app", "nsis"]` | Customer ship = NSIS on Windows; macOS `.app` for local testing |
+| `bundle.targets` | `["app", "dmg", "nsis"]` | Customer ship = NSIS on Windows; macOS `.app` + `.dmg` for local testing |
 | `windows.webviewInstallMode.type` | `offlineInstaller` | No CDN required at install time (~+127 MB) |
 | `windows.webviewInstallMode.silent` | `true` | Quiet WebView2 bootstrap when missing |
 | `windows.nsis.installMode` | `currentUser` | Typical shop PC without admin elevation |
@@ -28,7 +28,13 @@ macOS app bundle:
 src-tauri/target/release/bundle/macos/Servioo.app
 ```
 
-Drag that into Applications if you want. Customer delivery remains Windows NSIS only.
+macOS disk image (opens the familiar drag-to-Applications window):
+
+```text
+src-tauri/target/release/bundle/dmg/Servioo_*.dmg
+```
+
+Double-click the `.dmg`, then drag **Servioo** into Applications. Customer delivery remains Windows NSIS only.
 
 ## Local / CI build on Windows
 

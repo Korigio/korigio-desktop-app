@@ -14,7 +14,9 @@
     "diagnosisTemplates": "Plantillas de diagnóstico",
     "intake": "Recepción",
     "search": "Buscar",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "collapse": "Contraer barra lateral",
+    "expand": "Expandir barra lateral"
   },
   "common": {
     "loading": "Cargando…",
@@ -26,7 +28,19 @@
   },
   "home": {
     "title": "Inicio",
-    "refresh": "Comprobar conexión"
+    "dashboard": {
+      "title": "Mostrador del taller",
+      "subtitle": "Qué necesita atención ahora",
+      "loadFailed": "No se pudo cargar el panel.",
+      "pipeline": "Reparaciones abiertas por estado",
+      "todayLine": "Hoy: {received} recibidas · {collected} entregadas",
+      "readyTitle": "Listas para recoger",
+      "readyEmpty": "No hay reparaciones pendientes de entrega.",
+      "readyAt": "Lista {date}",
+      "staleTitle": "Estancadas (sin actualización en {days}+ días)",
+      "staleEmpty": "No hay reparaciones abiertas estancadas.",
+      "daysInStatus": "{days}d"
+    }
   },
   "search": {
     "title": "Búsqueda",
