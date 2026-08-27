@@ -6,10 +6,10 @@ use time::OffsetDateTime;
 use crate::error::AppError;
 
 /// (version, sql). Versions must be unique and increasing.
-pub const MIGRATIONS: &[(i64, &str)] = &[(
-    1,
-    include_str!("../../migrations/001_initial.sql"),
-)];
+pub const MIGRATIONS: &[(i64, &str)] = &[
+    (1, include_str!("../../migrations/001_initial.sql")),
+    (2, include_str!("../../migrations/002_search_indexes.sql")),
+];
 
 pub fn run(conn: &Connection) -> Result<(), AppError> {
     conn.execute_batch(
@@ -73,7 +73,7 @@ mod tests {
                 row.get(0)
             })
             .expect("count");
-        assert_eq!(count, 1);
+        assert_eq!(count, 2);
 
         let tables: i64 = conn
             .query_row(
@@ -83,5 +83,14 @@ mod tests {
             )
             .expect("tables");
         assert_eq!(tables, 1);
+
+        let indexes: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'idx_customers_phone'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("indexes");
+        assert_eq!(indexes, 1);
     }
 }

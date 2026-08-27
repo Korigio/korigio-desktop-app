@@ -1,9 +1,16 @@
 import { createContext } from "react";
 import type { Locale } from "@/i18n";
 
+export type LocalePreference = "system" | Locale;
+
 export type I18nContextValue = {
+  /** Active message catalog. */
   locale: Locale;
-  setLocale: (locale: Locale) => void;
+  /** Stored preference (`system` or a fixed locale). */
+  preference: LocalePreference;
+  /** OS locale tag from the backend (best effort). */
+  systemLocale: string;
+  setPreference: (preference: LocalePreference) => Promise<void>;
   t: (key: string) => string;
 };
 

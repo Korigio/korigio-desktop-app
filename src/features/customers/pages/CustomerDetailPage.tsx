@@ -2,6 +2,8 @@ import { CustomerDetailActions } from "@/features/customers/components/CustomerD
 import { CustomerDetailFields } from "@/features/customers/components/CustomerDetailFields";
 import { CustomerLoadState } from "@/features/customers/components/CustomerLoadState";
 import { useCustomerDetail } from "@/features/customers/hooks/useCustomerDetail";
+import { CustomerDevicesSection } from "@/features/devices/components/CustomerDevicesSection";
+import { CustomerRepairsSection } from "@/features/repairs/components/CustomerRepairsSection";
 import { Page, PageHeader } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useNavigate } from "react-router";
@@ -39,6 +41,8 @@ export function CustomerDetailPage({ customerId }: Props) {
         }
       />
       <CustomerDetailFields customer={customer} />
+      <CustomerDevicesSection customerId={customer.id} />
+      <CustomerRepairsSection customerId={customer.id} />
     </Page>
   );
 }
