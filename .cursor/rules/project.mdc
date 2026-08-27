@@ -1,9 +1,9 @@
 ---
-description: Repair Manager project-wide stack, phases, and hard constraints
+description: Servioo project-wide stack, phases, and hard constraints
 alwaysApply: true
 ---
 
-# Repair Manager — project rules
+# Servioo — project rules
 
 ## Stack (locked)
 

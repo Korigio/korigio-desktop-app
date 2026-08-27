@@ -3,6 +3,7 @@ import { DeviceDetailFields } from "@/features/devices/components/DeviceDetailFi
 import { DeviceLoadState } from "@/features/devices/components/DeviceLoadState";
 import { useDeviceDetail } from "@/features/devices/hooks/useDeviceDetail";
 import { deviceLabel } from "@/features/devices/types/device";
+import { DeviceRepairsSection } from "@/features/repairs/components/DeviceRepairsSection";
 import { Page, PageHeader } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useNavigate } from "react-router";
@@ -40,6 +41,10 @@ export function DeviceDetailPage({ deviceId }: Props) {
         }
       />
       <DeviceDetailFields device={device} />
+      <DeviceRepairsSection
+        customerId={device.customerId}
+        deviceId={device.id}
+      />
     </Page>
   );
 }

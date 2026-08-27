@@ -1,10 +1,10 @@
-# AGENTS.md — Repair Manager
+# AGENTS.md — Servioo
 
 AI agents: read this and `docs/` before changing code.
 
 ## Product
 
-Offline Windows desktop repair-shop app (Tauri 2 + React/TS + Rust + SQLite). Working name: Repair Manager.
+Offline Windows desktop repair-shop app (Tauri 2 + React/TS + Rust + SQLite). Product name: **Servioo**.
 
 ## Source of truth
 

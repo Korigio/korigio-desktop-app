@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Repair Manager",
+    "name": "Servioo",
     "running": "Aplicación en ejecución",
     "backendOk": "Backend conectado",
     "backendChecking": "Comprobando backend…",
@@ -10,6 +10,9 @@
     "home": "Inicio",
     "customers": "Clientes",
     "devices": "Dispositivos",
+    "repairs": "Reparaciones",
+    "intake": "Recepción",
+    "search": "Buscar",
     "settings": "Ajustes"
   },
   "common": {
@@ -23,6 +26,19 @@
   "home": {
     "title": "Inicio",
     "refresh": "Comprobar conexión"
+  },
+  "search": {
+    "title": "Búsqueda",
+    "subtitle": "Encuentre clientes, dispositivos y reparaciones en un solo lugar",
+    "placeholder": "Nombre, teléfono, serie, número de reparación…",
+    "prompt": "Escriba para buscar clientes, dispositivos y reparaciones.",
+    "empty": "No se encontraron resultados",
+    "sectionEmpty": "Sin coincidencias en esta sección",
+    "sections": {
+      "customers": "Clientes",
+      "devices": "Dispositivos",
+      "repairs": "Reparaciones"
+    }
   },
   "customers": {
     "title": "Clientes",
@@ -104,6 +120,79 @@
     "validation": {
       "customerRequired": "El cliente es obligatorio.",
       "identityHint": "Indique al menos tipo, fabricante, modelo o número de serie."
+    }
+  },
+  "repairs": {
+    "title": "Reparaciones",
+    "subtitle": "Buscar, crear y gestionar reparaciones",
+    "customerSectionTitle": "Reparaciones",
+    "deviceSectionTitle": "Reparaciones",
+    "createTitle": "Nueva reparación",
+    "createSubtitle": "Registrar una reparación para un cliente y dispositivo",
+    "editTitle": "Editar reparación",
+    "search": "Buscar",
+    "searchPlaceholder": "Número, cliente o dispositivo",
+    "statusFilterAll": "Todos los estados",
+    "empty": "No hay reparaciones",
+    "notFound": "Reparación no encontrada",
+    "invalidId": "Identificador de reparación no válido",
+    "backToList": "Volver a reparaciones",
+    "archivedEditHint": "Desarchive la reparación para poder editarla.",
+    "fields": {
+      "repairNumber": "Número",
+      "status": "Estado",
+      "customer": "Cliente",
+      "customerPlaceholder": "Seleccione un cliente",
+      "device": "Dispositivo",
+      "devicePlaceholder": "Seleccione un dispositivo",
+      "receivedAt": "Fecha de recepción",
+      "reportedProblem": "Problema reportado",
+      "accessoriesReceived": "Accesorios recibidos",
+      "deviceCondition": "Estado del dispositivo",
+      "diagnosisNotes": "Notas de diagnóstico",
+      "workPerformed": "Trabajo realizado",
+      "notes": "Notas",
+      "readyAt": "Fecha listo",
+      "collectedAt": "Fecha de recogida"
+    },
+    "status": {
+      "received": "Recibido",
+      "diagnosis": "Diagnóstico",
+      "waiting_customer": "Esperando al cliente",
+      "waiting_part": "Esperando pieza",
+      "in_repair": "En reparación",
+      "ready": "Listo para recoger",
+      "collected": "Recogido",
+      "cancelled": "Cancelado"
+    },
+    "actions": {
+      "new": "Nueva reparación",
+      "create": "Crear reparación",
+      "save": "Guardar",
+      "edit": "Editar",
+      "cancel": "Cancelar reparación",
+      "changeStatus": "Cambiar estado"
+    },
+    "validation": {
+      "customerRequired": "El cliente es obligatorio.",
+      "deviceRequired": "El dispositivo es obligatorio."
+    },
+    "intake": {
+      "title": "Recepción de reparación",
+      "subtitle": "Entrada rápida con teclado para nuevas reparaciones en mostrador",
+      "start": "Iniciar recepción",
+      "saveAndNext": "Guardar y siguiente",
+      "success": "Reparación {number} creada.",
+      "shortcutHint": "Consejo: Ctrl+Mayús+N abre la recepción desde cualquier lugar. Ctrl+Intro guarda.",
+      "noCustomers": "No hay clientes",
+      "noDevices": "No hay dispositivos",
+      "selectCustomerFirst": "Seleccione un cliente primero",
+      "quickCreateCustomer": "Crear cliente nuevo…",
+      "quickCreateCustomerTitle": "Creación rápida de cliente",
+      "quickCreateDevice": "Crear dispositivo nuevo…",
+      "quickCreateDeviceTitle": "Creación rápida de dispositivo",
+      "cancelQuickCreate": "Cancelar",
+      "problemRequired": "El problema reportado es obligatorio."
     }
   },
   "settings": {
