@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Repair Manager",
+    "name": "Servioo",
     "running": "Application running",
     "backendOk": "Backend connected",
     "backendChecking": "Checking backend…",
@@ -9,7 +9,11 @@
   "nav": {
     "home": "Home",
     "customers": "Customers",
-    "devices": "Devices"
+    "devices": "Devices",
+    "repairs": "Repairs",
+    "intake": "Intake",
+    "search": "Search",
+    "settings": "Settings"
   },
   "common": {
     "loading": "Loading…",
@@ -22,6 +26,19 @@
   "home": {
     "title": "Home",
     "refresh": "Check connection"
+  },
+  "search": {
+    "title": "Search",
+    "subtitle": "Find customers, devices and repairs in one place",
+    "placeholder": "Name, phone, serial, repair number…",
+    "prompt": "Type to search customers, devices and repairs.",
+    "empty": "No results found",
+    "sectionEmpty": "No matches in this section",
+    "sections": {
+      "customers": "Customers",
+      "devices": "Devices",
+      "repairs": "Repairs"
+    }
   },
   "customers": {
     "title": "Customers",
@@ -103,6 +120,92 @@
     "validation": {
       "customerRequired": "Customer is required.",
       "identityHint": "Enter at least a type, manufacturer, model, or serial number."
+    }
+  },
+  "repairs": {
+    "title": "Repairs",
+    "subtitle": "Search, create and manage repairs",
+    "customerSectionTitle": "Repairs",
+    "deviceSectionTitle": "Repairs",
+    "createTitle": "New repair",
+    "createSubtitle": "Register a repair for a customer and device",
+    "editTitle": "Edit repair",
+    "search": "Search",
+    "searchPlaceholder": "Number, customer or device",
+    "statusFilterAll": "All statuses",
+    "empty": "No repairs found",
+    "notFound": "Repair not found",
+    "invalidId": "Invalid repair id",
+    "backToList": "Back to repairs",
+    "archivedEditHint": "Unarchive the repair before editing.",
+    "fields": {
+      "repairNumber": "Number",
+      "status": "Status",
+      "customer": "Customer",
+      "customerPlaceholder": "Select a customer",
+      "device": "Device",
+      "devicePlaceholder": "Select a device",
+      "receivedAt": "Received",
+      "reportedProblem": "Reported problem",
+      "accessoriesReceived": "Accessories received",
+      "deviceCondition": "Device condition",
+      "diagnosisNotes": "Diagnosis notes",
+      "workPerformed": "Work performed",
+      "notes": "Notes",
+      "readyAt": "Ready date",
+      "collectedAt": "Collected date"
+    },
+    "status": {
+      "received": "Received",
+      "diagnosis": "Diagnosis",
+      "waiting_customer": "Waiting for customer",
+      "waiting_part": "Waiting for part",
+      "in_repair": "In repair",
+      "ready": "Ready for pickup",
+      "collected": "Collected",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "new": "New repair",
+      "create": "Create repair",
+      "save": "Save",
+      "edit": "Edit",
+      "cancel": "Cancel repair",
+      "changeStatus": "Change status"
+    },
+    "validation": {
+      "customerRequired": "Customer is required.",
+      "deviceRequired": "Device is required."
+    },
+    "intake": {
+      "title": "Repair intake",
+      "subtitle": "Fast keyboard entry for new repairs at the counter",
+      "start": "Start repair intake",
+      "saveAndNext": "Save and next",
+      "success": "Repair {number} created.",
+      "shortcutHint": "Tip: Ctrl+Shift+N opens intake from anywhere. Ctrl+Enter saves.",
+      "noCustomers": "No customers found",
+      "noDevices": "No devices found",
+      "selectCustomerFirst": "Select a customer first",
+      "quickCreateCustomer": "Create new customer…",
+      "quickCreateCustomerTitle": "Quick create customer",
+      "quickCreateDevice": "Create new device…",
+      "quickCreateDeviceTitle": "Quick create device",
+      "cancelQuickCreate": "Cancel",
+      "problemRequired": "Reported problem is required."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Application preferences for this computer",
+    "language": {
+      "label": "Language",
+      "hint": "“System” follows the language of this computer. Unsupported languages fall back to Spanish.",
+      "system": "System",
+      "de": "German",
+      "es": "Spanish",
+      "en": "English",
+      "error": "Could not save language preference."
     }
   }
 }

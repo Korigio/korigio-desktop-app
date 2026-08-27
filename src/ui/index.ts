@@ -14,6 +14,8 @@ export { PageHeader } from "./molecules/PageHeader";
 export type { PageHeaderProps } from "./molecules/PageHeader";
 export { SearchField } from "./molecules/SearchField";
 export type { SearchFieldProps } from "./molecules/SearchField";
+export { SearchCombobox } from "./molecules/SearchCombobox";
+export type { SearchComboboxProps } from "./molecules/SearchCombobox";
 export { CheckboxField } from "./molecules/CheckboxField";
 export type { CheckboxFieldProps } from "./molecules/CheckboxField";
 export { PaginationBar } from "./molecules/PaginationBar";
