@@ -1,0 +1,66 @@
+mod commands;
+mod db;
+mod domain;
+mod error;
+mod menu;
+mod paths;
+
+use std::sync::Mutex;
+
+use tauri::Manager;
+
+use crate::db::{Db, DbState};
+use crate::paths::AppPaths;
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .setup(|app| {
+            let app_data_dir = app.path().app_data_dir().map_err(|err| {
+                std::io::Error::other(format!("app data dir unavailable: {err}"))
+            })?;
+
+            let paths = AppPaths::from_app_data_dir(app_data_dir).map_err(|err| {
+                eprintln!("failed to prepare app data paths: {err:?}");
+                std::io::Error::other(err.to_string())
+            })?;
+
+            let database = Db::open(paths).map_err(|err| {
+                eprintln!("failed to open database: {err:?}");
+                std::io::Error::other(err.to_string())
+            })?;
+
+            app.manage(DbState(Mutex::new(database)));
+
+            if let Err(err) = menu::install_app_menu(app.handle()) {
+                eprintln!("failed to install application menu: {err}");
+            }
+
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            commands::app_status,
+            commands::db_health,
+            commands::get_locale_settings,
+            commands::set_locale_preference,
+            commands::list_customers,
+            commands::get_customer,
+            commands::create_customer,
+            commands::update_customer,
+            commands::archive_customer,
+            commands::unarchive_customer,
+            commands::list_devices,
+            commands::get_device,
+            commands::create_device,
+            commands::update_device,
+            commands::archive_device,
+            commands::unarchive_device,
+            commands::list_repairs,
+            commands::get_repair,
+            commands::create_repair,
+            commands::update_repair,
+            commands::global_search,
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running Servioo");
+}

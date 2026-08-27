@@ -1,0 +1,37 @@
+---
+description: Rust/Tauri backend — commands, services, repositories, errors, SQL
+globs: src-tauri/**/*
+alwaysApply: false
+---
+
+# Backend rules
+
+## Structure
+
+```text
+commands/     # thin IPC adapters (routes/controllers)
+domain/*/     # constants, types, validation, service, repository
+db/           # connection, migrations
+error.rs      # AppError → safe user message + log detail
+paths.rs      # AppData resolution only
+```
+
+## Layering
+
+1. Commands: parse input → call service → map `AppError`.
+2. Services: business rules, transactions, orchestration.
+3. Repositories: parameterized SQL only; explicit columns.
+4. Cross-domain: call the other domain’s **service**, not its repository.
+
+## Safety
+
+- No `unwrap()` / `expect()` on recoverable paths.
+- Never log PII (phones, addresses, notes, full customer rows).
+- Foreign keys ON; allocate repair numbers inside transactions.
+- Least-privilege Tauri capabilities; no shell; FS only under owned AppData paths.
+- Soft archive for customers/devices; do not hard-delete repair history in v1.
+
+## Testing
+
+- Unit tests for validation/services; integration tests with temporary DBs.
+- Never point automated tests at the real user database.

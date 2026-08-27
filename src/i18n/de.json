@@ -1,0 +1,211 @@
+{
+  "app": {
+    "name": "Servioo",
+    "running": "Anwendung läuft",
+    "backendOk": "Backend verbunden",
+    "backendChecking": "Backend wird geprüft…",
+    "backendError": "Backend nicht erreichbar"
+  },
+  "nav": {
+    "home": "Start",
+    "customers": "Kunden",
+    "devices": "Geräte",
+    "repairs": "Reparaturen",
+    "intake": "Annahme",
+    "search": "Suche",
+    "settings": "Einstellungen"
+  },
+  "common": {
+    "loading": "Laden…",
+    "saving": "Speichern…",
+    "actions": "Aktionen",
+    "prev": "Zurück",
+    "next": "Weiter",
+    "page": "Seite"
+  },
+  "home": {
+    "title": "Start",
+    "refresh": "Verbindung prüfen"
+  },
+  "search": {
+    "title": "Suche",
+    "subtitle": "Kunden, Geräte und Reparaturen an einem Ort finden",
+    "placeholder": "Name, Telefon, Serie, Reparaturnummer…",
+    "prompt": "Tippen, um Kunden, Geräte und Reparaturen zu suchen.",
+    "empty": "Keine Ergebnisse gefunden",
+    "sectionEmpty": "Keine Treffer in diesem Bereich",
+    "sections": {
+      "customers": "Kunden",
+      "devices": "Geräte",
+      "repairs": "Reparaturen"
+    }
+  },
+  "customers": {
+    "title": "Kunden",
+    "subtitle": "Kunden suchen, anlegen und archivieren",
+    "createTitle": "Neuer Kunde",
+    "createSubtitle": "Kundendaten für spätere Reparaturen",
+    "editTitle": "Kunde bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Name, Telefon oder E-Mail",
+    "includeArchived": "Archivierte anzeigen",
+    "empty": "Keine Kunden gefunden",
+    "notFound": "Kunde nicht gefunden",
+    "invalidId": "Ungültige Kunden-ID",
+    "backToList": "Zurück zu Kunden",
+    "archivedEditHint": "Kunde zuerst wiederherstellen, um zu bearbeiten.",
+    "fields": {
+      "name": "Name",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "address": "Adresse",
+      "notes": "Notizen",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Aktiv",
+      "archived": "Archiviert"
+    },
+    "actions": {
+      "new": "Neuer Kunde",
+      "create": "Kunde anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "unarchive": "Wiederherstellen"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich."
+    }
+  },
+  "devices": {
+    "title": "Geräte",
+    "subtitle": "Geräte nach Seriennummer, Marke oder Modell suchen",
+    "customerSectionTitle": "Geräte",
+    "createTitle": "Neues Gerät",
+    "createSubtitle": "Hardware einem Kunden zuordnen",
+    "editTitle": "Gerät bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Serie, Hersteller, Modell oder Typ",
+    "includeArchived": "Archivierte anzeigen",
+    "empty": "Keine Geräte gefunden",
+    "notFound": "Gerät nicht gefunden",
+    "invalidId": "Ungültige Geräte-ID",
+    "backToList": "Zurück zu Geräten",
+    "archivedEditHint": "Gerät zuerst wiederherstellen, um zu bearbeiten.",
+    "fields": {
+      "device": "Gerät",
+      "customer": "Kunde",
+      "customerPlaceholder": "Kunde auswählen",
+      "deviceType": "Typ",
+      "manufacturer": "Hersteller",
+      "model": "Modell",
+      "serialNumber": "Seriennummer",
+      "accessories": "Zubehör",
+      "notes": "Notizen",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Aktiv",
+      "archived": "Archiviert"
+    },
+    "actions": {
+      "new": "Neues Gerät",
+      "create": "Gerät anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "unarchive": "Wiederherstellen"
+    },
+    "validation": {
+      "customerRequired": "Kunde ist erforderlich.",
+      "identityHint": "Mindestens Typ, Hersteller, Modell oder Seriennummer angeben."
+    }
+  },
+  "repairs": {
+    "title": "Reparaturen",
+    "subtitle": "Reparaturen suchen, anlegen und verwalten",
+    "customerSectionTitle": "Reparaturen",
+    "deviceSectionTitle": "Reparaturen",
+    "createTitle": "Neue Reparatur",
+    "createSubtitle": "Reparatur für Kunde und Gerät erfassen",
+    "editTitle": "Reparatur bearbeiten",
+    "search": "Suche",
+    "searchPlaceholder": "Nummer, Kunde oder Gerät",
+    "statusFilterAll": "Alle Status",
+    "empty": "Keine Reparaturen gefunden",
+    "notFound": "Reparatur nicht gefunden",
+    "invalidId": "Ungültige Reparatur-ID",
+    "backToList": "Zurück zu Reparaturen",
+    "archivedEditHint": "Reparatur zuerst wiederherstellen, um zu bearbeiten.",
+    "fields": {
+      "repairNumber": "Nummer",
+      "status": "Status",
+      "customer": "Kunde",
+      "customerPlaceholder": "Kunde auswählen",
+      "device": "Gerät",
+      "devicePlaceholder": "Gerät auswählen",
+      "receivedAt": "Eingangsdatum",
+      "reportedProblem": "Gemeldetes Problem",
+      "accessoriesReceived": "Erhaltenes Zubehör",
+      "deviceCondition": "Gerätezustand",
+      "diagnosisNotes": "Diagnose-Notizen",
+      "workPerformed": "Durchgeführte Arbeit",
+      "notes": "Notizen",
+      "readyAt": "Abholbereit am",
+      "collectedAt": "Abgeholt am"
+    },
+    "status": {
+      "received": "Empfangen",
+      "diagnosis": "Diagnose",
+      "waiting_customer": "Wartet auf Kunde",
+      "waiting_part": "Wartet auf Teil",
+      "in_repair": "In Reparatur",
+      "ready": "Abholbereit",
+      "collected": "Abgeholt",
+      "cancelled": "Storniert"
+    },
+    "actions": {
+      "new": "Neue Reparatur",
+      "create": "Reparatur anlegen",
+      "save": "Speichern",
+      "edit": "Bearbeiten",
+      "cancel": "Reparatur stornieren",
+      "changeStatus": "Status ändern"
+    },
+    "validation": {
+      "customerRequired": "Kunde ist erforderlich.",
+      "deviceRequired": "Gerät ist erforderlich."
+    },
+    "intake": {
+      "title": "Reparatur-Annahme",
+      "subtitle": "Schnelle Tastatureingabe für neue Reparaturen an der Theke",
+      "start": "Annahme starten",
+      "saveAndNext": "Speichern und weiter",
+      "success": "Reparatur {number} angelegt.",
+      "shortcutHint": "Tipp: Strg+Umschalt+N öffnet die Annahme überall. Strg+Eingabe speichert.",
+      "noCustomers": "Keine Kunden gefunden",
+      "noDevices": "Keine Geräte gefunden",
+      "selectCustomerFirst": "Zuerst Kunde auswählen",
+      "quickCreateCustomer": "Neuen Kunden anlegen…",
+      "quickCreateCustomerTitle": "Kunde schnell anlegen",
+      "quickCreateDevice": "Neues Gerät anlegen…",
+      "quickCreateDeviceTitle": "Gerät schnell anlegen",
+      "cancelQuickCreate": "Abbrechen",
+      "problemRequired": "Gemeldetes Problem ist erforderlich."
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Anwendungseinstellungen für diesen Computer",
+    "language": {
+      "label": "Sprache",
+      "hint": "„System“ folgt der Computersprache. Nicht unterstützte Sprachen fallen auf Spanisch zurück.",
+      "system": "System",
+      "de": "Deutsch",
+      "es": "Spanisch",
+      "en": "Englisch",
+      "error": "Spracheinstellung konnte nicht gespeichert werden."
+    }
+  }
+}
