@@ -171,6 +171,7 @@
       "create": "Create repair",
       "save": "Save",
       "edit": "Edit",
+      "print": "Print",
       "cancel": "Cancel repair",
       "changeStatus": "Change status"
     },
@@ -279,6 +280,57 @@
         "restoreFailed": "Could not restore backup.",
         "invalidPackage": "This backup package is not valid."
       }
+    },
+    "devSeed": {
+      "title": "Developer seed data",
+      "subtitle": "Insert synthetic customers, devices and repairs for performance checks. Debug builds only.",
+      "success": "Seeded {customers} customers, {devices} devices, {repairs} repairs in {ms} ms.",
+      "error": "Seed failed.",
+      "fullConfirm": "Insert ~10k customers, 20k devices and 50k repairs? This can take a while and grow the database.",
+      "actions": {
+        "small": "Seed sample (100 / 200 / 500)",
+        "full": "Seed full measure set (10k / 20k / 50k)"
+      }
+    }
+  },
+  "print": {
+    "title": "Repair report",
+    "emptyValue": "—",
+    "yes": "Yes",
+    "no": "No",
+    "noDiagnosis": "No diagnosis checklist on this repair.",
+    "sections": {
+      "customer": "Customer",
+      "device": "Device",
+      "repair": "Repair",
+      "diagnosis": "Diagnosis"
+    },
+    "fields": {
+      "status": "Status",
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "deviceType": "Type",
+      "manufacturer": "Manufacturer",
+      "model": "Model",
+      "serialNumber": "Serial number",
+      "receivedAt": "Received",
+      "reportedProblem": "Reported problem",
+      "accessoriesReceived": "Accessories",
+      "deviceCondition": "Condition",
+      "diagnosisNotes": "Diagnosis notes",
+      "workPerformed": "Work performed",
+      "notes": "Notes",
+      "readyAt": "Ready",
+      "collectedAt": "Collected"
+    },
+    "actions": {
+      "print": "Print",
+      "close": "Back to repair"
+    },
+    "errors": {
+      "loadFailed": "Could not load the print report."
     }
   },
   "images": {

@@ -171,6 +171,7 @@
       "create": "Crear reparación",
       "save": "Guardar",
       "edit": "Editar",
+      "print": "Imprimir",
       "cancel": "Cancelar reparación",
       "changeStatus": "Cambiar estado"
     },
@@ -279,6 +280,57 @@
         "restoreFailed": "No se pudo restaurar la copia.",
         "invalidPackage": "Este paquete de copia no es válido."
       }
+    },
+    "devSeed": {
+      "title": "Datos de prueba (desarrollo)",
+      "subtitle": "Inserta clientes, dispositivos y reparaciones sintéticos para pruebas de rendimiento. Solo en builds de depuración.",
+      "success": "Insertados {customers} clientes, {devices} dispositivos, {repairs} reparaciones en {ms} ms.",
+      "error": "Error al insertar datos.",
+      "fullConfirm": "¿Insertar ~10k clientes, 20k dispositivos y 50k reparaciones? Puede tardar y aumentar la base de datos.",
+      "actions": {
+        "small": "Muestra (100 / 200 / 500)",
+        "full": "Conjunto completo (10k / 20k / 50k)"
+      }
+    }
+  },
+  "print": {
+    "title": "Informe de reparación",
+    "emptyValue": "—",
+    "yes": "Sí",
+    "no": "No",
+    "noDiagnosis": "No hay lista de diagnóstico en esta reparación.",
+    "sections": {
+      "customer": "Cliente",
+      "device": "Dispositivo",
+      "repair": "Reparación",
+      "diagnosis": "Diagnóstico"
+    },
+    "fields": {
+      "status": "Estado",
+      "name": "Nombre",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "address": "Dirección",
+      "deviceType": "Tipo",
+      "manufacturer": "Fabricante",
+      "model": "Modelo",
+      "serialNumber": "Número de serie",
+      "receivedAt": "Recibido",
+      "reportedProblem": "Problema reportado",
+      "accessoriesReceived": "Accesorios",
+      "deviceCondition": "Estado del dispositivo",
+      "diagnosisNotes": "Notas de diagnóstico",
+      "workPerformed": "Trabajo realizado",
+      "notes": "Notas",
+      "readyAt": "Listo",
+      "collectedAt": "Entregado"
+    },
+    "actions": {
+      "print": "Imprimir",
+      "close": "Volver a la reparación"
+    },
+    "errors": {
+      "loadFailed": "No se pudo cargar el informe."
     }
   },
   "images": {

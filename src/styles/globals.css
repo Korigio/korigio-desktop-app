@@ -15,3 +15,24 @@
     color: var(--color-foreground);
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .print-sheet {
+    max-width: none !important;
+    box-shadow: none !important;
+  }
+}

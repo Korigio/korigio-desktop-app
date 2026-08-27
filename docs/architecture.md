@@ -75,5 +75,7 @@ See [coding-standards.md](coding-standards.md) for file placement and dependency
 - [security.md](security.md)
 - [backup.md](backup.md)
 - [performance.md](performance.md)
+- [installer.md](installer.md)
+- [qa-checklist.md](qa-checklist.md)
 - [roadmap.md](roadmap.md)
 - [decisions/](decisions/)

@@ -78,6 +78,8 @@ pub fn run() {
             commands::restore_backup,
             commands::list_local_backups,
             commands::run_auto_backup_if_due,
+            commands::get_repair_print_report,
+            commands::seed_synthetic_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Servioo");
