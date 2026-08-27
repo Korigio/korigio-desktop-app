@@ -255,6 +255,57 @@
       "es": "Español",
       "en": "Inglés",
       "error": "No se pudo guardar la preferencia de idioma."
+    },
+    "backup": {
+      "title": "Copia de seguridad y restauración",
+      "subtitle": "Cree copias portátiles de la base de datos y las fotos. La restauración reemplaza los datos actuales tras una copia de seguridad de seguridad.",
+      "localList": "Copias locales",
+      "empty": "Aún no hay copias locales.",
+      "createSuccess": "Copia creada: {path}",
+      "restoreConfirm": "La restauración reemplazará la base de datos y las fotos actuales. Primero se creará una copia de seguridad de seguridad. ¿Continuar?",
+      "restoreSuccess": "Restaurado desde {from}. Copia de seguridad: {safety}",
+      "actions": {
+        "create": "Crear copia",
+        "restore": "Restaurar copia"
+      },
+      "kind": {
+        "manual": "Manual",
+        "auto": "Automática",
+        "safety": "Seguridad"
+      },
+      "errors": {
+        "listFailed": "No se pudieron listar las copias.",
+        "createFailed": "No se pudo crear la copia.",
+        "restoreFailed": "No se pudo restaurar la copia.",
+        "invalidPackage": "Este paquete de copia no es válido."
+      }
+    }
+  },
+  "images": {
+    "sectionTitle": "Fotos",
+    "empty": "Aún no hay fotos. Añada archivos JPEG o PNG desde el disco.",
+    "thumbAlt": "Foto de la reparación",
+    "thumbMissing": "Vista previa no disponible",
+    "lightboxTitle": "Foto a tamaño completo",
+    "addSuccess": "Fotos añadidas.",
+    "captionSaved": "Leyenda guardada.",
+    "deleteConfirm": "¿Eliminar esta foto de la reparación?",
+    "deleteSuccess": "Foto eliminada.",
+    "fields": {
+      "caption": "Leyenda"
+    },
+    "actions": {
+      "add": "Añadir fotos",
+      "saveCaption": "Guardar leyenda",
+      "delete": "Eliminar"
+    },
+    "errors": {
+      "loadFailed": "No se pudieron cargar las fotos.",
+      "attachFailed": "No se pudieron añadir las fotos.",
+      "updateFailed": "No se pudo actualizar la foto.",
+      "deleteFailed": "No se pudo eliminar la foto.",
+      "resolveFailed": "No se pudo abrir la foto.",
+      "limitReached": "Esta reparación ya tiene el máximo de fotos."
     }
   }
 }

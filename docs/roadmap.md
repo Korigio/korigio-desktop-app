@@ -15,8 +15,8 @@ Do not combine phases without permission. Do not implement unsolicited features.
 | 6 | Repair workflow UI | **Done** — keyboard intake flow, search comboboxes, Save & next |
 | 7 | Search | **Done** — global search, multi-field repairs list, indexes |
 | 8 | Diagnosis templates | **Done** — reusable checklists, apply on repair |
-| 9 | Images | FS storage, thumbs, lazy load |
-| 10 | Backup and restore | Manual + validation + safety backup |
+| 9 | Images | **Done** — FS storage, thumbs, lazy load |
+| 10 | Backup and restore | **Done** — Manual + validation + safety backup |
 | 11 | Printing | First A4 report |
 | 12 | Security hardening | Capabilities, CSP, encryption decision |
 | 13 | Performance hardening | Synthetic data + measure + fix |

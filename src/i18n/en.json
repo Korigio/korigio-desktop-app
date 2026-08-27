@@ -255,6 +255,57 @@
       "es": "Spanish",
       "en": "English",
       "error": "Could not save language preference."
+    },
+    "backup": {
+      "title": "Backup and restore",
+      "subtitle": "Create portable backups of the database and repair photos. Restore replaces current data after a safety backup.",
+      "localList": "Local backups",
+      "empty": "No local backups yet.",
+      "createSuccess": "Backup created: {path}",
+      "restoreConfirm": "Restore will replace the current database and photos. A safety backup of today’s data will be created first. Continue?",
+      "restoreSuccess": "Restored from {from}. Safety backup: {safety}",
+      "actions": {
+        "create": "Create backup",
+        "restore": "Restore backup"
+      },
+      "kind": {
+        "manual": "Manual",
+        "auto": "Automatic",
+        "safety": "Safety"
+      },
+      "errors": {
+        "listFailed": "Could not list backups.",
+        "createFailed": "Could not create backup.",
+        "restoreFailed": "Could not restore backup.",
+        "invalidPackage": "This backup package is not valid."
+      }
+    }
+  },
+  "images": {
+    "sectionTitle": "Photos",
+    "empty": "No photos yet. Add JPEG or PNG files from disk.",
+    "thumbAlt": "Repair photo",
+    "thumbMissing": "Preview unavailable",
+    "lightboxTitle": "Full-size photo",
+    "addSuccess": "Photos added.",
+    "captionSaved": "Caption saved.",
+    "deleteConfirm": "Delete this photo from the repair?",
+    "deleteSuccess": "Photo deleted.",
+    "fields": {
+      "caption": "Caption"
+    },
+    "actions": {
+      "add": "Add photos",
+      "saveCaption": "Save caption",
+      "delete": "Delete"
+    },
+    "errors": {
+      "loadFailed": "Could not load photos.",
+      "attachFailed": "Could not add photos.",
+      "updateFailed": "Could not update photo.",
+      "deleteFailed": "Could not delete photo.",
+      "resolveFailed": "Could not open photo.",
+      "limitReached": "This repair already has the maximum number of photos."
     }
   }
 }

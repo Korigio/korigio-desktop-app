@@ -9,7 +9,7 @@ Settings → Backup → Create backup.
 Produces a single portable package, e.g.:
 
 ```text
-RepairManager-YYYY-MM-DD-HHmm.backup
+Servioo-YYYY-MM-DD-HHmm.backup
 ```
 
 (ZIP with custom extension or documented ZIP layout.)

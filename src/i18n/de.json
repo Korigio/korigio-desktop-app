@@ -255,6 +255,57 @@
       "es": "Spanisch",
       "en": "Englisch",
       "error": "Spracheinstellung konnte nicht gespeichert werden."
+    },
+    "backup": {
+      "title": "Sicherung und Wiederherstellung",
+      "subtitle": "Erstellen Sie portable Sicherungen von Datenbank und Fotos. Die Wiederherstellung ersetzt aktuelle Daten nach einer Sicherheitssicherung.",
+      "localList": "Lokale Sicherungen",
+      "empty": "Noch keine lokalen Sicherungen.",
+      "createSuccess": "Sicherung erstellt: {path}",
+      "restoreConfirm": "Die Wiederherstellung ersetzt die aktuelle Datenbank und Fotos. Zuerst wird eine Sicherheitssicherung erstellt. Fortfahren?",
+      "restoreSuccess": "Wiederhergestellt von {from}. Sicherheitssicherung: {safety}",
+      "actions": {
+        "create": "Sicherung erstellen",
+        "restore": "Sicherung wiederherstellen"
+      },
+      "kind": {
+        "manual": "Manuell",
+        "auto": "Automatisch",
+        "safety": "Sicherheit"
+      },
+      "errors": {
+        "listFailed": "Sicherungen konnten nicht geladen werden.",
+        "createFailed": "Sicherung konnte nicht erstellt werden.",
+        "restoreFailed": "Sicherung konnte nicht wiederhergestellt werden.",
+        "invalidPackage": "Dieses Sicherungspaket ist ungültig."
+      }
+    }
+  },
+  "images": {
+    "sectionTitle": "Fotos",
+    "empty": "Noch keine Fotos. JPEG- oder PNG-Dateien von der Festplatte hinzufügen.",
+    "thumbAlt": "Reparaturfoto",
+    "thumbMissing": "Vorschau nicht verfügbar",
+    "lightboxTitle": "Foto in voller Größe",
+    "addSuccess": "Fotos hinzugefügt.",
+    "captionSaved": "Beschriftung gespeichert.",
+    "deleteConfirm": "Dieses Foto von der Reparatur löschen?",
+    "deleteSuccess": "Foto gelöscht.",
+    "fields": {
+      "caption": "Beschriftung"
+    },
+    "actions": {
+      "add": "Fotos hinzufügen",
+      "saveCaption": "Beschriftung speichern",
+      "delete": "Löschen"
+    },
+    "errors": {
+      "loadFailed": "Fotos konnten nicht geladen werden.",
+      "attachFailed": "Fotos konnten nicht hinzugefügt werden.",
+      "updateFailed": "Foto konnte nicht aktualisiert werden.",
+      "deleteFailed": "Foto konnte nicht gelöscht werden.",
+      "resolveFailed": "Foto konnte nicht geöffnet werden.",
+      "limitReached": "Diese Reparatur hat bereits die maximale Anzahl Fotos."
     }
   }
 }

@@ -15,6 +15,7 @@ use crate::paths::AppPaths;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir().map_err(|err| {
                 std::io::Error::other(format!("app data dir unavailable: {err}"))
@@ -67,6 +68,16 @@ pub fn run() {
             commands::delete_diagnosis_template,
             commands::get_repair_diagnosis,
             commands::upsert_repair_diagnosis,
+            commands::list_repair_images,
+            commands::attach_repair_images,
+            commands::update_repair_image,
+            commands::delete_repair_image,
+            commands::resolve_repair_image_path,
+            commands::create_backup,
+            commands::validate_backup,
+            commands::restore_backup,
+            commands::list_local_backups,
+            commands::run_auto_backup_if_due,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Servioo");
