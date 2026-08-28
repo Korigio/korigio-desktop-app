@@ -3,7 +3,7 @@
 use tauri::State;
 
 use crate::db::DbState;
-use crate::domain::print::{self, RepairPrintReport};
+use crate::domain::print::{self, DiagnosisPrintReport, RepairPrintReport, SummaryPrintReport};
 use crate::error::{AppError, CommandError};
 
 fn lock_db<'a>(
@@ -21,4 +21,22 @@ pub fn get_repair_print_report(
 ) -> Result<RepairPrintReport, CommandError> {
     let db = lock_db(&state)?;
     Ok(print::get_repair_print_report(&db, repair_id)?)
+}
+
+#[tauri::command(rename_all = "camelCase")]
+pub fn get_repair_diagnosis_print_report(
+    state: State<'_, DbState>,
+    repair_id: i64,
+) -> Result<DiagnosisPrintReport, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(print::get_repair_diagnosis_print_report(&db, repair_id)?)
+}
+
+#[tauri::command(rename_all = "camelCase")]
+pub fn get_repair_summary_print_report(
+    state: State<'_, DbState>,
+    repair_id: i64,
+) -> Result<SummaryPrintReport, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(print::get_repair_summary_print_report(&db, repair_id)?)
 }

@@ -5,6 +5,7 @@ export const REPAIR_STATUSES = [
   "waiting_part",
   "in_repair",
   "ready",
+  "awaiting_pickup",
   "collected",
   "cancelled",
 ] as const;
@@ -27,11 +28,32 @@ export type Repair = {
   diagnosisNotes: string | null;
   workPerformed: string | null;
   notes: string | null;
+  /** Pre-tax estimate in integer cents; null until first set via diagnosis flow. */
+  estimateBaseCents: number | null;
+  /** Tax rate snapshotted at estimate time, in basis points (e.g. 19% → 1900). */
+  estimateTaxRateBps: number | null;
+  estimateTaxCents: number | null;
+  estimateGrossCents: number | null;
   readyAt: string | null;
   collectedAt: string | null;
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
+};
+
+export type CompleteDiagnosisMode = "draft" | "finalize";
+
+export type CompleteRepairDiagnosisInput = {
+  repairId: number;
+  mode: CompleteDiagnosisMode;
+  diagnosisNotes: string | null;
+  expectedPickupAt: string | null;
+  /** Null only when the repair has never had an estimate; clearing is rejected. */
+  estimateBaseCents: number | null;
+};
+
+export type CompleteRepairDiagnosisResult = {
+  repair: Repair;
 };
 
 export type RepairInput = {
@@ -58,8 +80,12 @@ export type RepairListQuery = {
   pageSize?: number;
 };
 
+export type RepairListItem = Repair & {
+  customerName: string;
+};
+
 export type RepairListResult = {
-  items: Repair[];
+  items: RepairListItem[];
   total: number;
   page: number;
   pageSize: number;

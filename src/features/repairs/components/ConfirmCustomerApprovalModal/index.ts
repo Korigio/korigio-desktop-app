@@ -1,0 +1,1 @@
+export { ConfirmCustomerApprovalModal } from "./ConfirmCustomerApprovalModal";

@@ -45,10 +45,6 @@ export function DeviceRepairsSection({ customerId, deviceId }: Props) {
           repairs={list.result?.items ?? []}
           showCustomerLink={false}
           showDeviceLink={false}
-          statusUpdatingId={list.statusUpdatingId}
-          onStatusChange={(repair, nextStatus) => {
-            void list.updateStatus(repair, nextStatus);
-          }}
         />
       )}
 

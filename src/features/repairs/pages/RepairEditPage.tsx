@@ -37,6 +37,7 @@ function RepairEditForm({ repair }: { repair: Repair }) {
         disabled={isArchived}
         lockCustomer
         lockDevice
+        hideStatus
       />
       {isArchived ? (
         <StatusMessage>{t("repairs.archivedEditHint")}</StatusMessage>

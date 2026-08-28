@@ -5,29 +5,28 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { Link } from "react-router";
-import { RepairStatusSelect } from "@/features/repairs/components/RepairStatusSelect";
-import type { Repair, RepairStatus } from "@/features/repairs/types/repair";
+import type { RepairListItem } from "@/features/repairs/types/repair";
+import {
+  repairWorkflowActionKey,
+  workflowActionHref,
+} from "@/features/repairs/utils/repairWorkflow";
 import { DataTable } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
-  repairs: Repair[];
+  repairs: RepairListItem[];
   showCustomerLink?: boolean;
   showDeviceLink?: boolean;
-  onStatusChange?: (repair: Repair, status: RepairStatus) => void;
-  statusUpdatingId?: number | null;
 };
 
 export function RepairTable({
   repairs,
   showCustomerLink = true,
   showDeviceLink = true,
-  onStatusChange,
-  statusUpdatingId = null,
 }: Props) {
   const { t } = useI18n();
 
-  const columns: ColumnDef<Repair>[] = [
+  const columns: ColumnDef<RepairListItem>[] = [
     {
       accessorKey: "repairNumber",
       header: t("repairs.fields.repairNumber"),
@@ -43,33 +42,22 @@ export function RepairTable({
     {
       accessorKey: "status",
       header: t("repairs.fields.status"),
-      cell: ({ row }) =>
-        onStatusChange ? (
-          <RepairStatusSelect
-            disabled={statusUpdatingId === row.original.id}
-            value={row.original.status}
-            onChange={(nextStatus) =>
-              onStatusChange(row.original, nextStatus)
-            }
-          />
-        ) : (
-          t(`repairs.status.${row.original.status}`)
-        ),
+      cell: ({ row }) => t(`repairs.status.${row.original.status}`),
     },
     ...(showCustomerLink
       ? [
           {
             id: "customer",
             header: t("repairs.fields.customer"),
-            cell: ({ row }: { row: { original: Repair } }) => (
+            cell: ({ row }: { row: { original: RepairListItem } }) => (
               <Link
                 className="text-primary hover:underline"
                 to={`/customers/${row.original.customerId}`}
               >
-                #{row.original.customerId}
+                {row.original.customerName}
               </Link>
             ),
-          } satisfies ColumnDef<Repair>,
+          } satisfies ColumnDef<RepairListItem>,
         ]
       : []),
     ...(showDeviceLink
@@ -77,7 +65,7 @@ export function RepairTable({
           {
             id: "device",
             header: t("repairs.fields.device"),
-            cell: ({ row }: { row: { original: Repair } }) => (
+            cell: ({ row }: { row: { original: RepairListItem } }) => (
               <Link
                 className="text-primary hover:underline"
                 to={`/devices/${row.original.deviceId}`}
@@ -85,13 +73,32 @@ export function RepairTable({
                 #{row.original.deviceId}
               </Link>
             ),
-          } satisfies ColumnDef<Repair>,
+          } satisfies ColumnDef<RepairListItem>,
         ]
       : []),
     {
       accessorKey: "receivedAt",
       header: t("repairs.fields.receivedAt"),
       cell: ({ getValue }) => getValue<string>() ?? "—",
+    },
+    {
+      id: "actions",
+      header: t("repairs.fields.actions"),
+      cell: ({ row }) => {
+        const actionKey = repairWorkflowActionKey(row.original);
+        if (!actionKey) {
+          return "—";
+        }
+        const label = t(`repairs.workflow.actions.${actionKey}`);
+        return (
+          <Link
+            className="font-medium text-primary hover:underline"
+            to={workflowActionHref(row.original.id, actionKey)}
+          >
+            {label}
+          </Link>
+        );
+      },
     },
   ];
 

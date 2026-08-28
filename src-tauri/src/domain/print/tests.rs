@@ -11,9 +11,13 @@ use crate::domain::diagnosis::types::{
     DiagnosisResult, DiagnosisResultItem, RepairDiagnosisInput,
 };
 use crate::domain::diagnosis::upsert_repair_diagnosis;
-use crate::domain::print::get_repair_print_report;
+use crate::domain::print::{get_repair_diagnosis_print_report, get_repair_print_report, get_repair_summary_print_report};
+use crate::domain::repairs::types::CompleteDiagnosisMode;
+use crate::domain::repairs::{
+    CompleteRepairDiagnosisInput, RepairInput, complete_repair_diagnosis, create_repair,
+};
 use crate::domain::print::types::PrintDiagnosisValue;
-use crate::domain::repairs::{RepairInput, create_repair};
+use crate::domain::settings::{ShopSettingsInput, set_shop_settings};
 use crate::error::AppError;
 
 
@@ -154,4 +158,80 @@ fn print_report_missing_repair_is_not_found() {
     let db = Db::open_in_memory().expect("db");
     let err = get_repair_print_report(&db, 999_999).expect_err("missing");
     assert!(matches!(err, AppError::NotFound));
+}
+
+#[test]
+fn diagnosis_print_report_includes_estimate_and_currency() {
+    let db = Db::open_in_memory().expect("db");
+    let (repair_id, repair_number) = seed_repair(&db);
+
+    set_shop_settings(
+        db.conn(),
+        ShopSettingsInput {
+            tax_rate_percent: None,
+            currency: Some("CHF".into()),
+        },
+    )
+    .expect("currency");
+
+    complete_repair_diagnosis(
+        db.conn(),
+        CompleteRepairDiagnosisInput {
+            repair_id,
+            mode: CompleteDiagnosisMode::Finalize,
+            diagnosis_notes: Some("Needs board".into()),
+            expected_pickup_at: Some("2026-10-01".into()),
+            estimate_base_cents: Some(10_000),
+        },
+    )
+    .expect("diagnose");
+
+    let report = get_repair_diagnosis_print_report(&db, repair_id).expect("report");
+    assert_eq!(report.repair.repair_number, repair_number);
+    assert_eq!(report.repair.status, "waiting_customer");
+    assert_eq!(report.repair.diagnosis_notes.as_deref(), Some("Needs board"));
+    assert_eq!(report.repair.expected_pickup_at.as_deref(), Some("2026-10-01"));
+    assert_eq!(report.repair.estimate_base_cents, Some(10_000));
+    assert_eq!(report.repair.estimate_tax_rate_bps, Some(1_900));
+    assert_eq!(report.repair.estimate_tax_cents, Some(1_900));
+    assert_eq!(report.repair.estimate_gross_cents, Some(11_900));
+    assert_eq!(report.currency, "CHF");
+    assert_eq!(report.customer.name, "Print Customer");
+    let company = report.company.expect("company");
+    assert_eq!(company.legal_name, "Test Company");
+}
+
+#[test]
+fn summary_print_report_includes_work_and_dates() {
+    let db = Db::open_in_memory().expect("db");
+    let (repair_id, repair_number) = seed_repair(&db);
+
+    set_shop_settings(
+        db.conn(),
+        ShopSettingsInput {
+            tax_rate_percent: None,
+            currency: Some("EUR".into()),
+        },
+    )
+    .expect("currency");
+
+    complete_repair_diagnosis(
+        db.conn(),
+        CompleteRepairDiagnosisInput {
+            repair_id,
+            mode: CompleteDiagnosisMode::Finalize,
+            diagnosis_notes: Some("Screen fault".into()),
+            expected_pickup_at: Some("2026-10-05".into()),
+            estimate_base_cents: Some(8_000),
+        },
+    )
+    .expect("diagnose");
+
+    let report = get_repair_summary_print_report(&db, repair_id).expect("report");
+    assert_eq!(report.repair.repair_number, repair_number);
+    assert_eq!(report.repair.reported_problem.as_deref(), Some("Won't boot"));
+    assert_eq!(report.repair.expected_pickup_at.as_deref(), Some("2026-10-05"));
+    assert_eq!(report.repair.estimate_gross_cents, Some(9_520));
+    assert_eq!(report.currency, "EUR");
+    assert_eq!(report.customer.name, "Print Customer");
 }

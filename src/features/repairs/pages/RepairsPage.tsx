@@ -57,13 +57,7 @@ export function RepairsPage() {
       {list.loading ? (
         <StatusMessage>{t("common.loading")}</StatusMessage>
       ) : (
-        <RepairTable
-          repairs={list.result?.items ?? []}
-          statusUpdatingId={list.statusUpdatingId}
-          onStatusChange={(repair, nextStatus) => {
-            void list.updateStatus(repair, nextStatus);
-          }}
-        />
+        <RepairTable repairs={list.result?.items ?? []} />
       )}
 
       <PaginationBar

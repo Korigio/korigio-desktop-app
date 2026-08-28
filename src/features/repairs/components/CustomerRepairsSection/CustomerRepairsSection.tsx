@@ -41,10 +41,6 @@ export function CustomerRepairsSection({ customerId }: Props) {
         <RepairTable
           repairs={list.result?.items ?? []}
           showCustomerLink={false}
-          statusUpdatingId={list.statusUpdatingId}
-          onStatusChange={(repair, nextStatus) => {
-            void list.updateStatus(repair, nextStatus);
-          }}
         />
       )}
 

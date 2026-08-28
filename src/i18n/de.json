@@ -210,6 +210,34 @@
     "invalidId": "Ungültige Reparatur-ID",
     "backToList": "Zurück zu Reparaturen",
     "archivedEditHint": "Reparatur zuerst wiederherstellen, um zu bearbeiten.",
+    "detail": {
+      "subtitle": "Reparaturübersicht und Werkstattfortschritt",
+      "archived": "Diese Reparatur ist archiviert.",
+      "progressLabel": "Reparaturfortschritt",
+      "progressPercent": "{percent}% abgeschlossen",
+      "progressCancelled": "Storniert",
+      "diagnosisPendingHint": "Diagnose noch nicht abgeschlossen — Befunde und Kostenvoranschlag ergänzen, dann für Kundenfreigabe abschließen.",
+      "intakePendingHint": "Optional: Laden Sie das unterschriebene Annahmedokument hoch und fahren Sie fort, um mit der Diagnose zu beginnen.",
+      "diagnosisCompleteHint": "Diagnose für diese Reparatur gespeichert. Zum Anpassen von Befunden oder Kostenvoranschlag „Diagnose anpassen“ nutzen.",
+      "diagnosisLockedHint": "Diese Reparatur ist abgeschlossen. Die Diagnose kann nicht mehr geändert werden.",
+      "completedMessage": "Diese Reparatur ist abgeschlossen. Der Kunde hat das Gerät abgeholt.",
+      "sections": {
+        "client": "Kunde",
+        "entrance": "Annahme",
+        "diagnosis": "Diagnose & Kostenvoranschlag",
+        "photos": "Fotos"
+      },
+      "progressStep": {
+        "received": "Empfang",
+        "signedIntake": "Annahme signiert",
+        "diagnosis": "Diagnose",
+        "waiting_customer": "Warten",
+        "waiting_part": "Teile",
+        "in_repair": "Reparatur",
+        "signedSummary": "Signierte Zusammenfassung",
+        "collected": "Fertig"
+      }
+    },
     "fields": {
       "repairNumber": "Nummer",
       "status": "Status",
@@ -227,7 +255,8 @@
       "notes": "Notizen",
       "expectedPickupAt": "Mögliches Abholdatum",
       "readyAt": "Abholbereit am",
-      "collectedAt": "Abgeholt am"
+      "collectedAt": "Abgeholt am",
+      "actions": "Aktionen"
     },
     "status": {
       "received": "Empfangen",
@@ -235,7 +264,8 @@
       "waiting_customer": "Wartet auf Kunde",
       "waiting_part": "Wartet auf Teil",
       "in_repair": "In Reparatur",
-      "ready": "Abholbereit",
+      "ready": "Bereit",
+      "awaiting_pickup": "Abholbereit",
       "collected": "Abgeholt",
       "cancelled": "Storniert"
     },
@@ -246,7 +276,9 @@
       "edit": "Bearbeiten",
       "print": "Drucken",
       "cancel": "Reparatur stornieren",
-      "changeStatus": "Status ändern"
+      "changeStatus": "Status ändern",
+      "diagnose": "Diagnose",
+      "adjustDiagnosis": "Diagnose anpassen"
     },
     "validation": {
       "companyRequired": "Firma ist erforderlich.",
@@ -294,7 +326,232 @@
         "repairCreated": "Reparatur {number} angelegt.",
         "printEntrance": "Annahmebeleg drucken",
         "openRepair": "Reparatur öffnen",
-        "startAnother": "Weitere Annahme"
+        "startAnother": "Weitere Annahme",
+        "diagnose": "Reparatur diagnostizieren"
+      }
+    },
+    "diagnosisFlow": {
+      "title": "Diagnose",
+      "titleAdjust": "Diagnose anpassen",
+      "subtitle": "Reparatur {number}",
+      "templateHeading": "Checklisten-Vorlage",
+      "estimateHeading": "Kostenvoranschlag",
+      "noTemplates": "Noch keine Diagnosevorlagen. Erstellen Sie welche unter Diagnosevorlagen.",
+      "archivedHint": "Diese Reparatur ist archiviert. Die Diagnose kann nicht bearbeitet werden.",
+      "cancelledHint": "Diese Reparatur ist storniert. Die Diagnose kann nicht bearbeitet werden.",
+      "estimateHint": "Geben Sie den Nettobetrag ohne Steuer ein. Die Steuer wird aus den Werkstatteinstellungen berechnet.",
+      "estimateLockedHint": "Es ist bereits ein Kostenvoranschlag gespeichert. Der Betrag kann geändert, aber nicht gelöscht werden.",
+      "estimatePreviewInvalid": "Geben Sie einen gültigen Betrag ein.",
+      "applyToNotesSuccess": "Checkliste in die Befunde übernommen.",
+      "draftSuccess": "Diagnose-Entwurf gespeichert.",
+      "finalizeSuccess": "Diagnose abgeschlossen. Status: Warten auf Kunde.",
+      "fields": {
+        "findings": "Befunde",
+        "template": "Vorlage",
+        "estimate": "Kostenvoranschlag",
+        "estimateBase": "Netto-Kostenvoranschlag ({currency})",
+        "taxRate": "Steuersatz",
+        "tax": "Steuer",
+        "gross": "Gesamt (inkl. Steuer)"
+      },
+      "actions": {
+        "loadTemplate": "Vorlage laden",
+        "applyToNotes": "Checkliste in Befunde übernehmen",
+        "saveDraft": "Entwurf speichern",
+        "saveChanges": "Änderungen speichern",
+        "finalize": "Diagnose abschließen",
+        "print": "Diagnose drucken",
+        "backToRepair": "Zurück zur Reparatur"
+      },
+      "summary": {
+        "title": "Diagnose",
+        "empty": "Noch keine Diagnose oder kein Kostenvoranschlag.",
+        "estimateTaxLine": "Steuer {tax} ({rate}%)",
+        "estimateGrossLine": "Gesamt {gross}"
+      },
+      "errors": {
+        "loadFailed": "Diagnose konnte nicht geladen werden.",
+        "selectTemplateFirst": "Zuerst eine Vorlage auswählen.",
+        "loadTemplateFailed": "Vorlage konnte nicht geladen werden.",
+        "nothingToApply": "Nichts zum Übernehmen. Zuerst Vorlage laden und Checkliste ausfüllen.",
+        "estimateRequired": "Vor dem Abschließen einen Netto-Kostenvoranschlag eingeben.",
+        "estimateInvalid": "Gültigen Netto-Kostenvoranschlag eingeben.",
+        "notesRequired": "Vor dem Abschließen Befunde eingeben.",
+        "saveFailed": "Diagnose konnte nicht gespeichert werden."
+      }
+    },
+    "workflow": {
+      "actions": {
+        "startDiagnose": "Diagnose",
+        "adjustDiagnosis": "Diagnose anpassen",
+        "confirmIntake": "Unterschriebene Annahme hochladen",
+        "confirmCustomerApproval": "Kundenfreigabe bestätigen",
+        "confirmParts": "Teile als erhalten bestätigen",
+        "writeProtocol": "Reparaturprotokoll abschließen",
+        "confirmSummary": "Zusammenfassung drucken und unterschreiben",
+        "recordPickup": "Abholung erfassen"
+      },
+      "banner": {
+        "nextStep": "Nächster Schritt"
+      },
+      "cardStatus": {
+        "pending": "Ausstehend",
+        "active": "Aktueller Schritt",
+        "done": "Erledigt",
+        "disabled": "Nicht begonnen"
+      },
+      "cards": {
+        "parts": {
+          "title": "Teile",
+          "confirmHint": "Bestätigen Sie, dass alle bestellten Teile eingetroffen sind, bevor Sie mit der Reparatur beginnen.",
+          "confirmButton": "Alle Teile als erhalten bestätigen",
+          "allConfirmed": "Alle Teile als erhalten bestätigt."
+        },
+        "protocol": {
+          "title": "Reparaturprotokoll",
+          "workPerformed": "Durchgeführte Arbeit",
+          "recordHint": "Erfassen Sie die durchgeführte Arbeit, um diese Reparatur als abholbereit zu markieren.",
+          "writeButton": "Reparaturprotokoll abschließen",
+          "noneYet": "Noch kein Reparaturprotokoll erfasst."
+        },
+        "pickup": {
+          "title": "Abholung",
+          "readyAt": "Bereit am",
+          "collectedAt": "Abgeholt am",
+          "recordButton": "Abholung erfassen"
+        }
+      },
+      "modals": {
+        "cancel": "Abbrechen",
+        "confirmIntake": {
+          "title": "Unterschriebene Annahme (optional)",
+          "description": "Laden Sie den vom Kunden unterschriebenen Annahmebeleg hoch, falls vorhanden.",
+          "hint": "Dieser Schritt ist optional. Sie können jetzt eine unterschriebene Kopie hochladen oder ohne fortfahren.",
+          "printEntrance": "Annahmebeleg drucken",
+          "confirmButton": "Bestätigen",
+          "continueWithoutUpload": "Ohne Upload fortfahren",
+          "confirming": "Wird fortgesetzt…",
+          "confirmFailed": "Annahmeschritt konnte nicht abgeschlossen werden"
+        },
+        "confirmCustomerApproval": {
+          "title": "Kundenfreigabe (unterschriebene Kopie optional)",
+          "description": "Drucken Sie die Diagnose zur Unterschrift und bestätigen Sie die Freigabe zum Fortfahren.",
+          "hint": "Das Hochladen einer unterschriebenen Kopie ist optional. Sie können ohne fortfahren.",
+          "printDiagnosis": "Diagnose drucken",
+          "confirmButton": "Bestätigen",
+          "continueWithoutUpload": "Ohne Upload fortfahren",
+          "confirming": "Wird fortgesetzt…",
+          "confirmFailed": "Kundenfreigabe konnte nicht bestätigt werden"
+        },
+        "confirmSummary": {
+          "title": "Signierte Zusammenfassung (optional)",
+          "description": "Drucken Sie die Reparaturzusammenfassung zur Unterschrift bei der Abholung.",
+          "hint": "Das Hochladen einer unterschriebenen Kopie ist optional. Sie können ohne fortfahren.",
+          "printSummary": "Zusammenfassung drucken",
+          "confirmButton": "Bestätigen",
+          "continueWithoutUpload": "Ohne Upload fortfahren",
+          "confirming": "Wird fortgesetzt…",
+          "confirmFailed": "Zusammenfassungsschritt konnte nicht abgeschlossen werden"
+        },
+        "confirmParts": {
+          "title": "Teile als erhalten bestätigen",
+          "description": "Markieren Sie alle bestellten Teile als erhalten, um die Reparatur zu starten.",
+          "hint": "Die Reparatur wechselt in den Status In Reparatur.",
+          "confirmButton": "Alle Teile als erhalten bestätigen",
+          "confirming": "Wird bestätigt…",
+          "confirmFailed": "Teile konnten nicht als erhalten bestätigt werden"
+        },
+        "protocol": {
+          "title": "Reparaturprotokoll abschließen",
+          "description": "Beschreiben Sie die an diesem Gerät durchgeführte Arbeit.",
+          "saveButton": "Speichern und als bereit markieren",
+          "workRequired": "Durchgeführte Arbeit ist erforderlich.",
+          "saveFailed": "Reparaturprotokoll konnte nicht gespeichert werden"
+        },
+        "recordPickup": {
+          "title": "Abholung erfassen",
+          "description": "Bestätigen Sie, wann der Kunde das Gerät abgeholt hat.",
+          "pickupDate": "Abholdatum",
+          "confirmButton": "Abholung bestätigen",
+          "dateRequired": "Abholdatum ist erforderlich.",
+          "recordFailed": "Abholung konnte nicht erfasst werden"
+        }
+      },
+      "summaryPrint": {
+        "title": "Reparaturzusammenfassung",
+        "repairNumber": "Reparatur-Nr.:",
+        "logoAlt": "Firmenlogo",
+        "sections": {
+          "customer": "Kunde",
+          "device": "Gerät",
+          "intake": "Annahme",
+          "workPerformed": "Durchgeführte Arbeit",
+          "estimate": "Kostenvoranschlag",
+          "pickup": "Abholung"
+        },
+        "fields": {
+          "taxId": "Steuer-ID",
+          "address": "Adresse",
+          "phone": "Telefon",
+          "email": "E-Mail",
+          "name": "Name",
+          "type": "Typ",
+          "manufacturer": "Hersteller",
+          "model": "Modell",
+          "serial": "Seriennummer",
+          "received": "Empfangen",
+          "reportedProblem": "Gemeldetes Problem",
+          "accessories": "Zubehör",
+          "condition": "Zustand",
+          "subtotal": "Zwischensumme",
+          "taxRate": "Steuersatz",
+          "tax": "Steuer",
+          "total": "Gesamt",
+          "expected": "Erwartet",
+          "ready": "Bereit",
+          "collected": "Abgeholt"
+        }
+      }
+    },
+    "documents": {
+      "title": "Dokumente",
+      "loading": "Dokumente werden geladen…",
+      "print": "Drucken",
+      "view": "Anzeigen",
+      "replace": "Ersetzen",
+      "delete": "Löschen",
+      "uploadButton": "Unterschriebene Kopie hochladen",
+      "noneUploaded": "Noch keine unterschriebene Kopie hochgeladen.",
+      "opening": "Wird geöffnet…",
+      "openFailed": "Dokument konnte nicht geöffnet werden",
+      "deleteConfirm": "Dieses unterschriebene Dokument löschen? Sie können danach ein neues hochladen.",
+      "deleteFailed": "Dokument konnte nicht gelöscht werden",
+      "upload": {
+        "hint": "Akzeptierte Formate: PDF, PNG oder JPEG.",
+        "chooseFile": "Datei wählen",
+        "uploading": "Wird hochgeladen…",
+        "uploadFailed": "Dokument konnte nicht hochgeladen werden",
+        "documentsFilter": "Dokumente"
+      },
+      "types": {
+        "entranceSigned": {
+          "label": "Unterschriebene Annahme",
+          "description": "Kundenunterschrift auf dem Annahmebeleg.",
+          "uploadTitle": "Unterschriebene Annahme hochladen",
+          "uploadDescription": "Wählen Sie das unterschriebene Annahmedokument auf Ihrem Computer."
+        },
+        "diagnosisSigned": {
+          "label": "Unterschriebene Diagnose",
+          "description": "Kundenfreigabe für Diagnose und Kostenvoranschlag.",
+          "uploadTitle": "Unterschriebene Diagnose hochladen",
+          "uploadDescription": "Wählen Sie das unterschriebene Diagnosedokument auf Ihrem Computer."
+        },
+        "summarySigned": {
+          "label": "Unterschriebene Zusammenfassung",
+          "description": "Kundenunterschrift auf der Reparaturzusammenfassung bei Abholung.",
+          "uploadTitle": "Unterschriebene Zusammenfassung hochladen",
+          "uploadDescription": "Wählen Sie das unterschriebene Zusammenfassungsdokument auf Ihrem Computer."
+        }
       }
     }
   },
@@ -392,6 +649,23 @@
         "small": "Stichprobe (100 / 200 / 500)",
         "full": "Vollständiger Satz (10k / 20k / 50k)"
       }
+    },
+    "shop": {
+      "title": "Werkstatt-Standards",
+      "subtitle": "Steuer und Währung für Kostenvoranschläge",
+      "hint": "Standard-Steuersatz ist 19%. Verwenden Sie einen dreistelligen Währungscode (z. B. EUR).",
+      "saveSuccess": "Werkstatt-Einstellungen gespeichert.",
+      "fields": {
+        "taxRatePercent": "Steuersatz (%)",
+        "currency": "Währung"
+      },
+      "actions": {
+        "save": "Werkstatt-Einstellungen speichern"
+      },
+      "errors": {
+        "loadFailed": "Werkstatt-Einstellungen konnten nicht geladen werden.",
+        "saveFailed": "Werkstatt-Einstellungen konnten nicht gespeichert werden."
+      }
     }
   },
   "print": {
@@ -428,7 +702,8 @@
     },
     "actions": {
       "print": "Drucken",
-      "close": "Zurück zur Reparatur"
+      "close": "Zurück zur Reparatur",
+      "closeDiagnosis": "Zurück zur Reparatur"
     },
     "errors": {
       "loadFailed": "Druckbericht konnte nicht geladen werden."
@@ -461,6 +736,49 @@
         "notes": "Notizen",
         "expectedPickup": "Mögliche Abholung"
       },
+      "signatures": {
+        "client": "Unterschrift Kunde",
+        "shop": "Unterschrift Werkstatt",
+        "nameDate": "Name und Datum"
+      }
+    },
+    "diagnosis": {
+      "title": "Diagnosebericht",
+      "acknowledgment": "Der unterzeichnende Kunde bestätigt die Diagnosebefunde und den Kostenvoranschlag oben und autorisiert die Werkstatt, vorbehaltlich weiterer Absprache fortzufahren.",
+      "logoAlt": "Firmenlogo",
+      "sections": {
+        "customer": "Kunde",
+        "device": "Gerät",
+        "findings": "Befunde",
+        "estimate": "Kostenvoranschlag"
+      },
+      "fields": {
+        "taxId": "Steuer-ID",
+        "address": "Adresse",
+        "phone": "Telefon",
+        "email": "E-Mail",
+        "website": "Website",
+        "repairNumber": "Reparatur-Nr.",
+        "name": "Name",
+        "deviceType": "Typ",
+        "manufacturer": "Hersteller",
+        "model": "Modell",
+        "serialNumber": "Seriennummer",
+        "estimateBase": "Netto-Kostenvoranschlag",
+        "taxRate": "Steuersatz",
+        "tax": "Steuer",
+        "gross": "Gesamt (inkl. Steuer)",
+        "currency": "Währung",
+        "expectedPickup": "Mögliche Abholung"
+      },
+      "signatures": {
+        "client": "Unterschrift Kunde",
+        "shop": "Unterschrift Werkstatt",
+        "nameDate": "Name und Datum"
+      }
+    },
+    "summary": {
+      "acknowledgment": "Der unten unterzeichnende Kunde bestätigt den Empfang des reparierten Geräts und akzeptiert die durchgeführte Arbeit sowie die aufgeführten Kosten.",
       "signatures": {
         "client": "Unterschrift Kunde",
         "shop": "Unterschrift Werkstatt",

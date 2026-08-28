@@ -1,6 +1,6 @@
 import type { Customer } from "@/features/customers/types/customer";
 import type { Device } from "@/features/devices/types/device";
-import type { Repair } from "@/features/repairs/types/repair";
+import type { RepairListItem } from "@/features/repairs/types/repair";
 
 export type GlobalSearchQuery = {
   query: string;
@@ -10,7 +10,7 @@ export type GlobalSearchQuery = {
 export type GlobalSearchResult = {
   customers: Customer[];
   devices: Device[];
-  repairs: Repair[];
+  repairs: RepairListItem[];
 };
 
 export const EMPTY_SEARCH_RESULT: GlobalSearchResult = {

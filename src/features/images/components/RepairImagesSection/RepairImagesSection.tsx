@@ -1,8 +1,8 @@
 import { useRepairImages } from "@/features/images/hooks/useRepairImages";
 import {
   Button,
+  Card,
   FormField,
-  PageHeader,
   StatusMessage,
   TextField,
 } from "@/ui";
@@ -17,20 +17,18 @@ export function RepairImagesSection({ repairId }: Props) {
   const state = useRepairImages(repairId);
 
   return (
-    <section className="flex flex-col gap-4">
-      <PageHeader
-        title={t("images.sectionTitle")}
-        actions={
-          <Button
-            type="button"
-            disabled={state.busy || state.loading || state.atLimit}
-            onClick={() => void state.addPhotos()}
-          >
-            {state.busy ? t("common.saving") : t("images.actions.add")}
-          </Button>
-        }
-      />
-
+    <Card
+      title={t("repairs.detail.sections.photos")}
+      actions={
+        <Button
+          type="button"
+          disabled={state.busy || state.loading || state.atLimit}
+          onClick={() => void state.addPhotos()}
+        >
+          {state.busy ? t("common.saving") : t("images.actions.add")}
+        </Button>
+      }
+    >
       {state.error ? (
         <StatusMessage tone="danger">{state.error}</StatusMessage>
       ) : null}
@@ -123,6 +121,6 @@ export function RepairImagesSection({ repairId }: Props) {
           />
         </div>
       ) : null}
-    </section>
+    </Card>
   );
 }

@@ -47,6 +47,31 @@ Pages are **composition only**. Reading a page file should tell you the screen s
 - Utils are pure (no React, no `invoke`).
 - Pages do not call `invoke` directly — go through feature `api` + hooks.
 
+## DRY and reuse (mandatory)
+
+Before finishing a change, scan for duplicated patterns in the same feature (or sibling features).
+
+| Pattern | Extract to |
+| --- | --- |
+| Same pure helper twice (`printFieldValue`, formatters, mappers) | `features/<domain>/utils/` or `shared/` |
+| Same markup in 2+ sibling components (print sheets, modal bodies, table chrome) | Shared component under `features/<domain>/components/` (e.g. `print/components/shared/`) |
+| Repeated `useState` + `busy`/`uploading`/`error` + async handler | Shared hook (`useModalAsyncAction`, `useRepairDocumentUpload`, …) in `hooks/` |
+| Same modal flow with different labels/API calls | One parameterized component + thin named wrappers |
+
+**Forbidden:** copy-pasting `dash`/`companyDisplayName`, full print headers, or `busy`/`uploading`/`handleConfirm` blocks across files. If it appears twice, extract immediately.
+
+## Print documents
+
+- Pure formatting → `features/print/utils/` (e.g. `printFormat.ts`).
+- Shared layout (header, field grid, signatures) → `features/print/components/shared/`.
+- Each `*PrintDocument` composes shared pieces; document-specific sections stay in that file only.
+
+## Workflow modals
+
+- File pick + upload → `useRepairDocumentUpload`.
+- Confirm action with busy/error → `useModalAsyncAction`.
+- Optional signed-document step (print link + upload + confirm) → `ConfirmSignedDocumentModal`; named modals (`ConfirmIntakeModal`, …) are thin i18n wrappers only.
+
 ## Mandatory libraries
 
 - **Forms:** `@tanstack/react-form` for every create/edit form

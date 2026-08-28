@@ -79,6 +79,17 @@ Dependency direction: `pages → templates → organisms → molecules → atoms
 - Hooks own state / effects / form instances / table instances.
 - Utils are pure (no React, no `invoke`).
 
+### DRY and reuse (mandatory)
+
+Agents must deduplicate before marking work complete:
+
+1. **Pure helpers** used in more than one file → `utils/` (domain) or `shared/`.
+2. **Repeated JSX** across sibling components → shared component (e.g. `features/print/components/shared/`).
+3. **Repeated async modal state** (`busy`, `uploading`, `error`, confirm handler) → shared hook (`useModalAsyncAction`, domain-specific upload hooks).
+4. **Same modal flow, different copy/API** → one parameterized component; thin named exports for i18n labels only.
+
+Do not leave duplicate `dash`-style helpers, print headers, or copy-pasted confirm/upload handlers in multiple files.
+
 ### Mandatory libraries
 
 | Concern | Must use | Must not use instead |

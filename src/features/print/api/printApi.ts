@@ -1,8 +1,22 @@
 import { invoke } from "@/shared/api/invoke";
-import type { RepairPrintReport } from "@/features/print/types/printReport";
+import type {
+  DiagnosisPrintReport,
+  RepairPrintReport,
+  SummaryPrintReport,
+} from "@/features/print/types/printReport";
 
 export const printApi = {
   getRepairReport(repairId: number): Promise<RepairPrintReport> {
     return invoke<RepairPrintReport>("get_repair_print_report", { repairId });
+  },
+  getDiagnosisReport(repairId: number): Promise<DiagnosisPrintReport> {
+    return invoke<DiagnosisPrintReport>("get_repair_diagnosis_print_report", {
+      repairId,
+    });
+  },
+  getSummaryReport(repairId: number): Promise<SummaryPrintReport> {
+    return invoke<SummaryPrintReport>("get_repair_summary_print_report", {
+      repairId,
+    });
   },
 };

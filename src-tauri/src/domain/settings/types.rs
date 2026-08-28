@@ -43,3 +43,22 @@ pub struct LocaleSettings {
     /// Catalog actually used: `en` | `es` | `de`.
     pub resolved_locale: String,
 }
+
+pub const TAX_RATE_PERCENT_KEY: &str = "tax_rate_percent";
+pub const CURRENCY_KEY: &str = "currency";
+pub const DEFAULT_TAX_RATE_PERCENT: &str = "19";
+pub const DEFAULT_CURRENCY: &str = "EUR";
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ShopSettings {
+    pub tax_rate_percent: String,
+    pub currency: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShopSettingsInput {
+    pub tax_rate_percent: Option<String>,
+    pub currency: Option<String>,
+}

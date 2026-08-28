@@ -12,6 +12,32 @@ pub struct RepairPrintReport {
     pub diagnosis: Option<PrintDiagnosis>,
 }
 
+/// Diagnosis paper for customer signature (notes + estimate; no checklist JSON).
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct DiagnosisPrintReport {
+    pub repair: DiagnosisPrintRepair,
+    pub customer: PrintCustomer,
+    pub device: PrintDevice,
+    pub company: Option<PrintCompany>,
+    pub company_logo_absolute_path: Option<String>,
+    /// Display currency from shop settings.
+    pub currency: String,
+}
+
+/// Repair summary for pickup / completion paperwork.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SummaryPrintReport {
+    pub repair: SummaryPrintRepair,
+    pub customer: PrintCustomer,
+    pub device: PrintDevice,
+    pub company: Option<PrintCompany>,
+    pub company_logo_absolute_path: Option<String>,
+    /// Display currency from shop settings.
+    pub currency: String,
+}
+
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PrintRepairCore {
@@ -28,6 +54,40 @@ pub struct PrintRepairCore {
     pub expected_pickup_at: Option<String>,
     pub ready_at: Option<String>,
     pub collected_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DiagnosisPrintRepair {
+    pub id: i64,
+    pub repair_number: String,
+    pub status: String,
+    pub diagnosis_notes: Option<String>,
+    pub expected_pickup_at: Option<String>,
+    pub estimate_base_cents: Option<i64>,
+    pub estimate_tax_rate_bps: Option<i64>,
+    pub estimate_tax_cents: Option<i64>,
+    pub estimate_gross_cents: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SummaryPrintRepair {
+    pub id: i64,
+    pub repair_number: String,
+    pub status: String,
+    pub received_at: String,
+    pub reported_problem: Option<String>,
+    pub accessories_received: Option<String>,
+    pub device_condition: Option<String>,
+    pub work_performed: Option<String>,
+    pub expected_pickup_at: Option<String>,
+    pub ready_at: Option<String>,
+    pub collected_at: Option<String>,
+    pub estimate_base_cents: Option<i64>,
+    pub estimate_tax_rate_bps: Option<i64>,
+    pub estimate_tax_cents: Option<i64>,
+    pub estimate_gross_cents: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]

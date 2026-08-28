@@ -14,6 +14,7 @@ const PIPELINE = [
   "waiting_part",
   "in_repair",
   "ready",
+  "awaiting_pickup",
 ] as const;
 
 export function DashboardStatusCounts({ counts }: Props) {
@@ -23,7 +24,7 @@ export function DashboardStatusCounts({ counts }: Props) {
   return (
     <section className="flex min-w-0 flex-col gap-2">
       <h2 className="text-sm font-semibold">{t("home.dashboard.pipeline")}</h2>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-7">
         {PIPELINE.map((status) => {
           const count = byStatus.get(status) ?? 0;
           return (

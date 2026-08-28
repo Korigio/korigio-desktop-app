@@ -10,6 +10,11 @@ pub const MAX_PAGE_SIZE: u32 = 100;
 
 pub const DEFAULT_STATUS: &str = "received";
 
+pub const ALLOWED_REPAIR_DOCUMENT_EXTENSIONS: &[&str] = &["pdf", "jpg", "jpeg", "png"];
+
+/// Signed document uploads (PDF or image scan).
+pub const MAX_REPAIR_DOCUMENT_BYTES: u64 = 20 * 1024 * 1024;
+
 pub const REPAIR_STATUSES: &[&str] = &[
     "received",
     "diagnosis",
@@ -17,6 +22,7 @@ pub const REPAIR_STATUSES: &[&str] = &[
     "waiting_part",
     "in_repair",
     "ready",
+    "awaiting_pickup",
     "collected",
     "cancelled",
 ];

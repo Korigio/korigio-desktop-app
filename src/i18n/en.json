@@ -210,6 +210,34 @@
     "invalidId": "Invalid repair id",
     "backToList": "Back to repairs",
     "archivedEditHint": "Unarchive the repair before editing.",
+    "detail": {
+      "subtitle": "Repair overview and workshop progress",
+      "archived": "This repair is archived.",
+      "progressLabel": "Repair progress",
+      "progressPercent": "{percent}% complete",
+      "progressCancelled": "Cancelled",
+      "diagnosisPendingHint": "Diagnosis not finalized yet — complete findings and estimate, then finalize for customer approval.",
+      "intakePendingHint": "Optional: upload the signed intake document, then continue to start diagnosis.",
+      "diagnosisCompleteHint": "Diagnosis recorded on this repair. Use adjust to update findings or estimate.",
+      "diagnosisLockedHint": "This repair is complete. Diagnosis can no longer be changed.",
+      "completedMessage": "This repair is complete. The customer has collected the device.",
+      "sections": {
+        "client": "Client",
+        "entrance": "Entrance",
+        "diagnosis": "Diagnosis & estimate",
+        "photos": "Photos"
+      },
+      "progressStep": {
+        "received": "Received",
+        "signedIntake": "Signed intake",
+        "diagnosis": "Diagnosis",
+        "waiting_customer": "Waiting",
+        "waiting_part": "Parts",
+        "in_repair": "Repair",
+        "signedSummary": "Signed summary",
+        "collected": "Done"
+      }
+    },
     "fields": {
       "repairNumber": "Number",
       "status": "Status",
@@ -227,7 +255,8 @@
       "notes": "Notes",
       "expectedPickupAt": "Possible pickup date",
       "readyAt": "Ready date",
-      "collectedAt": "Collected date"
+      "collectedAt": "Collected date",
+      "actions": "Actions"
     },
     "status": {
       "received": "Received",
@@ -235,7 +264,8 @@
       "waiting_customer": "Waiting for customer",
       "waiting_part": "Waiting for part",
       "in_repair": "In repair",
-      "ready": "Ready for pickup",
+      "ready": "Ready",
+      "awaiting_pickup": "Ready for pickup",
       "collected": "Collected",
       "cancelled": "Cancelled"
     },
@@ -246,7 +276,9 @@
       "edit": "Edit",
       "print": "Print",
       "cancel": "Cancel repair",
-      "changeStatus": "Change status"
+      "changeStatus": "Change status",
+      "diagnose": "Diagnose",
+      "adjustDiagnosis": "Adjust diagnosis"
     },
     "validation": {
       "companyRequired": "Company is required.",
@@ -294,7 +326,232 @@
         "repairCreated": "Repair {number} created.",
         "printEntrance": "Print intake receipt",
         "openRepair": "Open repair",
-        "startAnother": "Start another"
+        "startAnother": "Start another",
+        "diagnose": "Diagnose repair"
+      }
+    },
+    "diagnosisFlow": {
+      "title": "Diagnosis",
+      "titleAdjust": "Adjust diagnosis",
+      "subtitle": "Repair {number}",
+      "templateHeading": "Checklist template",
+      "estimateHeading": "Repair estimate",
+      "noTemplates": "No diagnosis templates yet. Create one under Diagnosis templates.",
+      "archivedHint": "This repair is archived. Diagnosis cannot be edited.",
+      "cancelledHint": "This repair is cancelled. Diagnosis cannot be edited.",
+      "estimateHint": "Enter the net amount before tax. Tax is calculated from shop settings.",
+      "estimateLockedHint": "An estimate is already saved. You can update the amount, but it cannot be cleared.",
+      "estimatePreviewInvalid": "Enter a valid amount.",
+      "applyToNotesSuccess": "Checklist applied to findings.",
+      "draftSuccess": "Diagnosis draft saved.",
+      "finalizeSuccess": "Diagnosis finalized. Status set to waiting for customer.",
+      "fields": {
+        "findings": "Findings",
+        "template": "Template",
+        "estimate": "Estimate",
+        "estimateBase": "Net estimate ({currency})",
+        "taxRate": "Tax rate",
+        "tax": "Tax",
+        "gross": "Total (incl. tax)"
+      },
+      "actions": {
+        "loadTemplate": "Load template",
+        "applyToNotes": "Apply checklist to findings",
+        "saveDraft": "Save draft",
+        "saveChanges": "Save changes",
+        "finalize": "Finalize diagnosis",
+        "print": "Print diagnosis",
+        "backToRepair": "Back to repair"
+      },
+      "summary": {
+        "title": "Diagnosis",
+        "empty": "No diagnosis or estimate recorded yet.",
+        "estimateTaxLine": "Tax {tax} ({rate}%)",
+        "estimateGrossLine": "Total {gross}"
+      },
+      "errors": {
+        "loadFailed": "Could not load the diagnosis.",
+        "selectTemplateFirst": "Select a template first.",
+        "loadTemplateFailed": "Could not load the template.",
+        "nothingToApply": "Nothing to apply. Load a template and fill the checklist first.",
+        "estimateRequired": "Enter a net estimate before finalizing.",
+        "estimateInvalid": "Enter a valid net estimate.",
+        "notesRequired": "Enter findings before finalizing.",
+        "saveFailed": "Could not save the diagnosis."
+      }
+    },
+    "workflow": {
+      "actions": {
+        "startDiagnose": "Diagnose",
+        "adjustDiagnosis": "Adjust diagnosis",
+        "confirmIntake": "Upload signed intake",
+        "confirmCustomerApproval": "Confirm customer approval",
+        "confirmParts": "Confirm parts received",
+        "writeProtocol": "Complete repair protocol",
+        "confirmSummary": "Print and sign summary",
+        "recordPickup": "Record pickup"
+      },
+      "banner": {
+        "nextStep": "Next step"
+      },
+      "cardStatus": {
+        "pending": "Pending",
+        "active": "Current step",
+        "done": "Done",
+        "disabled": "Not started"
+      },
+      "cards": {
+        "parts": {
+          "title": "Parts",
+          "confirmHint": "Confirm when all ordered parts have arrived before starting the repair.",
+          "confirmButton": "Confirm all parts received",
+          "allConfirmed": "All parts confirmed as received."
+        },
+        "protocol": {
+          "title": "Repair protocol",
+          "workPerformed": "Work performed",
+          "recordHint": "Record the work performed to mark this repair ready for pickup.",
+          "writeButton": "Complete repair protocol",
+          "noneYet": "No repair protocol recorded yet."
+        },
+        "pickup": {
+          "title": "Pickup",
+          "readyAt": "Ready at",
+          "collectedAt": "Collected at",
+          "recordButton": "Record pickup"
+        }
+      },
+      "modals": {
+        "cancel": "Cancel",
+        "confirmIntake": {
+          "title": "Signed intake (optional)",
+          "description": "Upload the customer's signed intake receipt if you have it.",
+          "hint": "This step is optional. You can upload a signed copy now or continue without one.",
+          "printEntrance": "Print intake receipt",
+          "confirmButton": "Confirm",
+          "continueWithoutUpload": "Continue without uploading",
+          "confirming": "Continuing…",
+          "confirmFailed": "Could not continue intake step"
+        },
+        "confirmCustomerApproval": {
+          "title": "Customer approval (optional signed copy)",
+          "description": "Print the diagnosis for the customer to sign, then confirm approval to continue.",
+          "hint": "Uploading a signed copy is optional. You can continue without one.",
+          "printDiagnosis": "Print diagnosis",
+          "confirmButton": "Confirm",
+          "continueWithoutUpload": "Continue without uploading",
+          "confirming": "Continuing…",
+          "confirmFailed": "Could not confirm customer approval"
+        },
+        "confirmSummary": {
+          "title": "Signed summary (optional)",
+          "description": "Print the repair summary for the customer to sign at pickup.",
+          "hint": "Uploading a signed copy is optional. You can continue without one.",
+          "printSummary": "Print summary",
+          "confirmButton": "Confirm",
+          "continueWithoutUpload": "Continue without uploading",
+          "confirming": "Continuing…",
+          "confirmFailed": "Could not continue summary step"
+        },
+        "confirmParts": {
+          "title": "Confirm parts received",
+          "description": "Mark all ordered parts as received to start the repair.",
+          "hint": "This will move the repair to in repair status.",
+          "confirmButton": "Confirm all parts received",
+          "confirming": "Confirming…",
+          "confirmFailed": "Could not confirm parts received"
+        },
+        "protocol": {
+          "title": "Complete repair protocol",
+          "description": "Describe the work performed on this device.",
+          "saveButton": "Save and mark ready",
+          "workRequired": "Work performed is required.",
+          "saveFailed": "Could not save repair protocol"
+        },
+        "recordPickup": {
+          "title": "Record pickup",
+          "description": "Confirm when the customer collected the device.",
+          "pickupDate": "Pickup date",
+          "confirmButton": "Confirm pickup",
+          "dateRequired": "Pickup date is required.",
+          "recordFailed": "Could not record pickup"
+        }
+      },
+      "summaryPrint": {
+        "title": "Repair summary",
+        "repairNumber": "Repair #:",
+        "logoAlt": "Company logo",
+        "sections": {
+          "customer": "Customer",
+          "device": "Device",
+          "intake": "Intake",
+          "workPerformed": "Work performed",
+          "estimate": "Estimate",
+          "pickup": "Pickup"
+        },
+        "fields": {
+          "taxId": "Tax ID",
+          "address": "Address",
+          "phone": "Phone",
+          "email": "Email",
+          "name": "Name",
+          "type": "Type",
+          "manufacturer": "Manufacturer",
+          "model": "Model",
+          "serial": "Serial",
+          "received": "Received",
+          "reportedProblem": "Reported problem",
+          "accessories": "Accessories",
+          "condition": "Condition",
+          "subtotal": "Subtotal",
+          "taxRate": "Tax rate",
+          "tax": "Tax",
+          "total": "Total",
+          "expected": "Expected",
+          "ready": "Ready",
+          "collected": "Collected"
+        }
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "loading": "Loading documents…",
+      "print": "Print",
+      "view": "View",
+      "replace": "Replace",
+      "delete": "Delete",
+      "uploadButton": "Upload signed copy",
+      "noneUploaded": "No signed copy uploaded yet.",
+      "opening": "Opening…",
+      "openFailed": "Could not open document",
+      "deleteConfirm": "Delete this signed document? You can upload a new one afterwards.",
+      "deleteFailed": "Could not delete document",
+      "upload": {
+        "hint": "Accepted formats: PDF, PNG, or JPEG.",
+        "chooseFile": "Choose file",
+        "uploading": "Uploading…",
+        "uploadFailed": "Could not upload document",
+        "documentsFilter": "Documents"
+      },
+      "types": {
+        "entranceSigned": {
+          "label": "Signed intake",
+          "description": "Customer signature on the intake receipt.",
+          "uploadTitle": "Upload signed intake",
+          "uploadDescription": "Select the signed intake document from your computer."
+        },
+        "diagnosisSigned": {
+          "label": "Signed diagnosis",
+          "description": "Customer approval of the diagnosis and estimate.",
+          "uploadTitle": "Upload signed diagnosis",
+          "uploadDescription": "Select the signed diagnosis document from your computer."
+        },
+        "summarySigned": {
+          "label": "Signed summary",
+          "description": "Customer signature on the repair summary at pickup.",
+          "uploadTitle": "Upload signed summary",
+          "uploadDescription": "Select the signed summary document from your computer."
+        }
       }
     }
   },
@@ -392,6 +649,23 @@
         "small": "Seed sample (100 / 200 / 500)",
         "full": "Seed full measure set (10k / 20k / 50k)"
       }
+    },
+    "shop": {
+      "title": "Shop defaults",
+      "subtitle": "Tax and currency used for repair estimates",
+      "hint": "Default tax rate is 19%. Use a three-letter currency code (for example EUR).",
+      "saveSuccess": "Shop settings saved.",
+      "fields": {
+        "taxRatePercent": "Tax rate (%)",
+        "currency": "Currency"
+      },
+      "actions": {
+        "save": "Save shop settings"
+      },
+      "errors": {
+        "loadFailed": "Could not load shop settings.",
+        "saveFailed": "Could not save shop settings."
+      }
     }
   },
   "print": {
@@ -428,7 +702,8 @@
     },
     "actions": {
       "print": "Print",
-      "close": "Back to repair"
+      "close": "Back to repair",
+      "closeDiagnosis": "Back to repair"
     },
     "errors": {
       "loadFailed": "Could not load the print report."
@@ -461,6 +736,49 @@
         "notes": "Notes",
         "expectedPickup": "Possible pickup"
       },
+      "signatures": {
+        "client": "Customer signature",
+        "shop": "Shop signature",
+        "nameDate": "Name and date"
+      }
+    },
+    "diagnosis": {
+      "title": "Diagnosis report",
+      "acknowledgment": "The undersigned customer acknowledges the diagnosis findings and the repair estimate above, and authorizes the shop to proceed subject to any further agreement.",
+      "logoAlt": "Company logo",
+      "sections": {
+        "customer": "Customer",
+        "device": "Device",
+        "findings": "Findings",
+        "estimate": "Estimate"
+      },
+      "fields": {
+        "taxId": "Tax ID",
+        "address": "Address",
+        "phone": "Phone",
+        "email": "Email",
+        "website": "Website",
+        "repairNumber": "Repair no.",
+        "name": "Name",
+        "deviceType": "Type",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serialNumber": "Serial number",
+        "estimateBase": "Net estimate",
+        "taxRate": "Tax rate",
+        "tax": "Tax",
+        "gross": "Total (incl. tax)",
+        "currency": "Currency",
+        "expectedPickup": "Possible pickup"
+      },
+      "signatures": {
+        "client": "Customer signature",
+        "shop": "Shop signature",
+        "nameDate": "Name and date"
+      }
+    },
+    "summary": {
+      "acknowledgment": "The undersigned customer confirms receipt of the repaired device and accepts the work performed and charges listed above.",
       "signatures": {
         "client": "Customer signature",
         "shop": "Shop signature",

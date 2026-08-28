@@ -26,6 +26,8 @@ export { LinkButton } from "./molecules/LinkButton";
 export type { LinkButtonProps } from "./molecules/LinkButton";
 export { DefinitionList } from "./molecules/DefinitionList";
 export type { DefinitionListProps, DefinitionItem } from "./molecules/DefinitionList";
+export { Card } from "./molecules/Card";
+export type { CardProps } from "./molecules/Card";
 export { Stepper, WizardNav } from "./molecules/Stepper";
 export type {
   StepperProps,

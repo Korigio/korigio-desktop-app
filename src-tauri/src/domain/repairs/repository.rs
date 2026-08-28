@@ -1,7 +1,7 @@
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
 
 use crate::db::repository::like_pattern;
-use crate::domain::repairs::types::Repair;
+use crate::domain::repairs::types::{Repair, RepairListItem};
 use crate::domain::repairs::validation::{ValidatedCreateRepairInput, ValidatedUpdateRepairInput};
 use crate::error::AppError;
 
@@ -114,13 +114,9 @@ pub fn update_repair(
 }
 
 pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, AppError> {
-    let mut stmt = conn.prepare(
-        "SELECT id, repair_number, customer_id, device_id, company_id, status, received_at,
-                reported_problem, accessories_received, device_condition,
-                diagnosis_notes, work_performed, notes, expected_pickup_at,
-                ready_at, collected_at, created_at, updated_at, archived_at
-         FROM repairs WHERE id = ?1",
-    )?;
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {REPAIR_SELECT_COLS} FROM repairs WHERE id = ?1"
+    ))?;
     let repair = stmt.query_row(params![id], map_repair).optional()?;
     Ok(repair)
 }
@@ -129,7 +125,10 @@ const REPAIR_SELECT_COLS: &str = "repairs.id, repairs.repair_number, repairs.cus
         repairs.device_id, repairs.company_id, repairs.status, repairs.received_at,
         repairs.reported_problem, repairs.accessories_received, repairs.device_condition,
         repairs.diagnosis_notes, repairs.work_performed, repairs.notes,
-        repairs.expected_pickup_at, repairs.ready_at, repairs.collected_at,
+        repairs.expected_pickup_at,
+        repairs.estimate_base_cents, repairs.estimate_tax_rate_bps,
+        repairs.estimate_tax_cents, repairs.estimate_gross_cents,
+        repairs.ready_at, repairs.collected_at,
         repairs.created_at, repairs.updated_at, repairs.archived_at";
 
 const SEARCH_MATCH_SQL: &str = "(
@@ -150,9 +149,9 @@ pub fn list_repairs(
     status: Option<&str>,
     limit: u32,
     offset: u32,
-) -> Result<(Vec<Repair>, i64), AppError> {
+) -> Result<(Vec<RepairListItem>, i64), AppError> {
     let pattern = like_pattern(search);
-    let needs_join = pattern.is_some();
+    let needs_device_join = pattern.is_some();
 
     let mut where_parts = vec!["repairs.archived_at IS NULL".to_string()];
     if customer_id.is_some() {
@@ -178,31 +177,16 @@ pub fn list_repairs(
     }
 
     let where_sql = format!("WHERE {}", where_parts.join(" AND "));
-    let from_sql = if needs_join {
+    let from_sql = if needs_device_join {
         "FROM repairs
          INNER JOIN customers ON customers.id = repairs.customer_id
          INNER JOIN devices ON devices.id = repairs.device_id"
     } else {
-        "FROM repairs"
+        "FROM repairs
+         INNER JOIN customers ON customers.id = repairs.customer_id"
     };
 
-    // Without a join, column names need no table prefix in SELECT.
-    let select_cols = if needs_join {
-        REPAIR_SELECT_COLS
-    } else {
-        "id, repair_number, customer_id, device_id, company_id, status, received_at,
-                reported_problem, accessories_received, device_condition,
-                diagnosis_notes, work_performed, notes, expected_pickup_at,
-                ready_at, collected_at, created_at, updated_at, archived_at"
-    };
-
-    // When not joining, drop the `repairs.` prefix from WHERE for clarity/consistency
-    // with the unprefixed FROM — rewrite archived/customer/device/status filters.
-    let where_sql = if needs_join {
-        where_sql
-    } else {
-        where_sql.replace("repairs.", "")
-    };
+    let select_cols = format!("{REPAIR_SELECT_COLS}, customers.name AS customer_name");
 
     let param_count = usize::from(customer_id.is_some())
         + usize::from(device_id.is_some())
@@ -216,17 +200,9 @@ pub fn list_repairs(
         "SELECT {select_cols}
          {from_sql}
          {where_sql}
-         ORDER BY received_at DESC, id DESC
+         ORDER BY repairs.received_at DESC, repairs.id DESC
          LIMIT {limit_ph} OFFSET {offset_ph}"
     );
-
-    // Unprefixed ORDER BY is fine; with join use repairs.received_at / repairs.id.
-    let list_sql = if needs_join {
-        list_sql
-            .replace("ORDER BY received_at DESC, id DESC", "ORDER BY repairs.received_at DESC, repairs.id DESC")
-    } else {
-        list_sql
-    };
 
     let total = query_count(conn, &count_sql, customer_id, device_id, status, pattern.as_deref())?;
 
@@ -291,58 +267,65 @@ fn query_rows(
     pattern: Option<&str>,
     limit: u32,
     offset: u32,
-) -> Result<Vec<Repair>, AppError> {
+) -> Result<Vec<RepairListItem>, AppError> {
     let rows = match (customer_id, device_id, status, pattern) {
         (None, None, None, None) => stmt
-            .query_map(params![limit, offset], map_repair)?
+            .query_map(params![limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), None, None, None) => stmt
-            .query_map(params![c, limit, offset], map_repair)?
+            .query_map(params![c, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (None, Some(d), None, None) => stmt
-            .query_map(params![d, limit, offset], map_repair)?
+            .query_map(params![d, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (None, None, Some(s), None) => stmt
-            .query_map(params![s, limit, offset], map_repair)?
+            .query_map(params![s, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (None, None, None, Some(q)) => stmt
-            .query_map(params![q, limit, offset], map_repair)?
+            .query_map(params![q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), Some(d), None, None) => stmt
-            .query_map(params![c, d, limit, offset], map_repair)?
+            .query_map(params![c, d, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), None, Some(s), None) => stmt
-            .query_map(params![c, s, limit, offset], map_repair)?
+            .query_map(params![c, s, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), None, None, Some(q)) => stmt
-            .query_map(params![c, q, limit, offset], map_repair)?
+            .query_map(params![c, q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (None, Some(d), Some(s), None) => stmt
-            .query_map(params![d, s, limit, offset], map_repair)?
+            .query_map(params![d, s, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (None, Some(d), None, Some(q)) => stmt
-            .query_map(params![d, q, limit, offset], map_repair)?
+            .query_map(params![d, q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (None, None, Some(s), Some(q)) => stmt
-            .query_map(params![s, q, limit, offset], map_repair)?
+            .query_map(params![s, q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), Some(d), Some(s), None) => stmt
-            .query_map(params![c, d, s, limit, offset], map_repair)?
+            .query_map(params![c, d, s, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), Some(d), None, Some(q)) => stmt
-            .query_map(params![c, d, q, limit, offset], map_repair)?
+            .query_map(params![c, d, q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), None, Some(s), Some(q)) => stmt
-            .query_map(params![c, s, q, limit, offset], map_repair)?
+            .query_map(params![c, s, q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (None, Some(d), Some(s), Some(q)) => stmt
-            .query_map(params![d, s, q, limit, offset], map_repair)?
+            .query_map(params![d, s, q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
         (Some(c), Some(d), Some(s), Some(q)) => stmt
-            .query_map(params![c, d, s, q, limit, offset], map_repair)?
+            .query_map(params![c, d, s, q, limit, offset], map_repair_list_item)?
             .collect::<Result<Vec<_>, _>>()?,
     };
     Ok(rows)
+}
+
+fn map_repair_list_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<RepairListItem> {
+    Ok(RepairListItem {
+        repair: map_repair(row)?,
+        customer_name: row.get(23)?,
+    })
 }
 
 fn map_repair(row: &rusqlite::Row<'_>) -> rusqlite::Result<Repair> {
@@ -361,10 +344,137 @@ fn map_repair(row: &rusqlite::Row<'_>) -> rusqlite::Result<Repair> {
         work_performed: row.get(11)?,
         notes: row.get(12)?,
         expected_pickup_at: row.get(13)?,
-        ready_at: row.get(14)?,
-        collected_at: row.get(15)?,
-        created_at: row.get(16)?,
-        updated_at: row.get(17)?,
-        archived_at: row.get(18)?,
+        estimate_base_cents: row.get(14)?,
+        estimate_tax_rate_bps: row.get(15)?,
+        estimate_tax_cents: row.get(16)?,
+        estimate_gross_cents: row.get(17)?,
+        ready_at: row.get(18)?,
+        collected_at: row.get(19)?,
+        created_at: row.get(20)?,
+        updated_at: row.get(21)?,
+        archived_at: row.get(22)?,
     })
+}
+pub fn update_repair_diagnosis(
+    conn: &Connection,
+    id: i64,
+    status: &str,
+    diagnosis_notes: Option<&str>,
+    expected_pickup_at: Option<&str>,
+    estimate_base_cents: Option<i64>,
+    estimate_tax_rate_bps: Option<i64>,
+    estimate_tax_cents: Option<i64>,
+    estimate_gross_cents: Option<i64>,
+    now: &str,
+) -> Result<Repair, AppError> {
+    let updated = conn.execute(
+        "UPDATE repairs SET
+            status = ?1,
+            diagnosis_notes = ?2,
+            expected_pickup_at = ?3,
+            estimate_base_cents = ?4,
+            estimate_tax_rate_bps = ?5,
+            estimate_tax_cents = ?6,
+            estimate_gross_cents = ?7,
+            updated_at = ?8
+         WHERE id = ?9 AND archived_at IS NULL",
+        params![
+            status,
+            diagnosis_notes,
+            expected_pickup_at,
+            estimate_base_cents,
+            estimate_tax_rate_bps,
+            estimate_tax_cents,
+            estimate_gross_cents,
+            now,
+            id,
+        ],
+    )?;
+    if updated == 0 {
+        return match get_repair_by_id(conn, id)? {
+            Some(_) => Err(AppError::Validation {
+                field: None,
+                message: "Archived repairs cannot be edited.".into(),
+            }),
+            None => Err(AppError::NotFound),
+        };
+    }
+    get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
+}
+
+pub fn update_repair_status(
+    conn: &Connection,
+    id: i64,
+    status: &str,
+    now: &str,
+) -> Result<Repair, AppError> {
+    let updated = conn.execute(
+        "UPDATE repairs SET status = ?1, updated_at = ?2
+         WHERE id = ?3 AND archived_at IS NULL",
+        params![status, now, id],
+    )?;
+    if updated == 0 {
+        return match get_repair_by_id(conn, id)? {
+            Some(_) => Err(AppError::Validation {
+                field: None,
+                message: "Archived repairs cannot be edited.".into(),
+            }),
+            None => Err(AppError::NotFound),
+        };
+    }
+    get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
+}
+
+pub fn update_repair_protocol_complete(
+    conn: &Connection,
+    id: i64,
+    work_performed: &str,
+    ready_at: Option<&str>,
+    now: &str,
+) -> Result<Repair, AppError> {
+    let updated = conn.execute(
+        "UPDATE repairs SET
+            status = 'ready',
+            work_performed = ?1,
+            ready_at = ?2,
+            updated_at = ?3
+         WHERE id = ?4 AND archived_at IS NULL",
+        params![work_performed, ready_at, now, id],
+    )?;
+    if updated == 0 {
+        return match get_repair_by_id(conn, id)? {
+            Some(_) => Err(AppError::Validation {
+                field: None,
+                message: "Archived repairs cannot be edited.".into(),
+            }),
+            None => Err(AppError::NotFound),
+        };
+    }
+    get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
+}
+
+pub fn update_repair_pickup_complete(
+    conn: &Connection,
+    id: i64,
+    collected_at: &str,
+    now: &str,
+) -> Result<Repair, AppError> {
+    let updated = conn.execute(
+        "UPDATE repairs SET
+            status = 'collected',
+            collected_at = ?1,
+            updated_at = ?2
+         WHERE id = ?3 AND archived_at IS NULL",
+        params![collected_at, now, id],
+    )?;
+    if updated == 0 {
+        return match get_repair_by_id(conn, id)? {
+            Some(_) => Err(AppError::Validation {
+                field: None,
+                message: "Archived repairs cannot be edited.".into(),
+            }),
+            None => Err(AppError::NotFound),
+        };
+    }
+    get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
 }

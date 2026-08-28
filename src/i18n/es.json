@@ -210,6 +210,34 @@
     "invalidId": "Identificador de reparación no válido",
     "backToList": "Volver a reparaciones",
     "archivedEditHint": "Desarchive la reparación para poder editarla.",
+    "detail": {
+      "subtitle": "Resumen de la reparación y progreso del taller",
+      "archived": "Esta reparación está archivada.",
+      "progressLabel": "Progreso de la reparación",
+      "progressPercent": "{percent}% completado",
+      "progressCancelled": "Cancelada",
+      "diagnosisPendingHint": "Diagnóstico no finalizado — complete hallazgos y presupuesto, luego finalice para aprobación del cliente.",
+      "intakePendingHint": "Opcional: suba el documento de entrada firmado y continúe para iniciar el diagnóstico.",
+      "diagnosisCompleteHint": "Diagnóstico registrado en esta reparación. Use ajustar para actualizar hallazgos o presupuesto.",
+      "diagnosisLockedHint": "Esta reparación está completada. El diagnóstico ya no se puede modificar.",
+      "completedMessage": "Esta reparación está completada. El cliente ya recogió el dispositivo.",
+      "sections": {
+        "client": "Cliente",
+        "entrance": "Recepción",
+        "diagnosis": "Diagnóstico y presupuesto",
+        "photos": "Fotos"
+      },
+      "progressStep": {
+        "received": "Recibido",
+        "signedIntake": "Entrada firmada",
+        "diagnosis": "Diagnóstico",
+        "waiting_customer": "Espera",
+        "waiting_part": "Piezas",
+        "in_repair": "Reparación",
+        "signedSummary": "Resumen firmado",
+        "collected": "Fin"
+      }
+    },
     "fields": {
       "repairNumber": "Número",
       "status": "Estado",
@@ -227,7 +255,8 @@
       "notes": "Notas",
       "expectedPickupAt": "Fecha posible de recogida",
       "readyAt": "Fecha listo",
-      "collectedAt": "Fecha de recogida"
+      "collectedAt": "Fecha de recogida",
+      "actions": "Acciones"
     },
     "status": {
       "received": "Recibido",
@@ -235,7 +264,8 @@
       "waiting_customer": "Esperando al cliente",
       "waiting_part": "Esperando pieza",
       "in_repair": "En reparación",
-      "ready": "Listo para recoger",
+      "ready": "Listo",
+      "awaiting_pickup": "Listo para recoger",
       "collected": "Recogido",
       "cancelled": "Cancelado"
     },
@@ -246,7 +276,9 @@
       "edit": "Editar",
       "print": "Imprimir",
       "cancel": "Cancelar reparación",
-      "changeStatus": "Cambiar estado"
+      "changeStatus": "Cambiar estado",
+      "diagnose": "Diagnosticar",
+      "adjustDiagnosis": "Ajustar diagnóstico"
     },
     "validation": {
       "companyRequired": "La empresa es obligatoria.",
@@ -294,7 +326,232 @@
         "repairCreated": "Reparación {number} creada.",
         "printEntrance": "Imprimir comprobante de recepción",
         "openRepair": "Abrir reparación",
-        "startAnother": "Empezar otra"
+        "startAnother": "Empezar otra",
+        "diagnose": "Diagnosticar reparación"
+      }
+    },
+    "diagnosisFlow": {
+      "title": "Diagnóstico",
+      "titleAdjust": "Ajustar diagnóstico",
+      "subtitle": "Reparación {number}",
+      "templateHeading": "Plantilla de lista",
+      "estimateHeading": "Presupuesto de reparación",
+      "noTemplates": "Aún no hay plantillas de diagnóstico. Créelas en Plantillas de diagnóstico.",
+      "archivedHint": "Esta reparación está archivada. No se puede editar el diagnóstico.",
+      "cancelledHint": "Esta reparación está cancelada. No se puede editar el diagnóstico.",
+      "estimateHint": "Introduzca el importe neto sin impuestos. El impuesto se calcula con los ajustes del taller.",
+      "estimateLockedHint": "Ya hay un presupuesto guardado. Puede cambiar el importe, pero no eliminarlo.",
+      "estimatePreviewInvalid": "Introduzca un importe válido.",
+      "applyToNotesSuccess": "Lista aplicada a los hallazgos.",
+      "draftSuccess": "Borrador del diagnóstico guardado.",
+      "finalizeSuccess": "Diagnóstico finalizado. Estado: en espera del cliente.",
+      "fields": {
+        "findings": "Hallazgos",
+        "template": "Plantilla",
+        "estimate": "Presupuesto",
+        "estimateBase": "Presupuesto neto ({currency})",
+        "taxRate": "Tipo impositivo",
+        "tax": "Impuesto",
+        "gross": "Total (con impuestos)"
+      },
+      "actions": {
+        "loadTemplate": "Cargar plantilla",
+        "applyToNotes": "Aplicar lista a hallazgos",
+        "saveDraft": "Guardar borrador",
+        "saveChanges": "Guardar cambios",
+        "finalize": "Finalizar diagnóstico",
+        "print": "Imprimir diagnóstico",
+        "backToRepair": "Volver a la reparación"
+      },
+      "summary": {
+        "title": "Diagnóstico",
+        "empty": "Aún no hay diagnóstico ni presupuesto.",
+        "estimateTaxLine": "Impuesto {tax} ({rate}%)",
+        "estimateGrossLine": "Total {gross}"
+      },
+      "errors": {
+        "loadFailed": "No se pudo cargar el diagnóstico.",
+        "selectTemplateFirst": "Seleccione una plantilla primero.",
+        "loadTemplateFailed": "No se pudo cargar la plantilla.",
+        "nothingToApply": "Nada que aplicar. Cargue una plantilla y complete la lista primero.",
+        "estimateRequired": "Introduzca un presupuesto neto antes de finalizar.",
+        "estimateInvalid": "Introduzca un presupuesto neto válido.",
+        "notesRequired": "Introduzca los hallazgos antes de finalizar.",
+        "saveFailed": "No se pudo guardar el diagnóstico."
+      }
+    },
+    "workflow": {
+      "actions": {
+        "startDiagnose": "Diagnosticar",
+        "adjustDiagnosis": "Ajustar diagnóstico",
+        "confirmIntake": "Subir entrada firmada",
+        "confirmCustomerApproval": "Confirmar aprobación del cliente",
+        "confirmParts": "Confirmar piezas recibidas",
+        "writeProtocol": "Completar protocolo de reparación",
+        "confirmSummary": "Imprimir y firmar resumen",
+        "recordPickup": "Registrar entrega"
+      },
+      "banner": {
+        "nextStep": "Siguiente paso"
+      },
+      "cardStatus": {
+        "pending": "Pendiente",
+        "active": "Paso actual",
+        "done": "Hecho",
+        "disabled": "No iniciado"
+      },
+      "cards": {
+        "parts": {
+          "title": "Piezas",
+          "confirmHint": "Confirme cuando hayan llegado todas las piezas pedidas antes de iniciar la reparación.",
+          "confirmButton": "Confirmar todas las piezas recibidas",
+          "allConfirmed": "Todas las piezas confirmadas como recibidas."
+        },
+        "protocol": {
+          "title": "Protocolo de reparación",
+          "workPerformed": "Trabajo realizado",
+          "recordHint": "Registre el trabajo realizado para marcar esta reparación como lista para entrega.",
+          "writeButton": "Completar protocolo de reparación",
+          "noneYet": "Aún no se ha registrado ningún protocolo de reparación."
+        },
+        "pickup": {
+          "title": "Entrega",
+          "readyAt": "Lista el",
+          "collectedAt": "Recogida el",
+          "recordButton": "Registrar entrega"
+        }
+      },
+      "modals": {
+        "cancel": "Cancelar",
+        "confirmIntake": {
+          "title": "Entrada firmada (opcional)",
+          "description": "Suba el recibo de entrada firmado por el cliente si lo tiene.",
+          "hint": "Este paso es opcional. Puede subir una copia firmada ahora o continuar sin ella.",
+          "printEntrance": "Imprimir recibo de entrada",
+          "confirmButton": "Confirmar",
+          "continueWithoutUpload": "Continuar sin subir",
+          "confirming": "Continuando…",
+          "confirmFailed": "No se pudo completar el paso de entrada"
+        },
+        "confirmCustomerApproval": {
+          "title": "Aprobación del cliente (copia firmada opcional)",
+          "description": "Imprima el diagnóstico para que el cliente lo firme y confirme la aprobación para continuar.",
+          "hint": "Subir una copia firmada es opcional. Puede continuar sin ella.",
+          "printDiagnosis": "Imprimir diagnóstico",
+          "confirmButton": "Confirmar",
+          "continueWithoutUpload": "Continuar sin subir",
+          "confirming": "Continuando…",
+          "confirmFailed": "No se pudo confirmar la aprobación del cliente"
+        },
+        "confirmSummary": {
+          "title": "Resumen firmado (opcional)",
+          "description": "Imprima el resumen de reparación para que el cliente lo firme al recoger.",
+          "hint": "Subir una copia firmada es opcional. Puede continuar sin ella.",
+          "printSummary": "Imprimir resumen",
+          "confirmButton": "Confirmar",
+          "continueWithoutUpload": "Continuar sin subir",
+          "confirming": "Continuando…",
+          "confirmFailed": "No se pudo completar el paso del resumen"
+        },
+        "confirmParts": {
+          "title": "Confirmar piezas recibidas",
+          "description": "Marque todas las piezas pedidas como recibidas para iniciar la reparación.",
+          "hint": "Esto moverá la reparación al estado en reparación.",
+          "confirmButton": "Confirmar todas las piezas recibidas",
+          "confirming": "Confirmando…",
+          "confirmFailed": "No se pudieron confirmar las piezas recibidas"
+        },
+        "protocol": {
+          "title": "Completar protocolo de reparación",
+          "description": "Describa el trabajo realizado en este dispositivo.",
+          "saveButton": "Guardar y marcar como lista",
+          "workRequired": "El trabajo realizado es obligatorio.",
+          "saveFailed": "No se pudo guardar el protocolo de reparación"
+        },
+        "recordPickup": {
+          "title": "Registrar entrega",
+          "description": "Confirme cuándo el cliente recogió el dispositivo.",
+          "pickupDate": "Fecha de entrega",
+          "confirmButton": "Confirmar entrega",
+          "dateRequired": "La fecha de entrega es obligatoria.",
+          "recordFailed": "No se pudo registrar la entrega"
+        }
+      },
+      "summaryPrint": {
+        "title": "Resumen de reparación",
+        "repairNumber": "Reparación n.º:",
+        "logoAlt": "Logotipo de la empresa",
+        "sections": {
+          "customer": "Cliente",
+          "device": "Dispositivo",
+          "intake": "Recepción",
+          "workPerformed": "Trabajo realizado",
+          "estimate": "Presupuesto",
+          "pickup": "Entrega"
+        },
+        "fields": {
+          "taxId": "NIF/CIF",
+          "address": "Dirección",
+          "phone": "Teléfono",
+          "email": "Correo electrónico",
+          "name": "Nombre",
+          "type": "Tipo",
+          "manufacturer": "Fabricante",
+          "model": "Modelo",
+          "serial": "Número de serie",
+          "received": "Recibido",
+          "reportedProblem": "Problema reportado",
+          "accessories": "Accesorios",
+          "condition": "Estado",
+          "subtotal": "Subtotal",
+          "taxRate": "Tipo impositivo",
+          "tax": "Impuesto",
+          "total": "Total",
+          "expected": "Prevista",
+          "ready": "Lista",
+          "collected": "Recogida"
+        }
+      }
+    },
+    "documents": {
+      "title": "Documentos",
+      "loading": "Cargando documentos…",
+      "print": "Imprimir",
+      "view": "Ver",
+      "replace": "Reemplazar",
+      "delete": "Eliminar",
+      "uploadButton": "Subir copia firmada",
+      "noneUploaded": "Aún no se ha subido ninguna copia firmada.",
+      "opening": "Abriendo…",
+      "openFailed": "No se pudo abrir el documento",
+      "deleteConfirm": "¿Eliminar este documento firmado? Puedes subir uno nuevo después.",
+      "deleteFailed": "No se pudo eliminar el documento",
+      "upload": {
+        "hint": "Formatos aceptados: PDF, PNG o JPEG.",
+        "chooseFile": "Elegir archivo",
+        "uploading": "Subiendo…",
+        "uploadFailed": "No se pudo subir el documento",
+        "documentsFilter": "Documentos"
+      },
+      "types": {
+        "entranceSigned": {
+          "label": "Entrada firmada",
+          "description": "Firma del cliente en el recibo de entrada.",
+          "uploadTitle": "Subir entrada firmada",
+          "uploadDescription": "Selecciona el documento de entrada firmado en tu ordenador."
+        },
+        "diagnosisSigned": {
+          "label": "Diagnóstico firmado",
+          "description": "Aprobación del cliente del diagnóstico y presupuesto.",
+          "uploadTitle": "Subir diagnóstico firmado",
+          "uploadDescription": "Selecciona el documento de diagnóstico firmado en tu ordenador."
+        },
+        "summarySigned": {
+          "label": "Resumen firmado",
+          "description": "Firma del cliente en el resumen de reparación al recoger.",
+          "uploadTitle": "Subir resumen firmado",
+          "uploadDescription": "Selecciona el documento de resumen firmado en tu ordenador."
+        }
       }
     }
   },
@@ -392,6 +649,23 @@
         "small": "Muestra (100 / 200 / 500)",
         "full": "Conjunto completo (10k / 20k / 50k)"
       }
+    },
+    "shop": {
+      "title": "Ajustes del taller",
+      "subtitle": "Impuesto y moneda para presupuestos de reparación",
+      "hint": "El tipo impositivo predeterminado es el 19%. Use un código de moneda de tres letras (por ejemplo EUR).",
+      "saveSuccess": "Ajustes del taller guardados.",
+      "fields": {
+        "taxRatePercent": "Tipo impositivo (%)",
+        "currency": "Moneda"
+      },
+      "actions": {
+        "save": "Guardar ajustes del taller"
+      },
+      "errors": {
+        "loadFailed": "No se pudieron cargar los ajustes del taller.",
+        "saveFailed": "No se pudieron guardar los ajustes del taller."
+      }
     }
   },
   "print": {
@@ -428,7 +702,8 @@
     },
     "actions": {
       "print": "Imprimir",
-      "close": "Volver a la reparación"
+      "close": "Volver a la reparación",
+      "closeDiagnosis": "Volver a la reparación"
     },
     "errors": {
       "loadFailed": "No se pudo cargar el informe."
@@ -461,6 +736,49 @@
         "notes": "Notas",
         "expectedPickup": "Posible recogida"
       },
+      "signatures": {
+        "client": "Firma del cliente",
+        "shop": "Firma del taller",
+        "nameDate": "Nombre y fecha"
+      }
+    },
+    "diagnosis": {
+      "title": "Informe de diagnóstico",
+      "acknowledgment": "El cliente abajo firmante reconoce los hallazgos del diagnóstico y el presupuesto de reparación anteriores, y autoriza al taller a continuar según lo acordado.",
+      "logoAlt": "Logotipo de la empresa",
+      "sections": {
+        "customer": "Cliente",
+        "device": "Dispositivo",
+        "findings": "Hallazgos",
+        "estimate": "Presupuesto"
+      },
+      "fields": {
+        "taxId": "NIF/CIF",
+        "address": "Dirección",
+        "phone": "Teléfono",
+        "email": "Correo",
+        "website": "Sitio web",
+        "repairNumber": "N.º de reparación",
+        "name": "Nombre",
+        "deviceType": "Tipo",
+        "manufacturer": "Fabricante",
+        "model": "Modelo",
+        "serialNumber": "Número de serie",
+        "estimateBase": "Presupuesto neto",
+        "taxRate": "Tipo impositivo",
+        "tax": "Impuesto",
+        "gross": "Total (con impuestos)",
+        "currency": "Moneda",
+        "expectedPickup": "Posible recogida"
+      },
+      "signatures": {
+        "client": "Firma del cliente",
+        "shop": "Firma del taller",
+        "nameDate": "Nombre y fecha"
+      }
+    },
+    "summary": {
+      "acknowledgment": "El cliente abajo firmante confirma la recepción del dispositivo reparado y acepta el trabajo realizado y los cargos indicados.",
       "signatures": {
         "client": "Firma del cliente",
         "shop": "Firma del taller",

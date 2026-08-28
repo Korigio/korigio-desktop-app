@@ -10,7 +10,7 @@ use crate::domain::dashboard::constants::STALE_AFTER_DAYS;
 use crate::domain::dashboard::get_home_dashboard;
 use crate::domain::devices::{DeviceInput, create_device};
 use crate::domain::repairs::constants::REPAIR_STATUSES;
-use crate::domain::repairs::{RepairInput, create_repair, update_repair};
+use crate::domain::repairs::{RepairInput, create_repair};
 
 fn customer(db: &Db, name: &str, phone: Option<&str>) -> i64 {
     create_customer(
@@ -78,25 +78,36 @@ fn sample_repair(customer_id: i64, device_id: i64, company_id: i64) -> RepairInp
     }
 }
 
-fn set_status(db: &Db, id: i64, customer_id: i64, device_id: i64, company_id: i64, status: &str) {
-    update_repair(
-        db.conn(),
-        id,
-        RepairInput {
-            customer_id,
-            device_id,
-            company_id,
-            status: Some(status.into()),
-            reported_problem: None,
-            accessories_received: None,
-            device_condition: None,
-            diagnosis_notes: None,
-            work_performed: None,
-            notes: None,
-            expected_pickup_at: None,
-        },
-    )
-    .expect("status");
+fn set_status(db: &Db, id: i64, status: &str) {
+    let now = OffsetDateTime::now_utc()
+        .format(&Rfc3339)
+        .expect("now");
+    match status {
+        "ready" => {
+            db.conn()
+                .execute(
+                    "UPDATE repairs SET status = ?1, ready_at = ?2, updated_at = ?2 WHERE id = ?3",
+                    rusqlite::params![status, now.as_str(), id],
+                )
+                .expect("status");
+        }
+        "collected" => {
+            db.conn()
+                .execute(
+                    "UPDATE repairs SET status = ?1, collected_at = ?2, updated_at = ?2 WHERE id = ?3",
+                    rusqlite::params![status, now.as_str(), id],
+                )
+                .expect("status");
+        }
+        _ => {
+            db.conn()
+                .execute(
+                    "UPDATE repairs SET status = ?1, updated_at = ?2 WHERE id = ?3",
+                    rusqlite::params![status, now.as_str(), id],
+                )
+                .expect("status");
+        }
+    }
 }
 
 fn count_for(status_counts: &[(String, i64)], status: &str) -> i64 {
@@ -133,10 +144,10 @@ fn status_counts_and_today_received() {
 
     let received = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("r1");
     let diagnosis = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("r2");
-    set_status(&db, diagnosis.id, customer_id, device_id, company_id, "diagnosis");
+    set_status(&db, diagnosis.id, "diagnosis");
 
     let ready = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("r3");
-    set_status(&db, ready.id, customer_id, device_id, company_id, "ready");
+    set_status(&db, ready.id, "ready");
 
     let dash = get_home_dashboard(db.conn()).expect("dashboard");
     let counts: Vec<(String, i64)> = dash
@@ -170,10 +181,10 @@ fn ready_list_orders_by_ready_at_ascending() {
     let device_id = device(&db, customer_id, "SN-2");
 
     let first = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("first");
-    set_status(&db, first.id, customer_id, device_id, company_id, "ready");
+    set_status(&db, first.id, "ready");
 
     let second = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("second");
-    set_status(&db, second.id, customer_id, device_id, company_id, "ready");
+    set_status(&db, second.id, "ready");
 
     // Force older ready_at on the second repair so order is deterministic.
     let older = (OffsetDateTime::now_utc() - Duration::days(2))
@@ -210,16 +221,16 @@ fn stale_list_includes_old_open_repairs_excludes_fresh_and_terminal() {
     let device_id = device(&db, customer_id, "SN-3");
 
     let stale = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("stale");
-    set_status(&db, stale.id, customer_id, device_id, company_id, "in_repair");
+    set_status(&db, stale.id, "in_repair");
 
     let fresh = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("fresh");
-    set_status(&db, fresh.id, customer_id, device_id, company_id, "diagnosis");
+    set_status(&db, fresh.id, "diagnosis");
 
     let collected = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("col");
-    set_status(&db, collected.id, customer_id, device_id, company_id, "collected");
+    set_status(&db, collected.id, "collected");
 
     let cancelled = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("can");
-    set_status(&db, cancelled.id, customer_id, device_id, company_id, "cancelled");
+    set_status(&db, cancelled.id, "cancelled");
 
     let old = (OffsetDateTime::now_utc() - Duration::days(i64::from(STALE_AFTER_DAYS) + 2))
         .format(&Rfc3339)
@@ -267,7 +278,7 @@ fn archived_repairs_excluded_from_all_sections() {
     let device_id = device(&db, customer_id, "SN-4");
 
     let repair = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("repair");
-    set_status(&db, repair.id, customer_id, device_id, company_id, "ready");
+    set_status(&db, repair.id, "ready");
 
     let old = (OffsetDateTime::now_utc() - Duration::days(i64::from(STALE_AFTER_DAYS) + 3))
         .format(&Rfc3339)
@@ -296,7 +307,7 @@ fn today_collected_uses_collected_at_date_prefix() {
     let device_id = device(&db, customer_id, "SN-5");
 
     let repair = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("repair");
-    set_status(&db, repair.id, customer_id, device_id, company_id, "collected");
+    set_status(&db, repair.id, "collected");
 
     let dash = get_home_dashboard(db.conn()).expect("dashboard");
     assert_eq!(dash.today.collected, 1);

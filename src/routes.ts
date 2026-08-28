@@ -10,7 +10,11 @@ import {
  * Prefer `index`, `route`, `layout`, and `prefix` from `@react-router/dev/routes`.
  */
 export default [
-  route("repairs/:id/print", "./routes/repairs/print.tsx"),
+  route("repairs/:id/print", "./routes/repairs/print-layout.tsx", [
+    index("./routes/repairs/print.tsx"),
+    route("diagnosis", "./routes/repairs/print-diagnosis.tsx"),
+    route("summary", "./routes/repairs/print-summary.tsx"),
+  ]),
   layout("./routes/app-shell.tsx", [
     index("./routes/home.tsx"),
     route("search", "./routes/search.tsx"),
@@ -31,6 +35,7 @@ export default [
     route("repairs/new", "./routes/repairs/new.tsx"),
     route("repairs/:id", "./routes/repairs/detail.tsx"),
     route("repairs/:id/edit", "./routes/repairs/edit.tsx"),
+    route("repairs/:id/diagnosis", "./routes/repairs/diagnosis.tsx"),
     route("diagnosis-templates", "./routes/diagnosis-templates/list.tsx"),
     route("diagnosis-templates/new", "./routes/diagnosis-templates/new.tsx"),
     route(
