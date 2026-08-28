@@ -7,6 +7,5 @@ pub mod diagnosis;
 pub mod images;
 pub mod print;
 pub mod repairs;
-pub mod search;
 pub mod seed;
 pub mod settings;

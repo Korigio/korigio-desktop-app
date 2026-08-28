@@ -84,7 +84,6 @@ pub fn run() {
             commands::confirm_repair_summary,
             commands::complete_repair_pickup,
             commands::get_home_dashboard,
-            commands::global_search,
             commands::list_diagnosis_templates,
             commands::get_diagnosis_template,
             commands::create_diagnosis_template,

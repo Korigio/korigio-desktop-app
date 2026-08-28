@@ -14,7 +14,6 @@
     "repairs": "Reparaciones",
     "diagnosisTemplates": "Plantillas de diagnóstico",
     "intake": "Recepción",
-    "search": "Buscar",
     "settings": "Ajustes",
     "collapse": "Contraer barra lateral",
     "expand": "Expandir barra lateral"
@@ -43,19 +42,6 @@
       "staleTitle": "Estancadas (sin actualización en {days}+ días)",
       "staleEmpty": "No hay reparaciones abiertas estancadas.",
       "daysInStatus": "{days}d"
-    }
-  },
-  "search": {
-    "title": "Búsqueda",
-    "subtitle": "Encuentre clientes, dispositivos y reparaciones en un solo lugar",
-    "placeholder": "Nombre, teléfono, serie, número de reparación…",
-    "prompt": "Escriba para buscar clientes, dispositivos y reparaciones.",
-    "empty": "No se encontraron resultados",
-    "sectionEmpty": "Sin coincidencias en esta sección",
-    "sections": {
-      "customers": "Clientes",
-      "devices": "Dispositivos",
-      "repairs": "Reparaciones"
     }
   },
   "customers": {

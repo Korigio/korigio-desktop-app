@@ -167,27 +167,6 @@ export function AppShell() {
             >
               {t("repairs.intake.start")}
             </LinkButton>
-            <LinkButton
-              to="/search"
-              variant="secondary"
-              className="px-3 py-1.5 text-xs sm:text-sm"
-            >
-              {t("nav.search")}
-            </LinkButton>
-            <LinkButton
-              to="/customers/new"
-              variant="secondary"
-              className="px-3 py-1.5 text-xs sm:text-sm"
-            >
-              {t("customers.actions.new")}
-            </LinkButton>
-            <LinkButton
-              to="/repairs/new"
-              variant="secondary"
-              className="px-3 py-1.5 text-xs sm:text-sm"
-            >
-              {t("repairs.actions.new")}
-            </LinkButton>
           </div>
         </header>
         <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">

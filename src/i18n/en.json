@@ -14,7 +14,6 @@
     "repairs": "Repairs",
     "diagnosisTemplates": "Diagnosis templates",
     "intake": "Intake",
-    "search": "Search",
     "settings": "Settings",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar"
@@ -43,19 +42,6 @@
       "staleTitle": "Stale (no update in {days}+ days)",
       "staleEmpty": "No stale open repairs.",
       "daysInStatus": "{days}d"
-    }
-  },
-  "search": {
-    "title": "Search",
-    "subtitle": "Find customers, devices and repairs in one place",
-    "placeholder": "Name, phone, serial, repair number…",
-    "prompt": "Type to search customers, devices and repairs.",
-    "empty": "No results found",
-    "sectionEmpty": "No matches in this section",
-    "sections": {
-      "customers": "Customers",
-      "devices": "Devices",
-      "repairs": "Repairs"
     }
   },
   "customers": {
