@@ -72,13 +72,22 @@
     "invalidId": "Ungültige Kunden-ID",
     "backToList": "Zurück zu Kunden",
     "archivedEditHint": "Kunde zuerst wiederherstellen, um zu bearbeiten.",
+    "detail": {
+      "subtitle": "Kundenübersicht und Kontaktdaten",
+      "sections": {
+        "contact": "Kontakt",
+        "notes": "Notizen"
+      }
+    },
     "fields": {
       "name": "Name",
       "phone": "Telefon",
       "email": "E-Mail",
       "address": "Adresse",
       "notes": "Notizen",
-      "status": "Status"
+      "status": "Status",
+      "createdAt": "Erstellt",
+      "updatedAt": "Aktualisiert"
     },
     "status": {
       "active": "Aktiv",
@@ -111,6 +120,14 @@
     "invalidId": "Ungültige Geräte-ID",
     "backToList": "Zurück zu Geräten",
     "archivedEditHint": "Gerät zuerst wiederherstellen, um zu bearbeiten.",
+    "detail": {
+      "subtitle": "Geräteübersicht und Eigentümerdaten",
+      "sections": {
+        "info": "Geräteinformationen",
+        "customer": "Kunde",
+        "notes": "Notizen"
+      }
+    },
     "fields": {
       "device": "Gerät",
       "customer": "Kunde",
@@ -121,7 +138,9 @@
       "serialNumber": "Seriennummer",
       "accessories": "Zubehör",
       "notes": "Notizen",
-      "status": "Status"
+      "status": "Status",
+      "createdAt": "Erstellt",
+      "updatedAt": "Aktualisiert"
     },
     "status": {
       "active": "Aktiv",
@@ -154,6 +173,14 @@
     "invalidId": "Ungültige Firmen-ID",
     "backToList": "Zurück zu Firmen",
     "archivedEditHint": "Firma zuerst wiederherstellen, um zu bearbeiten.",
+    "detail": {
+      "subtitle": "Firmenprofil für Annahme und Belege",
+      "sections": {
+        "identity": "Identität",
+        "contact": "Kontakt",
+        "logo": "Logo"
+      }
+    },
     "fields": {
       "legalName": "Firmenname",
       "tradeName": "Handelsname",
@@ -163,7 +190,9 @@
       "email": "E-Mail",
       "website": "Website",
       "default": "Standard",
-      "status": "Status"
+      "status": "Status",
+      "createdAt": "Erstellt",
+      "updatedAt": "Aktualisiert"
     },
     "status": {
       "active": "Aktiv",
@@ -575,6 +604,14 @@
     "saveReloadFailed": "Gespeichert, aber Diagnose konnte nicht neu geladen werden. Seite aktualisieren.",
     "selectTemplateFirst": "Zuerst eine Vorlage wählen.",
     "nothingToSave": "Nichts zu speichern. Zuerst eine Vorlage anwenden.",
+    "detail": {
+      "subtitle": "Checklistenvorlage für Reparaturdiagnosen",
+      "itemCount": "{count} Punkte",
+      "sections": {
+        "name": "Vorlagenname",
+        "items": "Checklistenpunkte"
+      }
+    },
     "fields": {
       "name": "Name",
       "items": "Checklistenpunkte",

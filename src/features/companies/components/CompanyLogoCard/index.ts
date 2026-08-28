@@ -1,0 +1,1 @@
+export { CompanyLogoCard } from "./CompanyLogoCard";

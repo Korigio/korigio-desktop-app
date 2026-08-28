@@ -1,0 +1,1 @@
+export { CustomerDetailStatusPanel } from "./CustomerDetailStatusPanel";

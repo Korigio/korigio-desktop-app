@@ -72,13 +72,22 @@
     "invalidId": "Identificador de cliente no válido",
     "backToList": "Volver a clientes",
     "archivedEditHint": "Desarchive el cliente para poder editarlo.",
+    "detail": {
+      "subtitle": "Resumen del cliente y datos de contacto",
+      "sections": {
+        "contact": "Contacto",
+        "notes": "Notas"
+      }
+    },
     "fields": {
       "name": "Nombre",
       "phone": "Teléfono",
       "email": "Email",
       "address": "Dirección",
       "notes": "Notas",
-      "status": "Estado"
+      "status": "Estado",
+      "createdAt": "Creado",
+      "updatedAt": "Actualizado"
     },
     "status": {
       "active": "Activo",
@@ -111,6 +120,14 @@
     "invalidId": "Identificador de dispositivo no válido",
     "backToList": "Volver a dispositivos",
     "archivedEditHint": "Desarchive el dispositivo para poder editarlo.",
+    "detail": {
+      "subtitle": "Resumen del dispositivo y datos del propietario",
+      "sections": {
+        "info": "Datos del dispositivo",
+        "customer": "Cliente",
+        "notes": "Notas"
+      }
+    },
     "fields": {
       "device": "Dispositivo",
       "customer": "Cliente",
@@ -121,7 +138,9 @@
       "serialNumber": "Número de serie",
       "accessories": "Accesorios",
       "notes": "Notas",
-      "status": "Estado"
+      "status": "Estado",
+      "createdAt": "Creado",
+      "updatedAt": "Actualizado"
     },
     "status": {
       "active": "Activo",
@@ -154,6 +173,14 @@
     "invalidId": "Identificador de empresa no válido",
     "backToList": "Volver a empresas",
     "archivedEditHint": "Desarchive la empresa para poder editarla.",
+    "detail": {
+      "subtitle": "Perfil de empresa para recepción y comprobantes",
+      "sections": {
+        "identity": "Identidad",
+        "contact": "Contacto",
+        "logo": "Logotipo"
+      }
+    },
     "fields": {
       "legalName": "Razón social",
       "tradeName": "Nombre comercial",
@@ -163,7 +190,9 @@
       "email": "Correo",
       "website": "Sitio web",
       "default": "Predeterminada",
-      "status": "Estado"
+      "status": "Estado",
+      "createdAt": "Creado",
+      "updatedAt": "Actualizado"
     },
     "status": {
       "active": "Activa",
@@ -575,6 +604,14 @@
     "saveReloadFailed": "Guardado, pero no se pudo recargar el diagnóstico. Actualice la página.",
     "selectTemplateFirst": "Seleccione una plantilla primero.",
     "nothingToSave": "No hay nada que guardar. Aplique una plantilla primero.",
+    "detail": {
+      "subtitle": "Plantilla de lista de verificación para diagnósticos",
+      "itemCount": "{count} ítems",
+      "sections": {
+        "name": "Nombre de la plantilla",
+        "items": "Ítems de la lista"
+      }
+    },
     "fields": {
       "name": "Nombre",
       "items": "Ítems de la lista",

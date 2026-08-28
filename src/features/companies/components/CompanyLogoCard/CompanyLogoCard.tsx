@@ -1,6 +1,6 @@
 import { useCompanyLogo } from "@/features/companies/hooks/useCompanyLogo";
 import type { Company } from "@/features/companies/types/company";
-import { Button, StatusMessage } from "@/ui";
+import { Button, Card, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export function CompanyLogoSection({
+export function CompanyLogoCard({
   company,
   onCompanyChange,
   disabled = false,
@@ -18,8 +18,7 @@ export function CompanyLogoSection({
   const logo = useCompanyLogo({ company, onCompanyChange, disabled });
 
   return (
-    <section className="flex max-w-xl flex-col gap-3">
-      <h2 className="text-base font-medium">{t("companies.logo.title")}</h2>
+    <Card title={t("companies.detail.sections.logo")}>
       {logo.logoUrl ? (
         <img
           src={logo.logoUrl}
@@ -32,7 +31,7 @@ export function CompanyLogoSection({
       {logo.error ? (
         <StatusMessage tone="danger">{logo.error}</StatusMessage>
       ) : null}
-      <div className="flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         <Button
           type="button"
           variant="secondary"
@@ -54,6 +53,6 @@ export function CompanyLogoSection({
           </Button>
         ) : null}
       </div>
-    </section>
+    </Card>
   );
 }

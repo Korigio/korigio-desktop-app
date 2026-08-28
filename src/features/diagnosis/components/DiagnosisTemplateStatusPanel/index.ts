@@ -1,0 +1,1 @@
+export { DiagnosisTemplateStatusPanel } from "./DiagnosisTemplateStatusPanel";

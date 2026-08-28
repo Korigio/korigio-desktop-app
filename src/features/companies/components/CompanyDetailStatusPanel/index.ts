@@ -1,0 +1,1 @@
+export { CompanyDetailStatusPanel } from "./CompanyDetailStatusPanel";

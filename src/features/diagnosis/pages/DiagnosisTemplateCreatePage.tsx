@@ -8,10 +8,10 @@ export function DiagnosisTemplateCreatePage() {
   const { form, submitError } = useDiagnosisTemplateForm({ mode: "create" });
 
   return (
-    <Page>
+    <Page className="max-w-5xl">
       <PageHeader
         title={t("diagnosis.createTitle")}
-        description={t("diagnosis.createSubtitle")}
+        description={t("diagnosis.detail.subtitle")}
       />
       <DiagnosisTemplateForm
         form={form}

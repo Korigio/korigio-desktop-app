@@ -1,4 +1,5 @@
 import { DiagnosisTemplateForm } from "@/features/diagnosis/components/DiagnosisTemplateForm";
+import { DiagnosisTemplateStatusPanel } from "@/features/diagnosis/components/DiagnosisTemplateStatusPanel";
 import { useDiagnosisTemplateDetail } from "@/features/diagnosis/hooks/useDiagnosisTemplateDetail";
 import { useDiagnosisTemplateForm } from "@/features/diagnosis/hooks/useDiagnosisTemplateForm";
 import type { DiagnosisTemplate } from "@/features/diagnosis/types/diagnosis";
@@ -44,16 +45,20 @@ function DiagnosisTemplateEditForm({
   });
 
   return (
-    <Page>
+    <Page className="max-w-5xl">
       <PageHeader
-        title={t("diagnosis.editTitle")}
-        description={template.name}
+        title={template.name}
+        description={t("diagnosis.detail.subtitle")}
       />
-      <DiagnosisTemplateForm
-        form={form}
-        submitError={submitError}
-        submitLabel={t("diagnosis.actions.save")}
-      />
+
+      <div className="flex flex-col gap-4">
+        <DiagnosisTemplateStatusPanel template={template} />
+        <DiagnosisTemplateForm
+          form={form}
+          submitError={submitError}
+          submitLabel={t("diagnosis.actions.save")}
+        />
+      </div>
     </Page>
   );
 }

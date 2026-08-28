@@ -1,7 +1,11 @@
+import { DeviceCustomerCard } from "@/features/devices/components/DeviceCustomerCard";
 import { DeviceDetailActions } from "@/features/devices/components/DeviceDetailActions";
-import { DeviceDetailFields } from "@/features/devices/components/DeviceDetailFields";
+import { DeviceDetailStatusPanel } from "@/features/devices/components/DeviceDetailStatusPanel";
+import { DeviceInfoCard } from "@/features/devices/components/DeviceInfoCard";
 import { DeviceLoadState } from "@/features/devices/components/DeviceLoadState";
+import { DeviceNotesCard } from "@/features/devices/components/DeviceNotesCard";
 import { useDeviceDetail } from "@/features/devices/hooks/useDeviceDetail";
+import { useDeviceDetailRelations } from "@/features/devices/hooks/useDeviceDetailRelations";
 import { deviceLabel } from "@/features/devices/types/device";
 import { DeviceRepairsSection } from "@/features/repairs/components/DeviceRepairsSection";
 import { Page, PageHeader } from "@/ui";
@@ -14,6 +18,7 @@ export function DeviceDetailPage({ deviceId }: Props) {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { device, loading, error, setDevice } = useDeviceDetail(deviceId);
+  const relations = useDeviceDetailRelations(device);
 
   if (loading) {
     return <DeviceLoadState />;
@@ -24,14 +29,10 @@ export function DeviceDetailPage({ deviceId }: Props) {
   }
 
   return (
-    <Page>
+    <Page className="max-w-5xl">
       <PageHeader
         title={deviceLabel(device)}
-        description={
-          device.archivedAt
-            ? t("devices.status.archived")
-            : t("devices.status.active")
-        }
+        description={t("devices.detail.subtitle")}
         actions={
           <DeviceDetailActions
             device={device}
@@ -40,11 +41,25 @@ export function DeviceDetailPage({ deviceId }: Props) {
           />
         }
       />
-      <DeviceDetailFields device={device} />
-      <DeviceRepairsSection
-        customerId={device.customerId}
-        deviceId={device.id}
-      />
+
+      <div className="flex flex-col gap-4">
+        <DeviceDetailStatusPanel device={device} />
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+          <DeviceInfoCard device={device} />
+          <DeviceCustomerCard
+            device={device}
+            customer={relations.customer}
+            loading={relations.loading}
+          />
+          <DeviceNotesCard device={device} />
+        </div>
+
+        <DeviceRepairsSection
+          customerId={device.customerId}
+          deviceId={device.id}
+        />
+      </div>
     </Page>
   );
 }

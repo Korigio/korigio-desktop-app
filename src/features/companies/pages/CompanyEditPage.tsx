@@ -1,6 +1,6 @@
 import { CompanyForm } from "@/features/companies/components/CompanyForm";
 import { CompanyLoadState } from "@/features/companies/components/CompanyLoadState";
-import { CompanyLogoSection } from "@/features/companies/components/CompanyLogoSection";
+import { CompanyLogoCard } from "@/features/companies/components/CompanyLogoCard";
 import { useCompanyDetail } from "@/features/companies/hooks/useCompanyDetail";
 import { useCompanyForm } from "@/features/companies/hooks/useCompanyForm";
 import {
@@ -49,7 +49,7 @@ function CompanyEditForm({
         submitLabel={t("companies.actions.save")}
         disabled={isArchived}
       />
-      <CompanyLogoSection
+      <CompanyLogoCard
         company={company}
         onCompanyChange={onCompanyChange}
         disabled={isArchived}

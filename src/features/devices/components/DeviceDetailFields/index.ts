@@ -1,1 +1,0 @@
-export { DeviceDetailFields } from "./DeviceDetailFields";

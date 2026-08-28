@@ -1,6 +1,13 @@
 import type { useDiagnosisTemplateForm } from "@/features/diagnosis/hooks/useDiagnosisTemplateForm";
 import { newTemplateItemId } from "@/features/diagnosis/types/diagnosis";
-import { Button, FormField, SelectField, StatusMessage, TextField } from "@/ui";
+import {
+  Button,
+  Card,
+  FormField,
+  SelectField,
+  StatusMessage,
+  TextField,
+} from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
@@ -20,7 +27,7 @@ export function DiagnosisTemplateForm({
 
   return (
     <form
-      className="flex max-w-2xl flex-col gap-4"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -31,36 +38,38 @@ export function DiagnosisTemplateForm({
         <StatusMessage tone="danger">{submitError}</StatusMessage>
       ) : null}
 
-      <form.Field
-        name="name"
-        validators={{
-          onChange: ({ value }) =>
-            !value.trim()
-              ? t("diagnosis.validation.nameRequired")
-              : undefined,
-        }}
-      >
-        {(field) => (
-          <FormField
-            label={t("diagnosis.fields.name")}
-            htmlFor={field.name}
-            error={
-              typeof field.state.meta.errors[0] === "string"
-                ? field.state.meta.errors[0]
-                : undefined
-            }
-          >
-            <TextField
-              id={field.name}
-              name={field.name}
-              value={field.state.value}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+      <Card title={t("diagnosis.detail.sections.name")}>
+        <form.Field
+          name="name"
+          validators={{
+            onChange: ({ value }) =>
+              !value.trim()
+                ? t("diagnosis.validation.nameRequired")
+                : undefined,
+          }}
+        >
+          {(field) => (
+            <FormField
+              label={t("diagnosis.fields.name")}
+              htmlFor={field.name}
+              error={
+                typeof field.state.meta.errors[0] === "string"
+                  ? field.state.meta.errors[0]
+                  : undefined
+              }
+            >
+              <TextField
+                id={field.name}
+                name={field.name}
+                value={field.state.value}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
+      </Card>
 
       <form.Field
         name="items"
@@ -73,11 +82,9 @@ export function DiagnosisTemplateForm({
         }}
       >
         {(itemsField) => (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-medium">
-                {t("diagnosis.fields.items")}
-              </h2>
+          <Card
+            title={t("diagnosis.detail.sections.items")}
+            actions={
               <Button
                 type="button"
                 variant="secondary"
@@ -93,95 +100,97 @@ export function DiagnosisTemplateForm({
               >
                 {t("diagnosis.actions.addItem")}
               </Button>
-            </div>
+            }
+          >
+            <div className="flex flex-col gap-3">
+              {typeof itemsField.state.meta.errors[0] === "string" ? (
+                <p className="text-sm text-red-700">
+                  {itemsField.state.meta.errors[0]}
+                </p>
+              ) : null}
 
-            {typeof itemsField.state.meta.errors[0] === "string" ? (
-              <p className="text-sm text-red-700">
-                {itemsField.state.meta.errors[0]}
-              </p>
-            ) : null}
-
-            {itemsField.state.value.map((item, index) => (
-              <div
-                key={item.id}
-                className="flex flex-col gap-3 rounded-md border border-border p-3"
-              >
-                <form.Field
-                  name={`items[${index}].label`}
-                  validators={{
-                    onChange: ({ value }) =>
-                      !value.trim()
-                        ? t("diagnosis.validation.labelRequired")
-                        : undefined,
-                  }}
+              {itemsField.state.value.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col gap-3 rounded-md border border-border p-3"
                 >
-                  {(field) => (
-                    <FormField
-                      label={t("diagnosis.fields.itemLabel")}
-                      htmlFor={field.name}
-                      error={
-                        typeof field.state.meta.errors[0] === "string"
-                          ? field.state.meta.errors[0]
-                          : undefined
-                      }
-                    >
-                      <TextField
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        disabled={disabled}
-                        onBlur={field.handleBlur}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value)
-                        }
-                      />
-                    </FormField>
-                  )}
-                </form.Field>
-
-                <form.Field name={`items[${index}].kind`}>
-                  {(field) => (
-                    <FormField
-                      label={t("diagnosis.fields.itemKind")}
-                      htmlFor={field.name}
-                    >
-                      <SelectField
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        disabled={disabled}
-                        onBlur={field.handleBlur}
-                        onChange={(event) =>
-                          field.handleChange(
-                            event.target.value as "checkbox" | "text",
-                          )
+                  <form.Field
+                    name={`items[${index}].label`}
+                    validators={{
+                      onChange: ({ value }) =>
+                        !value.trim()
+                          ? t("diagnosis.validation.labelRequired")
+                          : undefined,
+                    }}
+                  >
+                    {(field) => (
+                      <FormField
+                        label={t("diagnosis.fields.itemLabel")}
+                        htmlFor={field.name}
+                        error={
+                          typeof field.state.meta.errors[0] === "string"
+                            ? field.state.meta.errors[0]
+                            : undefined
                         }
                       >
-                        <option value="checkbox">
-                          {t("diagnosis.kinds.checkbox")}
-                        </option>
-                        <option value="text">
-                          {t("diagnosis.kinds.text")}
-                        </option>
-                      </SelectField>
-                    </FormField>
-                  )}
-                </form.Field>
+                        <TextField
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          disabled={disabled}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(event.target.value)
+                          }
+                        />
+                      </FormField>
+                    )}
+                  </form.Field>
 
-                <div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    className="px-2 py-1 text-xs"
-                    disabled={disabled || itemsField.state.value.length <= 1}
-                    onClick={() => itemsField.removeValue(index)}
-                  >
-                    {t("diagnosis.actions.removeItem")}
-                  </Button>
+                  <form.Field name={`items[${index}].kind`}>
+                    {(field) => (
+                      <FormField
+                        label={t("diagnosis.fields.itemKind")}
+                        htmlFor={field.name}
+                      >
+                        <SelectField
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          disabled={disabled}
+                          onBlur={field.handleBlur}
+                          onChange={(event) =>
+                            field.handleChange(
+                              event.target.value as "checkbox" | "text",
+                            )
+                          }
+                        >
+                          <option value="checkbox">
+                            {t("diagnosis.kinds.checkbox")}
+                          </option>
+                          <option value="text">
+                            {t("diagnosis.kinds.text")}
+                          </option>
+                        </SelectField>
+                      </FormField>
+                    )}
+                  </form.Field>
+
+                  <div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="px-2 py-1 text-xs"
+                      disabled={disabled || itemsField.state.value.length <= 1}
+                      onClick={() => itemsField.removeValue(index)}
+                    >
+                      {t("diagnosis.actions.removeItem")}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </Card>
         )}
       </form.Field>
 

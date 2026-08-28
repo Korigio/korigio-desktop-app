@@ -1,7 +1,9 @@
+import { CompanyContactCard } from "@/features/companies/components/CompanyContactCard";
 import { CompanyDetailActions } from "@/features/companies/components/CompanyDetailActions";
-import { CompanyDetailFields } from "@/features/companies/components/CompanyDetailFields";
+import { CompanyDetailStatusPanel } from "@/features/companies/components/CompanyDetailStatusPanel";
+import { CompanyIdentityCard } from "@/features/companies/components/CompanyIdentityCard";
 import { CompanyLoadState } from "@/features/companies/components/CompanyLoadState";
-import { CompanyLogoSection } from "@/features/companies/components/CompanyLogoSection";
+import { CompanyLogoCard } from "@/features/companies/components/CompanyLogoCard";
 import { useCompanyDetail } from "@/features/companies/hooks/useCompanyDetail";
 import { companyLabel } from "@/features/companies/types/company";
 import { Page, PageHeader } from "@/ui";
@@ -26,16 +28,10 @@ export function CompanyDetailPage({ companyId }: Props) {
   const isArchived = Boolean(company.archivedAt);
 
   return (
-    <Page>
+    <Page className="max-w-5xl">
       <PageHeader
         title={companyLabel(company)}
-        description={
-          isArchived
-            ? t("companies.status.archived")
-            : company.isDefault
-              ? t("companies.status.default")
-              : t("companies.status.active")
-        }
+        description={t("companies.detail.subtitle")}
         actions={
           <CompanyDetailActions
             company={company}
@@ -44,12 +40,20 @@ export function CompanyDetailPage({ companyId }: Props) {
           />
         }
       />
-      <CompanyDetailFields company={company} />
-      <CompanyLogoSection
-        company={company}
-        onCompanyChange={setCompany}
-        disabled={isArchived}
-      />
+
+      <div className="flex flex-col gap-4">
+        <CompanyDetailStatusPanel company={company} />
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+          <CompanyIdentityCard company={company} />
+          <CompanyContactCard company={company} />
+          <CompanyLogoCard
+            company={company}
+            onCompanyChange={setCompany}
+            disabled={isArchived}
+          />
+        </div>
+      </div>
     </Page>
   );
 }

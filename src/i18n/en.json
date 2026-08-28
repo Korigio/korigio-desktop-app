@@ -72,13 +72,22 @@
     "invalidId": "Invalid customer id",
     "backToList": "Back to customers",
     "archivedEditHint": "Unarchive the customer before editing.",
+    "detail": {
+      "subtitle": "Customer overview and contact details",
+      "sections": {
+        "contact": "Contact",
+        "notes": "Notes"
+      }
+    },
     "fields": {
       "name": "Name",
       "phone": "Phone",
       "email": "Email",
       "address": "Address",
       "notes": "Notes",
-      "status": "Status"
+      "status": "Status",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
     },
     "status": {
       "active": "Active",
@@ -111,6 +120,14 @@
     "invalidId": "Invalid device id",
     "backToList": "Back to devices",
     "archivedEditHint": "Unarchive the device before editing.",
+    "detail": {
+      "subtitle": "Device overview and owner details",
+      "sections": {
+        "info": "Device info",
+        "customer": "Customer",
+        "notes": "Notes"
+      }
+    },
     "fields": {
       "device": "Device",
       "customer": "Customer",
@@ -121,7 +138,9 @@
       "serialNumber": "Serial number",
       "accessories": "Accessories",
       "notes": "Notes",
-      "status": "Status"
+      "status": "Status",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
     },
     "status": {
       "active": "Active",
@@ -154,6 +173,14 @@
     "invalidId": "Invalid company id",
     "backToList": "Back to companies",
     "archivedEditHint": "Unarchive the company before editing.",
+    "detail": {
+      "subtitle": "Company profile for intake and receipts",
+      "sections": {
+        "identity": "Identity",
+        "contact": "Contact",
+        "logo": "Logo"
+      }
+    },
     "fields": {
       "legalName": "Legal name",
       "tradeName": "Trade name",
@@ -163,7 +190,9 @@
       "email": "Email",
       "website": "Website",
       "default": "Default",
-      "status": "Status"
+      "status": "Status",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
     },
     "status": {
       "active": "Active",
@@ -575,6 +604,14 @@
     "saveReloadFailed": "Saved, but could not reload diagnosis. Try refreshing the page.",
     "selectTemplateFirst": "Select a template first.",
     "nothingToSave": "Nothing to save. Apply a template first.",
+    "detail": {
+      "subtitle": "Checklist template for repair diagnoses",
+      "itemCount": "{count} items",
+      "sections": {
+        "name": "Template name",
+        "items": "Checklist items"
+      }
+    },
     "fields": {
       "name": "Name",
       "items": "Checklist items",
