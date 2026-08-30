@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { diagnosisTemplatesApi } from "@/features/diagnosis/api/diagnosisApi";
 import {
   templateItemsToResult,
@@ -22,6 +22,7 @@ import {
 import { settingsApi } from "@/features/settings/api/settingsApi";
 import type { ShopSettings } from "@/features/settings/types/shopSettings";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 type FormValues = {
   diagnosisNotes: string;
@@ -46,8 +47,27 @@ function repairCanPrint(repair: Repair): boolean {
   );
 }
 
+function isDiagnosisFlowDirty(
+  formValues: FormValues,
+  repair: Repair | null,
+  checklistItems: DiagnosisResultItem[],
+): boolean {
+  if (checklistItems.length > 0) {
+    return true;
+  }
+  if (!repair) {
+    return false;
+  }
+  const saved = toFormValues(repair);
+  return (
+    formValues.diagnosisNotes !== saved.diagnosisNotes ||
+    formValues.expectedPickupAt !== saved.expectedPickupAt ||
+    formValues.estimateMajor !== saved.estimateMajor
+  );
+}
+
 export function useRepairDiagnosisFlow(
-  repairId: number,
+  repairId: string,
   options: {
     enabled?: boolean;
     onFinalizeSuccess?: (repair: Repair) => void;
@@ -116,6 +136,60 @@ export function useRepairDiagnosisFlow(
     }
   }, [form, repairId, t]);
 
+  const repairRef = useRef(repair);
+  repairRef.current = repair;
+  const checklistRef = useRef(checklistItems);
+  checklistRef.current = checklistItems;
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+
+  const silentRefresh = useCallback(async () => {
+    if (!enabledRef.current) {
+      return;
+    }
+    if (
+      isDiagnosisFlowDirty(
+        form.state.values,
+        repairRef.current,
+        checklistRef.current,
+      )
+    ) {
+      return;
+    }
+    try {
+      const [nextRepair, nextShop, templateList] = await Promise.all([
+        repairsApi.get(repairId),
+        settingsApi.getShopSettings(),
+        diagnosisTemplatesApi.list({ page: 1, pageSize: 100 }),
+      ]);
+      if (
+        isDiagnosisFlowDirty(
+          form.state.values,
+          repairRef.current,
+          checklistRef.current,
+        )
+      ) {
+        return;
+      }
+      setRepair(nextRepair);
+      setShopSettings(nextShop);
+      setTemplates(templateList.items);
+      setEstimateLocked(nextRepair.estimateBaseCents != null);
+      form.reset(toFormValues(nextRepair));
+      setSelectedTemplateId((prev) => {
+        if (
+          prev &&
+          templateList.items.some((template) => String(template.id) === prev)
+        ) {
+          return prev;
+        }
+        return templateList.items[0] ? String(templateList.items[0].id) : "";
+      });
+    } catch {
+      // Keep the last good repair and form values.
+    }
+  }, [form, repairId]);
+
   useEffect(() => {
     if (!enabled) {
       return;
@@ -123,11 +197,15 @@ export function useRepairDiagnosisFlow(
     void reload();
   }, [enabled, reload]);
 
+  useSyncApplied(() => {
+    void silentRefresh();
+  });
+
   const canPrint = repair ? repairCanPrint(repair) : false;
 
   const loadTemplateChecklist = useCallback(async () => {
-    const templateId = Number(selectedTemplateId);
-    if (!Number.isFinite(templateId) || templateId <= 0) {
+    const templateId = selectedTemplateId.trim();
+    if (!templateId) {
       setError(t("repairs.diagnosisFlow.errors.selectTemplateFirst"));
       return;
     }

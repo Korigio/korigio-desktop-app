@@ -7,6 +7,7 @@ import type {
   RepairInput,
   RepairStatus,
 } from "@/features/repairs/types/repair";
+import { isEntityId } from "@/shared/utils/entityId";
 
 type FormValues = {
   customerId: string;
@@ -25,25 +26,23 @@ type FormValues = {
 type Options = {
   repair?: Repair;
   mode: "create" | "edit";
-  defaultCustomerId?: number;
-  defaultDeviceId?: number;
-  defaultCompanyId?: number;
+  defaultCustomerId?: string;
+  defaultDeviceId?: string;
+  defaultCompanyId?: string;
   onSuccess?: (entity: Repair) => void;
   navigateOnSuccess?: boolean;
 };
 
 function toValues(
   repair?: Repair,
-  defaultCustomerId?: number,
-  defaultDeviceId?: number,
-  defaultCompanyId?: number,
+  defaultCustomerId?: string,
+  defaultDeviceId?: string,
+  defaultCompanyId?: string,
 ): FormValues {
   return {
-    customerId: String(repair?.customerId ?? defaultCustomerId ?? ""),
-    deviceId: String(repair?.deviceId ?? defaultDeviceId ?? ""),
-    companyId: String(
-      repair?.companyId ?? defaultCompanyId ?? "",
-    ),
+    customerId: repair?.customerId ?? defaultCustomerId ?? "",
+    deviceId: repair?.deviceId ?? defaultDeviceId ?? "",
+    companyId: repair?.companyId ?? defaultCompanyId ?? "",
     status: repair?.status ?? "received",
     reportedProblem: repair?.reportedProblem ?? "",
     accessoriesReceived: repair?.accessoriesReceived ?? "",
@@ -57,9 +56,9 @@ function toValues(
 
 function toInput(value: FormValues): RepairInput {
   return {
-    customerId: Number(value.customerId),
-    deviceId: Number(value.deviceId),
-    companyId: Number(value.companyId),
+    customerId: value.customerId,
+    deviceId: value.deviceId,
+    companyId: value.companyId,
     status: (value.status || undefined) as RepairStatus | undefined,
     reportedProblem: value.reportedProblem || null,
     accessoriesReceived: value.accessoriesReceived || null,
@@ -97,13 +96,13 @@ export function useRepairForm({
       const input = toInput(value);
 
       if (mode === "create") {
-        if (!Number.isFinite(input.customerId) || input.customerId <= 0) {
+        if (!isEntityId(input.customerId)) {
           throw new Error("Customer is required");
         }
-        if (!Number.isFinite(input.deviceId) || input.deviceId <= 0) {
+        if (!isEntityId(input.deviceId)) {
           throw new Error("Device is required");
         }
-        if (!Number.isFinite(input.companyId) || input.companyId <= 0) {
+        if (!isEntityId(input.companyId)) {
           throw new Error("Company is required");
         }
         const created = await repairsApi.create(input);

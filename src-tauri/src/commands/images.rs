@@ -20,7 +20,7 @@ fn lock_db<'a>(
 #[tauri::command(rename_all = "camelCase")]
 pub fn list_repair_images(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<Vec<RepairImage>, CommandError> {
     let db = lock_db(&state)?;
     Ok(images::list_repair_images(&db, repair_id)?)
@@ -38,7 +38,7 @@ pub fn attach_repair_images(
 #[tauri::command(rename_all = "camelCase")]
 pub fn update_repair_image(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
     input: UpdateRepairImageInput,
 ) -> Result<RepairImage, CommandError> {
     let db = lock_db(&state)?;
@@ -46,7 +46,7 @@ pub fn update_repair_image(
 }
 
 #[tauri::command(rename_all = "camelCase")]
-pub fn delete_repair_image(state: State<'_, DbState>, id: i64) -> Result<(), CommandError> {
+pub fn delete_repair_image(state: State<'_, DbState>, id: String) -> Result<(), CommandError> {
     let db = lock_db(&state)?;
     Ok(images::delete_repair_image(&db, id)?)
 }
@@ -54,7 +54,7 @@ pub fn delete_repair_image(state: State<'_, DbState>, id: i64) -> Result<(), Com
 #[tauri::command(rename_all = "camelCase")]
 pub fn resolve_repair_image_path(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
     variant: ImageVariant,
 ) -> Result<ResolveRepairImagePathResult, CommandError> {
     let db = lock_db(&state)?;

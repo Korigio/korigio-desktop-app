@@ -37,7 +37,10 @@ pub fn restore_backup(
     path: String,
 ) -> Result<RestoreBackupResult, CommandError> {
     let mut db = lock_db(&state)?;
-    Ok(backup::restore_backup(&mut db, std::path::Path::new(&path))?)
+    Ok(backup::restore_backup(
+        &mut db,
+        std::path::Path::new(&path),
+    )?)
 }
 
 #[tauri::command]
@@ -49,9 +52,7 @@ pub fn list_local_backups(
 }
 
 #[tauri::command]
-pub fn run_auto_backup_if_due(
-    state: State<'_, DbState>,
-) -> Result<AutoBackupResult, CommandError> {
+pub fn run_auto_backup_if_due(state: State<'_, DbState>) -> Result<AutoBackupResult, CommandError> {
     let db = lock_db(&state)?;
     Ok(backup::run_auto_backup_if_due(&db)?)
 }

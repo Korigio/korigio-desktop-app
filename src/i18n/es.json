@@ -28,6 +28,64 @@
     "clearSelection": "Quitar selección",
     "close": "Cerrar"
   },
+  "staff": {
+    "fields": {
+      "name": "Nombre"
+    }
+  },
+  "team": {
+    "title": "Equipo",
+    "enter": "Entrar al equipo",
+    "create": {
+      "title": "Crear un equipo",
+      "name": "Nombre del equipo",
+      "memberName": "Su nombre",
+      "pinShown": "Anote este PIN. Lo necesitará en este ordenador.",
+      "submit": "Crear equipo"
+    },
+    "join": {
+      "title": "Unirse a un equipo",
+      "memberName": "Su nombre",
+      "pin": "PIN",
+      "nearbyEmpty": "No se encontraron equipos en esta red",
+      "pick": "Unirse al equipo {name}",
+      "submit": "Unirse al equipo"
+    },
+    "leave": {
+      "title": "Salir del equipo",
+      "confirm": "¿Salir de este equipo? Este ordenador dejará de sincronizarse con los demás.",
+      "submit": "Salir del equipo"
+    },
+    "members": {
+      "title": "Miembros",
+      "open": "Abrir equipo",
+      "name": "Nombre",
+      "status": "Estado",
+      "gigs": "Trabajos",
+      "gigsHint": "Los trabajos son encargos abiertos asignados a esa persona. Ambos ordenadores deberían mostrar las mismas personas y números una vez sincronizados.",
+      "empty": "Aún no hay miembros"
+    },
+    "status": {
+      "online": "En línea",
+      "offline": "Sin conexión"
+    },
+    "sync": {
+      "unreachable": "No se pudo contactar con el otro ordenador. Permita Servioo en la red local en Ajustes del sistema y mantenga ambos ordenadores en el mismo Wi-Fi.",
+      "waiting": "Esperando a otro ordenador del equipo en esta red…",
+      "connected": "Conectado a {count} otro(s) ordenador(es)."
+    },
+    "pin": {
+      "label": "PIN",
+      "help": "Comparta este PIN para que otros se unan en este Wi-Fi.",
+      "unavailable": "El PIN del equipo no está disponible en este ordenador."
+    },
+    "notInTeam": "Este ordenador no está en un equipo",
+    "errors": {
+      "alreadyInTeam": "Este ordenador ya pertenece a un equipo",
+      "noPeer": "No se encontró otro ordenador del equipo en esta red",
+      "lastAdminLeave": "No se puede salir mientras otros ordenadores siguen en el equipo y usted es el último administrador."
+    }
+  },
   "home": {
     "title": "Inicio",
     "dashboard": {
@@ -225,6 +283,11 @@
     "invalidId": "Identificador de reparación no válido",
     "backToList": "Volver a reparaciones",
     "archivedEditHint": "Desarchive la reparación para poder editarla.",
+    "assign": "Asignar",
+    "takeOver": "Hacerse cargo",
+    "assignedTo": "Asignada a {name}",
+    "unassigned": "Sin asignar",
+    "selectAssignee": "Seleccionar asignado",
     "detail": {
       "subtitle": "Resumen de la reparación y progreso del taller",
       "archived": "Esta reparación está archivada.",
@@ -638,6 +701,13 @@
       "en": "Inglés",
       "error": "No se pudo guardar la preferencia de idioma."
     },
+    "syncInterval": {
+      "label": "Intervalo de sincronización",
+      "hint": "Cada cuánto se comunica este ordenador con los demás del equipo en la red. El valor predeterminado es 5 segundos.",
+      "unit": "segundos",
+      "error": "No se pudo guardar el intervalo de sincronización.",
+      "rangeHint": "Entre 2 y 60 segundos."
+    },
     "backup": {
       "title": "Copia de seguridad y restauración",
       "subtitle": "Cree copias portátiles de la base de datos y las fotos. La restauración reemplaza los datos actuales tras una copia de seguridad de seguridad.",
@@ -834,6 +904,11 @@
       "deleteFailed": "No se pudo eliminar la foto.",
       "resolveFailed": "No se pudo abrir la foto.",
       "limitReached": "Esta reparación ya tiene el máximo de fotos."
+    }
+  },
+  "backup": {
+    "restore": {
+      "unsupportedSchema": "Esta copia de seguridad es de una versión anterior de Servioo y no se puede restaurar."
     }
   }
 }

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { settingsApi } from "@/features/settings/api/settingsApi";
 import type { ShopSettings } from "@/features/settings/types/shopSettings";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 export function useShopSettings() {
   const { t } = useI18n();
@@ -33,9 +34,48 @@ export function useShopSettings() {
     }
   }, [t]);
 
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const taxRatePercentRef = useRef(taxRatePercent);
+  taxRatePercentRef.current = taxRatePercent;
+  const currencyRef = useRef(currency);
+  currencyRef.current = currency;
+
+  const shopFieldsDirty = useCallback(() => {
+    const saved = settingsRef.current;
+    if (!saved) {
+      return false;
+    }
+    return (
+      taxRatePercentRef.current !== saved.taxRatePercent ||
+      currencyRef.current !== saved.currency
+    );
+  }, []);
+
+  const silentRefresh = useCallback(async () => {
+    if (shopFieldsDirty()) {
+      return;
+    }
+    try {
+      const next = await settingsApi.getShopSettings();
+      if (shopFieldsDirty()) {
+        return;
+      }
+      setSettings(next);
+      setTaxRatePercent(next.taxRatePercent);
+      setCurrency(next.currency);
+    } catch {
+      // Keep the last saved shop settings.
+    }
+  }, [shopFieldsDirty]);
+
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useSyncApplied(() => {
+    void silentRefresh();
+  });
 
   const save = useCallback(async () => {
     setSaving(true);

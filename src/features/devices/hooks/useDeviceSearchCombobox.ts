@@ -4,7 +4,7 @@ import { deviceLabel, type Device } from "@/features/devices/types/device";
 import { useAsyncSearchCombobox } from "@/shared/hooks/useAsyncSearchCombobox";
 
 type Options = {
-  customerId?: number;
+  customerId?: string;
   onSelect?: (device: Device) => void;
   onClear?: () => void;
 };

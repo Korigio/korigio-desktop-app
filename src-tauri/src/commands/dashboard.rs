@@ -15,9 +15,7 @@ fn lock_db<'a>(
 }
 
 #[tauri::command]
-pub fn get_home_dashboard(
-    state: State<'_, DbState>,
-) -> Result<HomeDashboard, CommandError> {
+pub fn get_home_dashboard(state: State<'_, DbState>) -> Result<HomeDashboard, CommandError> {
     let db = lock_db(&state)?;
     Ok(dashboard::get_home_dashboard(db.conn())?)
 }

@@ -34,7 +34,11 @@ pub fn get_home_dashboard(conn: &Connection) -> Result<HomeDashboard, AppError> 
     })
 }
 
-fn to_row(raw: DashboardRepairRaw, now: OffsetDateTime, use_ready_anchor: bool) -> DashboardRepairRow {
+fn to_row(
+    raw: DashboardRepairRaw,
+    now: OffsetDateTime,
+    use_ready_anchor: bool,
+) -> DashboardRepairRow {
     let anchor = if use_ready_anchor {
         raw.ready_at.as_deref().unwrap_or(raw.updated_at.as_str())
     } else {

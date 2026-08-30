@@ -9,7 +9,10 @@ mod print;
 mod repairs;
 mod seed;
 mod settings;
+mod staff;
+mod sync;
 mod system;
+mod team;
 
 pub use backup::*;
 pub use companies::*;
@@ -22,4 +25,7 @@ pub use print::*;
 pub use repairs::*;
 pub use seed::*;
 pub use settings::*;
+pub use staff::*;
+pub use sync::*;
 pub use system::*;
+pub use team::*;

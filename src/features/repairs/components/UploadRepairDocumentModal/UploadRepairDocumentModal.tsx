@@ -4,7 +4,7 @@ import { useI18n } from "@/shared/hooks/useI18n";
 import { Button, Dialog, StatusMessage } from "@/ui";
 
 type Props = {
-  repairId: number;
+  repairId: string;
   documentType: RepairDocumentType;
   open: boolean;
   onOpenChange: (open: boolean) => void;

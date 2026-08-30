@@ -86,6 +86,34 @@ fn normalize_percent_display(whole: i64, frac_part: &str) -> String {
     }
 }
 
+pub fn validate_sync_interval_secs(value: u64) -> Result<u64, AppError> {
+    if !(crate::domain::settings::types::MIN_SYNC_INTERVAL_SECS
+        ..=crate::domain::settings::types::MAX_SYNC_INTERVAL_SECS)
+        .contains(&value)
+    {
+        return Err(AppError::Validation {
+            field: Some("intervalSeconds".into()),
+            message: "Sync interval must be an integer between 2 and 60 seconds.".into(),
+        });
+    }
+    Ok(value)
+}
+
+pub fn parse_sync_interval_secs(raw: &str) -> Result<u64, AppError> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() || !trimmed.chars().all(|c| c.is_ascii_digit()) {
+        return Err(AppError::Validation {
+            field: Some("intervalSeconds".into()),
+            message: "Sync interval must be an integer between 2 and 60 seconds.".into(),
+        });
+    }
+    let value: u64 = trimmed.parse().map_err(|_| AppError::Validation {
+        field: Some("intervalSeconds".into()),
+        message: "Sync interval must be an integer between 2 and 60 seconds.".into(),
+    })?;
+    validate_sync_interval_secs(value)
+}
+
 pub fn normalize_currency(raw: &str) -> Result<String, AppError> {
     let trimmed = raw.trim();
     if trimmed.len() != 3 || !trimmed.chars().all(|c| c.is_ascii_alphabetic()) {
@@ -104,11 +132,23 @@ mod tests {
     #[test]
     fn parse_percent_defaults_and_decimals() {
         assert_eq!(parse_tax_rate_percent("19").unwrap(), ("19".into(), 1_900));
-        assert_eq!(parse_tax_rate_percent("19.5").unwrap(), ("19.5".into(), 1_950));
-        assert_eq!(parse_tax_rate_percent("19.55").unwrap(), ("19.55".into(), 1_955));
+        assert_eq!(
+            parse_tax_rate_percent("19.5").unwrap(),
+            ("19.5".into(), 1_950)
+        );
+        assert_eq!(
+            parse_tax_rate_percent("19.55").unwrap(),
+            ("19.55".into(), 1_955)
+        );
         assert_eq!(parse_tax_rate_percent("0").unwrap(), ("0".into(), 0));
-        assert_eq!(parse_tax_rate_percent("100").unwrap(), ("100".into(), 10_000));
-        assert_eq!(parse_tax_rate_percent(" 19.50 ").unwrap(), ("19.5".into(), 1_950));
+        assert_eq!(
+            parse_tax_rate_percent("100").unwrap(),
+            ("100".into(), 10_000)
+        );
+        assert_eq!(
+            parse_tax_rate_percent(" 19.50 ").unwrap(),
+            ("19.5".into(), 1_950)
+        );
     }
 
     #[test]
@@ -125,5 +165,29 @@ mod tests {
         assert_eq!(normalize_currency("eur").unwrap(), "EUR");
         assert!(normalize_currency("EURO").is_err());
         assert!(normalize_currency("EU").is_err());
+    }
+
+    #[test]
+    fn parse_sync_interval_accepts_bounds() {
+        assert_eq!(parse_sync_interval_secs("2").unwrap(), 2);
+        assert_eq!(parse_sync_interval_secs("5").unwrap(), 5);
+        assert_eq!(parse_sync_interval_secs("60").unwrap(), 60);
+        assert_eq!(parse_sync_interval_secs(" 30 ").unwrap(), 30);
+    }
+
+    #[test]
+    fn parse_sync_interval_rejects_invalid() {
+        assert!(parse_sync_interval_secs("").is_err());
+        assert!(parse_sync_interval_secs("abc").is_err());
+        assert!(parse_sync_interval_secs("5.5").is_err());
+        assert!(parse_sync_interval_secs("1").is_err());
+        assert!(parse_sync_interval_secs("61").is_err());
+        assert!(parse_sync_interval_secs("-1").is_err());
+        match parse_sync_interval_secs("1") {
+            Err(AppError::Validation { field, .. }) => {
+                assert_eq!(field.as_deref(), Some("intervalSeconds"));
+            }
+            other => panic!("expected validation, got {other:?}"),
+        }
     }
 }

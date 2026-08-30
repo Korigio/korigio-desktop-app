@@ -4,22 +4,25 @@ mod domain;
 mod error;
 mod menu;
 mod paths;
+mod sync_net;
 
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use tauri::Manager;
 
 use crate::db::{Db, DbState};
 use crate::paths::AppPaths;
+use crate::sync_net::SyncRuntime;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let app_data_dir = app.path().app_data_dir().map_err(|err| {
-                std::io::Error::other(format!("app data dir unavailable: {err}"))
-            })?;
+            let app_data_dir = app
+                .path()
+                .app_data_dir()
+                .map_err(|err| std::io::Error::other(format!("app data dir unavailable: {err}")))?;
 
             let paths = AppPaths::from_app_data_dir(app_data_dir).map_err(|err| {
                 eprintln!("failed to prepare app data paths: {err:?}");
@@ -31,7 +34,11 @@ pub fn run() {
                 std::io::Error::other(err.to_string())
             })?;
 
-            app.manage(DbState(Mutex::new(database)));
+            let db = Arc::new(Mutex::new(database));
+            let runtime = SyncRuntime::new();
+            runtime.start(db.clone(), app.handle().clone());
+            app.manage(DbState(db));
+            app.manage(runtime);
 
             if let Err(err) = menu::install_app_menu(app.handle()) {
                 eprintln!("failed to install application menu: {err}");
@@ -46,6 +53,8 @@ pub fn run() {
             commands::set_locale_preference,
             commands::get_shop_settings,
             commands::set_shop_settings,
+            commands::get_sync_interval,
+            commands::set_sync_interval,
             commands::list_companies,
             commands::get_company,
             commands::create_company,
@@ -83,6 +92,8 @@ pub fn run() {
             commands::complete_repair_protocol,
             commands::confirm_repair_summary,
             commands::complete_repair_pickup,
+            commands::assign_repair,
+            commands::take_over_repair,
             commands::get_home_dashboard,
             commands::list_diagnosis_templates,
             commands::get_diagnosis_template,
@@ -105,6 +116,32 @@ pub fn run() {
             commands::get_repair_diagnosis_print_report,
             commands::get_repair_summary_print_report,
             commands::seed_synthetic_data,
+            commands::list_staff,
+            commands::get_staff,
+            commands::create_staff,
+            commands::update_staff,
+            commands::deactivate_staff,
+            commands::reactivate_staff,
+            commands::change_staff_role,
+            commands::set_staff_pin,
+            commands::sign_in_staff,
+            commands::sign_out_staff,
+            commands::get_current_session,
+            commands::get_team,
+            commands::create_team,
+            commands::leave_team,
+            commands::get_team_pin,
+            commands::list_nearby_teams,
+            commands::list_team_members,
+            commands::create_team_invite,
+            commands::list_team_invites,
+            commands::revoke_team_invite,
+            commands::join_team,
+            commands::list_team_devices,
+            commands::remove_team_device,
+            commands::rename_this_device,
+            commands::list_presence,
+            commands::get_sync_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Servioo");

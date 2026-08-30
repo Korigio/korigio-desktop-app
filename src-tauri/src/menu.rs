@@ -1,8 +1,8 @@
 //! Native application menu (desktop).
 
 use tauri::{
-    AppHandle, Emitter, Manager, Runtime,
     menu::{AboutMetadata, MenuBuilder, MenuItemBuilder, SubmenuBuilder},
+    AppHandle, Emitter, Manager, Runtime,
 };
 
 /// Event name listened to by the React shell.

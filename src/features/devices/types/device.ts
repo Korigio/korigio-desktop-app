@@ -1,6 +1,6 @@
 export type Device = {
-  id: number;
-  customerId: number;
+  id: string;
+  customerId: string;
   deviceType: string | null;
   manufacturer: string | null;
   model: string | null;
@@ -13,7 +13,7 @@ export type Device = {
 };
 
 export type DeviceInput = {
-  customerId: number;
+  customerId: string;
   deviceType?: string | null;
   manufacturer?: string | null;
   model?: string | null;
@@ -24,7 +24,7 @@ export type DeviceInput = {
 
 export type DeviceListQuery = {
   query?: string;
-  customerId?: number;
+  customerId?: string;
   includeArchived?: boolean;
   page?: number;
   pageSize?: number;

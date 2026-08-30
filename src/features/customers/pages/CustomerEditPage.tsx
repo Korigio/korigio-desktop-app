@@ -6,7 +6,7 @@ import type { Customer } from "@/features/customers/types/customer";
 import { Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-type Props = { customerId: number };
+type Props = { customerId: string };
 
 export function CustomerEditPage({ customerId }: Props) {
   const { t } = useI18n();

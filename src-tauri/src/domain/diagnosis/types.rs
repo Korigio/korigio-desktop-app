@@ -33,7 +33,7 @@ pub struct DiagnosisResult {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DiagnosisTemplate {
-    pub id: i64,
+    pub id: String,
     pub name: String,
     pub body: DiagnosisTemplateBody,
     pub updated_at: String,
@@ -66,16 +66,16 @@ pub struct DiagnosisTemplateListResult {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairDiagnosis {
-    pub id: i64,
-    pub repair_id: i64,
-    pub template_id: Option<i64>,
+    pub id: String,
+    pub repair_id: String,
+    pub template_id: Option<String>,
     pub result: DiagnosisResult,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairDiagnosisInput {
-    pub repair_id: i64,
-    pub template_id: Option<i64>,
+    pub repair_id: String,
+    pub template_id: Option<String>,
     pub result: DiagnosisResult,
 }

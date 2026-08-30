@@ -3,7 +3,6 @@ use std::path::{Component, Path, PathBuf};
 
 use image::imageops::FilterType;
 use image::{DynamicImage, GenericImageView, ImageFormat};
-use uuid::Uuid;
 
 use crate::db::repository::now_utc_rfc3339;
 use crate::db::Db;
@@ -17,18 +16,26 @@ use crate::domain::images::validation::{
     ensure_room_for_attachments, validate_attach_input, validate_update_input,
 };
 use crate::domain::repairs;
+use crate::domain::sync::{self, begin_write, WriteContext};
 use crate::error::AppError;
 use crate::paths::AppPaths;
 
-pub fn list_repair_images(db: &Db, repair_id: i64) -> Result<Vec<RepairImage>, AppError> {
-    if repair_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("repairId".into()),
-            message: "Repair is required.".into(),
-        });
-    }
-    let _repair = repairs::get_repair(db.conn(), repair_id)?;
-    repository::list_by_repair_id(db.conn(), repair_id)
+fn record_image(
+    conn: &rusqlite::Connection,
+    image: &RepairImage,
+    ctx: &WriteContext,
+) -> Result<(), AppError> {
+    let payload = serde_json::to_value(image).map_err(|err| AppError::Internal {
+        message: format!("serialize repair image: {err}"),
+    })?;
+    sync::record_upsert(conn, "repair_images", &image.id, payload, ctx)?;
+    Ok(())
+}
+
+pub fn list_repair_images(db: &Db, repair_id: String) -> Result<Vec<RepairImage>, AppError> {
+    let repair_id = crate::domain::ids::parse_entity_id_field(&repair_id, "repairId")?;
+    let _repair = repairs::get_repair(db.conn(), repair_id.clone())?;
+    repository::list_by_repair_id(db.conn(), &repair_id)
 }
 
 pub fn attach_repair_images(
@@ -36,17 +43,17 @@ pub fn attach_repair_images(
     input: AttachRepairImagesInput,
 ) -> Result<Vec<RepairImage>, AppError> {
     let validated = validate_attach_input(&input)?;
-    let _repair = repairs::get_repair(db.conn(), validated.repair_id)?;
+    let _repair = repairs::get_repair(db.conn(), validated.repair_id.clone())?;
 
-    let current = repository::count_by_repair_id(db.conn(), validated.repair_id)?;
+    let current = repository::count_by_repair_id(db.conn(), &validated.repair_id)?;
     ensure_room_for_attachments(current, validated.source_paths.len())?;
 
-    let mut sort_order = repository::next_sort_order(db.conn(), validated.repair_id)?;
+    let mut sort_order = repository::next_sort_order(db.conn(), &validated.repair_id)?;
     let created_at = now_utc_rfc3339()?;
     let mut attached = Vec::with_capacity(validated.source_paths.len());
 
     for source in &validated.source_paths {
-        let image = store_one_image(db, validated.repair_id, source, sort_order, &created_at)?;
+        let image = store_one_image(db, &validated.repair_id, source, sort_order, &created_at)?;
         attached.push(image);
         sort_order += 1;
     }
@@ -56,22 +63,29 @@ pub fn attach_repair_images(
 
 pub fn update_repair_image(
     db: &Db,
-    id: i64,
+    id: String,
     input: UpdateRepairImageInput,
 ) -> Result<RepairImage, AppError> {
-    if id <= 0 {
-        return Err(AppError::NotFound);
-    }
+    let id = crate::domain::ids::parse_entity_id(&id).map_err(|_| AppError::NotFound)?;
     let validated = validate_update_input(&input)?;
-    repository::update(db.conn(), id, &validated)
+    let ctx = begin_write(db.conn())?;
+    let image = repository::update(db.conn(), &id, &validated, &ctx)?;
+    record_image(db.conn(), &image, &ctx)?;
+    Ok(image)
 }
 
-pub fn delete_repair_image(db: &Db, id: i64) -> Result<(), AppError> {
-    if id <= 0 {
-        return Err(AppError::NotFound);
-    }
-    let existing = repository::get_by_id(db.conn(), id)?.ok_or(AppError::NotFound)?;
-    repository::delete(db.conn(), id)?;
+pub fn delete_repair_image(db: &Db, id: String) -> Result<(), AppError> {
+    let id = crate::domain::ids::parse_entity_id(&id).map_err(|_| AppError::NotFound)?;
+    let existing = repository::get_by_id(db.conn(), &id)?.ok_or(AppError::NotFound)?;
+    let ctx = begin_write(db.conn())?;
+    repository::delete(db.conn(), &id, &ctx)?;
+    sync::record_delete(
+        db.conn(),
+        "repair_images",
+        &id,
+        serde_json::json!({ "id": id }),
+        &ctx,
+    )?;
     remove_relative_file(db.paths(), &existing.original_path);
     if let Some(thumb) = &existing.thumb_path {
         remove_relative_file(db.paths(), thumb);
@@ -81,19 +95,14 @@ pub fn delete_repair_image(db: &Db, id: i64) -> Result<(), AppError> {
 
 pub fn resolve_repair_image_path(
     db: &Db,
-    id: i64,
+    id: String,
     variant: ImageVariant,
 ) -> Result<ResolveRepairImagePathResult, AppError> {
-    if id <= 0 {
-        return Err(AppError::NotFound);
-    }
-    let existing = repository::get_by_id(db.conn(), id)?.ok_or(AppError::NotFound)?;
+    let id = crate::domain::ids::parse_entity_id(&id).map_err(|_| AppError::NotFound)?;
+    let existing = repository::get_by_id(db.conn(), &id)?.ok_or(AppError::NotFound)?;
     let relative = match variant {
         ImageVariant::Original => existing.original_path.as_str(),
-        ImageVariant::Thumb => existing
-            .thumb_path
-            .as_deref()
-            .ok_or(AppError::NotFound)?,
+        ImageVariant::Thumb => existing.thumb_path.as_deref().ok_or(AppError::NotFound)?,
     };
 
     let absolute = resolve_safe_absolute(db.paths(), relative)?;
@@ -104,7 +113,7 @@ pub fn resolve_repair_image_path(
 
 fn store_one_image(
     db: &Db,
-    repair_id: i64,
+    repair_id: &str,
     source: &Path,
     sort_order: i64,
     created_at: &str,
@@ -114,31 +123,62 @@ fn store_one_image(
         .and_then(|e| e.to_str())
         .map(|e| e.to_ascii_lowercase())
         .unwrap_or_else(|| "jpg".into());
-    let file_stem = Uuid::new_v4().to_string();
-    let original_rel = format!("images/{repair_id}/{file_stem}.{ext}");
-    let thumb_rel = format!("thumbs/{repair_id}/{file_stem}.jpg");
+    let bytes = fs::read(source)?;
+    let hash = crate::domain::sync::blobs::write_blob_bytes(
+        &db.paths().root,
+        db.conn(),
+        &bytes,
+        "image",
+        created_at,
+    )?;
+    crate::domain::sync::blobs::record_local_blob(
+        db.conn(),
+        &hash,
+        "image",
+        bytes.len() as i64,
+        created_at,
+    )?;
+    let original_rel = format!("images/{repair_id}/{hash}.{ext}");
+    let thumb_rel = format!("thumbs/{repair_id}/{hash}.jpg");
 
+    crate::domain::sync::blobs::copy_to_display_path(&db.paths().root, &hash, &original_rel)?;
     let original_abs = db.paths().root.join(&original_rel);
     let thumb_abs = db.paths().root.join(&thumb_rel);
-
-    if let Some(parent) = original_abs.parent() {
-        fs::create_dir_all(parent)?;
-    }
     if let Some(parent) = thumb_abs.parent() {
         fs::create_dir_all(parent)?;
     }
-
-    fs::copy(source, &original_abs)?;
     generate_thumbnail(&original_abs, &thumb_abs)?;
+    if let Ok(thumb_bytes) = fs::read(&thumb_abs) {
+        if let Ok(thumb_hash) = crate::domain::sync::blobs::write_blob_bytes(
+            &db.paths().root,
+            db.conn(),
+            &thumb_bytes,
+            "thumb",
+            created_at,
+        ) {
+            let _ = crate::domain::sync::blobs::record_local_blob(
+                db.conn(),
+                &thumb_hash,
+                "thumb",
+                thumb_bytes.len() as i64,
+                created_at,
+            );
+        }
+    }
 
-    repository::insert(
+    let ctx = begin_write(db.conn())?;
+    let image = repository::insert(
         db.conn(),
         repair_id,
         &original_rel,
         Some(&thumb_rel),
+        &hash,
         sort_order,
         created_at,
-    )
+        &ctx,
+    )?;
+    record_image(db.conn(), &image, &ctx)?;
+    Ok(image)
 }
 
 fn generate_thumbnail(source: &Path, dest: &Path) -> Result<(), AppError> {
@@ -212,7 +252,10 @@ pub fn resolve_safe_absolute(paths: &AppPaths, relative: &str) -> Result<PathBuf
         paths.images.canonicalize().ok(),
         paths.thumbs.canonicalize().ok(),
     ];
-    let allowed = allowed_roots.iter().flatten().any(|root| canonical.starts_with(root));
+    let allowed = allowed_roots
+        .iter()
+        .flatten()
+        .any(|root| canonical.starts_with(root));
     if !allowed {
         return Err(AppError::Validation {
             field: Some("path".into()),

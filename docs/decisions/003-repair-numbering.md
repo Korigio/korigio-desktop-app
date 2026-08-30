@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded (format) by [ADR 012](012-repair-numbering-device-code.md). Transactional allocation and UNIQUE still apply.
 
 ## Context
 

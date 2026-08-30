@@ -6,15 +6,15 @@ import type {
 } from "@/features/print/types/printReport";
 
 export const printApi = {
-  getRepairReport(repairId: number): Promise<RepairPrintReport> {
+  getRepairReport(repairId: string): Promise<RepairPrintReport> {
     return invoke<RepairPrintReport>("get_repair_print_report", { repairId });
   },
-  getDiagnosisReport(repairId: number): Promise<DiagnosisPrintReport> {
+  getDiagnosisReport(repairId: string): Promise<DiagnosisPrintReport> {
     return invoke<DiagnosisPrintReport>("get_repair_diagnosis_print_report", {
       repairId,
     });
   },
-  getSummaryReport(repairId: number): Promise<SummaryPrintReport> {
+  getSummaryReport(repairId: string): Promise<SummaryPrintReport> {
     return invoke<SummaryPrintReport>("get_repair_summary_print_report", {
       repairId,
     });

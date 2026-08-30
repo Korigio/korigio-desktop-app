@@ -1,5 +1,5 @@
 export type Company = {
-  id: number;
+  id: string;
   legalName: string;
   tradeName: string | null;
   taxId: string | null;
@@ -39,7 +39,7 @@ export type CompanyListResult = {
 };
 
 export type AttachCompanyLogoInput = {
-  companyId: number;
+  companyId: string;
   sourcePath: string;
 };
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { printApi } from "@/features/print/api/printApi";
 import type { SummaryPrintReport } from "@/features/print/types/printReport";
 
-export function useSummaryPrintReport(repairId: number) {
+export function useSummaryPrintReport(repairId: string) {
   const [report, setReport] = useState<SummaryPrintReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { NativeMenuBridge } from "@/app/NativeMenuBridge";
 import { AutoBackupOnStartup } from "@/features/settings/components/AutoBackupOnStartup";
+import { SessionProvider } from "@/features/staff/hooks/useSession";
+import { TeamSidebar } from "@/features/team/components/TeamSidebar";
 import { Button } from "@/ui/atoms/Button";
 import { LinkButton } from "@/ui/molecules/LinkButton";
 import { useI18n } from "@/shared/hooks/useI18n";
@@ -90,6 +92,14 @@ function NavItem({ to, end, label, icon: Icon, collapsed }: NavItemProps) {
 }
 
 export function AppShell() {
+  return (
+    <SessionProvider>
+      <AppShellLayout />
+    </SessionProvider>
+  );
+}
+
+function AppShellLayout() {
   const { t } = useI18n();
   const [collapsed, setCollapsed] = useState(readSidebarCollapsed);
 
@@ -111,7 +121,7 @@ export function AppShell() {
       <aside
         className={cn(
           "shrink-0 border-b border-border bg-surface p-3 transition-[width] duration-200 ease-out md:border-b-0 md:border-r md:p-3",
-          collapsed ? "md:w-14" : "md:w-56 md:p-4",
+          collapsed ? "md:w-14" : "md:w-64 md:p-4",
         )}
       >
         <div
@@ -156,6 +166,7 @@ export function AppShell() {
             />
           ))}
         </nav>
+        <TeamSidebar collapsed={collapsed} />
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">

@@ -11,6 +11,8 @@ pub struct AppPaths {
     pub database: PathBuf,
     pub images: PathBuf,
     pub thumbs: PathBuf,
+    pub documents: PathBuf,
+    pub blobs: PathBuf,
     pub backups: PathBuf,
     pub logs: PathBuf,
 }
@@ -22,6 +24,8 @@ impl AppPaths {
             database: root.join("database.sqlite"),
             images: root.join("images"),
             thumbs: root.join("thumbs"),
+            documents: root.join("documents"),
+            blobs: root.join("blobs"),
             backups: root.join("backups"),
             logs: root.join("logs"),
             root,
@@ -37,7 +41,15 @@ impl AppPaths {
     }
 
     pub fn ensure_directories(&self) -> Result<(), AppError> {
-        for dir in [&self.root, &self.images, &self.thumbs, &self.backups, &self.logs] {
+        for dir in [
+            &self.root,
+            &self.images,
+            &self.thumbs,
+            &self.documents,
+            &self.blobs,
+            &self.backups,
+            &self.logs,
+        ] {
             fs::create_dir_all(dir)?;
         }
         fs::create_dir_all(self.backups_auto())?;

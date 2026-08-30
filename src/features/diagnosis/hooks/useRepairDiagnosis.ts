@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   diagnosisTemplatesApi,
   repairDiagnosisApi,
@@ -10,8 +10,19 @@ import {
   type RepairDiagnosis,
 } from "@/features/diagnosis/types/diagnosis";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
-export function useRepairDiagnosis(repairId: number) {
+function diagnosisDraftDirty(
+  draftItems: DiagnosisResultItem[],
+  diagnosis: RepairDiagnosis | null,
+): boolean {
+  return (
+    JSON.stringify(draftItems) !==
+    JSON.stringify(diagnosis?.result.items ?? [])
+  );
+}
+
+export function useRepairDiagnosis(repairId: string) {
   const { t } = useI18n();
   const [diagnosis, setDiagnosis] = useState<RepairDiagnosis | null>(null);
   const [templates, setTemplates] = useState<DiagnosisTemplate[]>([]);
@@ -55,13 +66,51 @@ export function useRepairDiagnosis(repairId: number) {
     }
   }, [repairId]);
 
+  const draftItemsRef = useRef(draftItems);
+  draftItemsRef.current = draftItems;
+  const diagnosisRef = useRef(diagnosis);
+  diagnosisRef.current = diagnosis;
+
+  const silentRefresh = useCallback(async () => {
+    if (diagnosisDraftDirty(draftItemsRef.current, diagnosisRef.current)) {
+      return;
+    }
+    try {
+      const [nextDiagnosis, templateList] = await Promise.all([
+        repairDiagnosisApi.get(repairId),
+        diagnosisTemplatesApi.list({ page: 1, pageSize: 100 }),
+      ]);
+      if (diagnosisDraftDirty(draftItemsRef.current, diagnosisRef.current)) {
+        return;
+      }
+      setDiagnosis(nextDiagnosis);
+      setDraftItems(nextDiagnosis?.result.items ?? []);
+      setTemplates(templateList.items);
+      setSelectedTemplateId((prev) => {
+        if (
+          prev &&
+          templateList.items.some((template) => String(template.id) === prev)
+        ) {
+          return prev;
+        }
+        return templateList.items[0] ? String(templateList.items[0].id) : "";
+      });
+    } catch {
+      // Keep the last good diagnosis and drafts.
+    }
+  }, [repairId]);
+
   useEffect(() => {
     void reload();
   }, [reload]);
 
+  useSyncApplied(() => {
+    void silentRefresh();
+  });
+
   const applyTemplate = useCallback(async () => {
-    const templateId = Number(selectedTemplateId);
-    if (!Number.isFinite(templateId) || templateId <= 0) {
+    const templateId = selectedTemplateId.trim();
+    if (!templateId) {
       setError(t("diagnosis.selectTemplateFirst"));
       return;
     }

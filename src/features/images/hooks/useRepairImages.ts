@@ -1,65 +1,97 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { imagesApi } from "@/features/images/api/imagesApi";
 import {
   MAX_IMAGES_PER_REPAIR,
   type RepairImage,
 } from "@/features/images/types/image";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
-export function useRepairImages(repairId: number) {
+export function useRepairImages(repairId: string) {
   const { t } = useI18n();
   const [images, setImages] = useState<RepairImage[]>([]);
-  const [thumbUrls, setThumbUrls] = useState<Record<number, string>>({});
+  const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-  const [captionDrafts, setCaptionDrafts] = useState<Record<number, string>>(
+  const [captionDrafts, setCaptionDrafts] = useState<Record<string, string>>(
     {},
   );
+  const imagesRef = useRef<RepairImage[]>([]);
+  imagesRef.current = images;
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const list = await imagesApi.list(repairId);
-      setImages(list);
-      setCaptionDrafts(
-        Object.fromEntries(
-          list.map((image) => [image.id, image.caption ?? ""]),
-        ),
-      );
-
-      const urls: Record<number, string> = {};
-      await Promise.all(
-        list.map(async (image) => {
-          try {
-            const variant = image.thumbPath ? "thumb" : "original";
-            const resolved = await imagesApi.resolvePath(image.id, variant);
-            urls[image.id] = convertFileSrc(resolved.absolutePath);
-          } catch {
-            // Skip broken paths; row still listed.
+  const reload = useCallback(
+    async (reloadOptions?: { silent?: boolean }) => {
+      const silent = reloadOptions?.silent === true;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const list = await imagesApi.list(repairId);
+        setImages(list);
+        setCaptionDrafts((prev) => {
+          if (!silent) {
+            return Object.fromEntries(
+              list.map((image) => [image.id, image.caption ?? ""]),
+            );
           }
-        }),
-      );
-      setThumbUrls(urls);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t("images.errors.loadFailed"),
-      );
-      setImages([]);
-      setThumbUrls({});
-    } finally {
-      setLoading(false);
-    }
-  }, [repairId, t]);
+          const next: Record<string, string> = {};
+          const previous = imagesRef.current;
+          for (const image of list) {
+            const prevSaved =
+              previous.find((item) => item.id === image.id)?.caption ?? "";
+            const draft = prev[image.id];
+            next[image.id] =
+              draft !== undefined && draft !== prevSaved
+                ? draft
+                : (image.caption ?? "");
+          }
+          return next;
+        });
+
+        const urls: Record<string, string> = {};
+        await Promise.all(
+          list.map(async (image) => {
+            try {
+              const variant = image.thumbPath ? "thumb" : "original";
+              const resolved = await imagesApi.resolvePath(image.id, variant);
+              urls[image.id] = convertFileSrc(resolved.absolutePath);
+            } catch {
+              // Skip broken paths; row still listed.
+            }
+          }),
+        );
+        setThumbUrls(urls);
+        setError(null);
+      } catch (err) {
+        if (!silent) {
+          setError(
+            err instanceof Error ? err.message : t("images.errors.loadFailed"),
+          );
+          setImages([]);
+          setThumbUrls({});
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [repairId, t],
+  );
 
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useSyncApplied(() => {
+    void reload({ silent: true });
+  });
 
   const atLimit = images.length >= MAX_IMAGES_PER_REPAIR;
 
@@ -102,7 +134,7 @@ export function useRepairImages(repairId: number) {
   }, [atLimit, reload, repairId, t]);
 
   const openLightbox = useCallback(
-    async (imageId: number) => {
+    async (imageId: string) => {
       setError(null);
       try {
         const resolved = await imagesApi.resolvePath(imageId, "original");
@@ -120,12 +152,12 @@ export function useRepairImages(repairId: number) {
     setLightboxUrl(null);
   }, []);
 
-  const setCaptionDraft = useCallback((imageId: number, value: string) => {
+  const setCaptionDraft = useCallback((imageId: string, value: string) => {
     setCaptionDrafts((prev) => ({ ...prev, [imageId]: value }));
   }, []);
 
   const saveCaption = useCallback(
-    async (imageId: number) => {
+    async (imageId: string) => {
       setBusy(true);
       setError(null);
       setSuccess(null);
@@ -148,7 +180,7 @@ export function useRepairImages(repairId: number) {
   );
 
   const removeImage = useCallback(
-    async (imageId: number) => {
+    async (imageId: string) => {
       const confirmed = window.confirm(t("images.deleteConfirm"));
       if (!confirmed) {
         return;

@@ -12,7 +12,7 @@ import { Page, PageHeader } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useNavigate } from "react-router";
 
-type Props = { deviceId: number };
+type Props = { deviceId: string };
 
 export function DeviceDetailPage({ deviceId }: Props) {
   const { t } = useI18n();

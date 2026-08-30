@@ -3,17 +3,17 @@
 use time::OffsetDateTime;
 
 use crate::db::Db;
-use crate::domain::companies::{CompanyInput, create_company};
-use crate::domain::customers::{CustomerInput, archive_customer, create_customer};
-use crate::domain::devices::{DeviceInput, create_device};
+use crate::domain::companies::{create_company, CompanyInput};
+use crate::domain::customers::{archive_customer, create_customer, CustomerInput};
+use crate::domain::devices::{create_device, DeviceInput};
 use crate::domain::repairs::repository;
 use crate::domain::repairs::types::CompleteDiagnosisMode;
 use crate::domain::repairs::{
-    CompleteRepairDiagnosisInput, RepairDocumentType, RepairInput, RepairListQuery,
     complete_repair_diagnosis, complete_repair_pickup, complete_repair_protocol,
     confirm_customer_approval, confirm_repair_intake, confirm_repair_parts_received,
-    confirm_repair_summary, create_repair, delete_repair_document,
-    get_repair, list_repairs, list_repair_documents, update_repair, upload_repair_document,
+    confirm_repair_summary, create_repair, delete_repair_document, get_repair,
+    list_repair_documents, list_repairs, update_repair, upload_repair_document,
+    CompleteRepairDiagnosisInput, RepairDocumentType, RepairInput, RepairListQuery,
 };
 use crate::error::AppError;
 
@@ -23,7 +23,7 @@ fn local_year() -> i32 {
         .unwrap_or_else(|_| OffsetDateTime::now_utc().year())
 }
 
-fn customer(db: &Db, name: &str) -> i64 {
+fn customer(db: &Db, name: &str) -> String {
     create_customer(
         db.conn(),
         CustomerInput {
@@ -38,11 +38,11 @@ fn customer(db: &Db, name: &str) -> i64 {
     .id
 }
 
-fn device(db: &Db, customer_id: i64, serial: &str) -> i64 {
+fn device(db: &Db, customer_id: &str, serial: &str) -> String {
     create_device(
         db.conn(),
         DeviceInput {
-            customer_id,
+            customer_id: customer_id.to_string(),
             device_type: Some("Phone".into()),
             manufacturer: Some("Acme".into()),
             model: Some("X1".into()),
@@ -55,7 +55,7 @@ fn device(db: &Db, customer_id: i64, serial: &str) -> i64 {
     .id
 }
 
-fn company(db: &Db) -> i64 {
+fn company(db: &Db) -> String {
     create_company(
         db.conn(),
         CompanyInput {
@@ -72,11 +72,11 @@ fn company(db: &Db) -> i64 {
     .id
 }
 
-fn sample_repair(customer_id: i64, device_id: i64, company_id: i64) -> RepairInput {
+fn sample_repair(customer_id: &str, device_id: &str, company_id: &str) -> RepairInput {
     RepairInput {
-        customer_id,
-        device_id,
-        company_id,
+        customer_id: customer_id.to_string(),
+        device_id: device_id.to_string(),
+        company_id: company_id.to_string(),
         status: None,
         reported_problem: Some("Screen cracked".into()),
         accessories_received: Some("Charger".into()),
@@ -94,11 +94,11 @@ fn open_temp_db() -> (tempfile::TempDir, Db) {
     (dir, db)
 }
 
-fn finalize_diagnosis(db: &Db, repair_id: i64) {
+fn finalize_diagnosis(db: &Db, repair_id: &str) {
     complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id,
+            repair_id: repair_id.to_string(),
             mode: CompleteDiagnosisMode::Finalize,
             diagnosis_notes: Some("Needs parts".into()),
             expected_pickup_at: Some("2026-09-20".into()),
@@ -115,22 +115,22 @@ fn write_sample_pdf(path: &std::path::Path) {
     std::fs::write(path, b"%PDF-1.4 sample").expect("pdf");
 }
 
-fn advance_from_waiting_customer_to_in_repair(db: &Db, repair_id: i64) {
-    confirm_customer_approval(db, repair_id).expect("customer approval");
+fn advance_from_waiting_customer_to_in_repair(db: &Db, repair_id: &str) {
+    confirm_customer_approval(db, repair_id.to_string()).expect("customer approval");
     let pdf = db.paths().root.join("signed.pdf");
     write_sample_pdf(&pdf);
     upload_repair_document(
         db,
-        repair_id,
+        repair_id.to_string(),
         RepairDocumentType::DiagnosisSigned,
         pdf.to_string_lossy().into_owned(),
     )
     .expect("upload");
-    confirm_repair_parts_received(db, repair_id).expect("parts");
+    confirm_repair_parts_received(db, repair_id.to_string()).expect("parts");
 }
 
-fn advance_to_in_repair(db: &Db, repair_id: i64) {
-    confirm_repair_intake(db, repair_id).expect("intake");
+fn advance_to_in_repair(db: &Db, repair_id: &str) {
+    confirm_repair_intake(db, repair_id.to_string()).expect("intake");
     finalize_diagnosis(db, repair_id);
     advance_from_waiting_customer_to_in_repair(db, repair_id);
 }
@@ -140,11 +140,15 @@ fn create_allocates_year_prefixed_repair_number() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
+    let device_id = device(&db, &customer_id, "SN-1");
 
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
     let year = local_year();
-    assert_eq!(created.repair_number, format!("{year}-000001"));
+    assert_eq!(created.repair_number, format!("{year}-AA-000001"));
     assert_eq!(created.status, "received");
     assert_eq!(created.company_id, Some(company_id));
     assert!(created.estimate_base_cents.is_none());
@@ -159,14 +163,22 @@ fn second_create_increments_sequence() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
+    let device_id = device(&db, &customer_id, "SN-1");
 
-    let first = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("first");
-    let second = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("second");
+    let first = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("first");
+    let second = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("second");
 
     let year = local_year();
-    assert_eq!(first.repair_number, format!("{year}-000001"));
-    assert_eq!(second.repair_number, format!("{year}-000002"));
+    assert_eq!(first.repair_number, format!("{year}-AA-000001"));
+    assert_eq!(second.repair_number, format!("{year}-AA-000002"));
 }
 
 #[test]
@@ -175,14 +187,30 @@ fn repair_number_sequence_is_per_year() {
     let conn = db.conn();
     let tx = conn.unchecked_transaction().expect("tx");
 
-    let n1 = repository::allocate_repair_number(&tx, 2030).expect("n1");
-    let n2 = repository::allocate_repair_number(&tx, 2030).expect("n2");
-    let n3 = repository::allocate_repair_number(&tx, 2031).expect("n3");
+    let n1 = repository::allocate_repair_number(&tx, 2030, "AA").expect("n1");
+    let n2 = repository::allocate_repair_number(&tx, 2030, "AA").expect("n2");
+    let n3 = repository::allocate_repair_number(&tx, 2031, "AA").expect("n3");
     tx.commit().expect("commit");
 
-    assert_eq!(n1, "2030-000001");
-    assert_eq!(n2, "2030-000002");
-    assert_eq!(n3, "2031-000001");
+    assert_eq!(n1, "2030-AA-000001");
+    assert_eq!(n2, "2030-AA-000002");
+    assert_eq!(n3, "2031-AA-000001");
+}
+
+#[test]
+fn repair_number_sequence_is_per_device_code() {
+    let db = Db::open_in_memory().expect("db");
+    let conn = db.conn();
+    let tx = conn.unchecked_transaction().expect("tx");
+
+    let aa = repository::allocate_repair_number(&tx, 2026, "AA").expect("aa");
+    let ab = repository::allocate_repair_number(&tx, 2026, "AB").expect("ab");
+    let aa2 = repository::allocate_repair_number(&tx, 2026, "AA").expect("aa2");
+    tx.commit().expect("commit");
+
+    assert_eq!(aa, "2026-AA-000001");
+    assert_eq!(ab, "2026-AB-000001");
+    assert_eq!(aa2, "2026-AA-000002");
 }
 
 #[test]
@@ -191,7 +219,7 @@ fn rejects_wrong_device_ownership() {
     let company_id = company(&db);
     let owner_a = customer(&db, "A");
     let owner_b = customer(&db, "B");
-    let device_b = device(&db, owner_b, "SN-B");
+    let device_b = device(&db, &owner_b, "SN-B");
 
     let err = create_repair(
         db.conn(),
@@ -218,10 +246,14 @@ fn rejects_archived_customer() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Archived");
-    let device_id = device(&db, customer_id, "SN-1");
-    archive_customer(db.conn(), customer_id).expect("archive");
+    let device_id = device(&db, &customer_id, "SN-1");
+    archive_customer(db.conn(), customer_id.clone()).expect("archive");
 
-    let err = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect_err("blocked");
+    let err = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect_err("blocked");
     assert_eq!(err.code(), "validation");
 }
 
@@ -230,9 +262,13 @@ fn list_filters_by_customer_device_status_and_query() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
+    let device_id = device(&db, &customer_id, "SN-1");
 
-    let repair = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let repair = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     let by_customer = list_repairs(
         db.conn(),
@@ -289,7 +325,7 @@ fn list_filters_by_customer_device_status_and_query() {
     )
     .expect("by query");
     assert_eq!(by_query.total, 1);
-    assert_eq!(by_query.items[0].id, repair.id);
+    assert_eq!(by_query.items[0].id, repair.id.clone());
     assert_eq!(by_query.items[0].customer_name, "Owner");
 
     let empty = list_repairs(
@@ -326,7 +362,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
     let device_id = create_device(
         db.conn(),
         DeviceInput {
-            customer_id,
+            customer_id: customer_id.to_string(),
             device_type: Some("Laptop".into()),
             manufacturer: Some("Lenovo".into()),
             model: Some("T14".into()),
@@ -341,9 +377,9 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
     let repair = create_repair(
         db.conn(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: None,
             reported_problem: Some("Won't boot after update".into()),
             accessories_received: None,
@@ -369,7 +405,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
     )
     .expect("by phone");
     assert_eq!(by_phone.total, 1);
-    assert_eq!(by_phone.items[0].id, repair.id);
+    assert_eq!(by_phone.items[0].id, repair.id.clone());
 
     let by_serial = list_repairs(
         db.conn(),
@@ -384,7 +420,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
     )
     .expect("by serial");
     assert_eq!(by_serial.total, 1);
-    assert_eq!(by_serial.items[0].id, repair.id);
+    assert_eq!(by_serial.items[0].id, repair.id.clone());
 
     let by_problem = list_repairs(
         db.conn(),
@@ -399,7 +435,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
     )
     .expect("by problem");
     assert_eq!(by_problem.total, 1);
-    assert_eq!(by_problem.items[0].id, repair.id);
+    assert_eq!(by_problem.items[0].id, repair.id.clone());
 
     let by_manufacturer = list_repairs(
         db.conn(),
@@ -421,21 +457,27 @@ fn complete_protocol_sets_ready_at_once() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
     assert!(created.ready_at.is_none());
 
-    advance_to_in_repair(&db, created.id);
+    advance_to_in_repair(&db, &created.id.clone());
 
-    let ready = complete_repair_protocol(&db, created.id, "Replaced screen".into()).expect("ready");
+    let ready =
+        complete_repair_protocol(&db, created.id.clone(), "Replaced screen".into()).expect("ready");
     assert_eq!(ready.status, "ready");
     let ready_at = ready.ready_at.clone().expect("ready_at set");
     assert_eq!(ready.work_performed.as_deref(), Some("Replaced screen"));
 
-    let err = complete_repair_protocol(&db, created.id, "Again".into()).expect_err("wrong status");
+    let err = complete_repair_protocol(&db, created.id.clone(), "Again".into())
+        .expect_err("wrong status");
     assert!(matches!(err, AppError::Validation { .. }));
 
-    let fetched = get_repair(db.conn(), created.id).expect("get");
+    let fetched = get_repair(db.conn(), created.id.clone()).expect("get");
     assert_eq!(fetched.ready_at.as_deref(), Some(ready_at.as_str()));
 }
 
@@ -445,14 +487,18 @@ fn update_keeps_customer_and_device_ownership() {
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
     let other_customer = customer(&db, "Other");
-    let device_id = device(&db, customer_id, "SN-1");
-    let other_device = device(&db, other_customer, "SN-2");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let other_device = device(&db, &other_customer, "SN-2");
 
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     let updated = update_repair(
         db.conn(),
-        created.id,
+        created.id.clone(),
         RepairInput {
             customer_id: other_customer,
             device_id: other_device,
@@ -479,16 +525,20 @@ fn rejects_invalid_status_on_update() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     let err = update_repair(
         db.conn(),
-        created.id,
+        created.id.clone(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: Some("invalid".into()),
             reported_problem: None,
             accessories_received: None,
@@ -508,24 +558,24 @@ fn create_and_update_persist_expected_pickup_at() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
+    let device_id = device(&db, &customer_id, "SN-1");
 
-    let mut input = sample_repair(customer_id, device_id, company_id);
+    let mut input = sample_repair(&customer_id, &device_id, &company_id);
     input.expected_pickup_at = Some("2026-09-15".into());
     let created = create_repair(db.conn(), input).expect("create");
     assert_eq!(created.expected_pickup_at.as_deref(), Some("2026-09-15"));
     assert!(created.ready_at.is_none());
 
-    let fetched = get_repair(db.conn(), created.id).expect("get");
+    let fetched = get_repair(db.conn(), created.id.clone()).expect("get");
     assert_eq!(fetched.expected_pickup_at.as_deref(), Some("2026-09-15"));
 
     let updated = update_repair(
         db.conn(),
-        created.id,
+        created.id.clone(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: None,
             reported_problem: None,
             accessories_received: None,
@@ -546,18 +596,22 @@ fn omit_expected_pickup_at_stores_null() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
+    let device_id = device(&db, &customer_id, "SN-1");
 
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
     assert!(created.expected_pickup_at.is_none());
 
     let cleared = update_repair(
         db.conn(),
-        created.id,
+        created.id.clone(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: None,
             reported_problem: Some("Screen cracked".into()),
             accessories_received: None,
@@ -577,9 +631,9 @@ fn rejects_invalid_expected_pickup_at_on_create() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
+    let device_id = device(&db, &customer_id, "SN-1");
 
-    let mut input = sample_repair(customer_id, device_id, company_id);
+    let mut input = sample_repair(&customer_id, &device_id, &company_id);
     input.expected_pickup_at = Some("09/15/2026".into());
     let err = create_repair(db.conn(), input).expect_err("invalid date");
     match err {
@@ -595,17 +649,17 @@ fn expected_pickup_at_does_not_affect_ready_at() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
+    let device_id = device(&db, &customer_id, "SN-1");
 
-    let mut input = sample_repair(customer_id, device_id, company_id);
+    let mut input = sample_repair(&customer_id, &device_id, &company_id);
     input.expected_pickup_at = Some("2026-09-20".into());
     let created = create_repair(db.conn(), input).expect("create");
     assert!(created.ready_at.is_none());
     assert_eq!(created.expected_pickup_at.as_deref(), Some("2026-09-20"));
 
-    advance_to_in_repair(&db, created.id);
+    advance_to_in_repair(&db, &created.id.clone());
 
-    let ready = complete_repair_protocol(&db, created.id, "Fixed".into()).expect("ready");
+    let ready = complete_repair_protocol(&db, created.id.clone(), "Fixed".into()).expect("ready");
     assert!(ready.ready_at.is_some());
     assert_ne!(ready.ready_at.as_deref(), Some("2026-09-20"));
     assert_eq!(ready.expected_pickup_at.as_deref(), Some("2026-09-20"));
@@ -616,13 +670,17 @@ fn draft_sets_diagnosis_status_and_may_omit_notes() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     let result = complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Draft,
             diagnosis_notes: None,
             expected_pickup_at: Some("2026-09-20".into()),
@@ -633,7 +691,10 @@ fn draft_sets_diagnosis_status_and_may_omit_notes() {
 
     assert_eq!(result.repair.status, "diagnosis");
     assert!(result.repair.diagnosis_notes.is_none());
-    assert_eq!(result.repair.expected_pickup_at.as_deref(), Some("2026-09-20"));
+    assert_eq!(
+        result.repair.expected_pickup_at.as_deref(),
+        Some("2026-09-20")
+    );
     assert_eq!(result.repair.estimate_base_cents, Some(10_000));
     assert_eq!(result.repair.estimate_tax_rate_bps, Some(1_900));
     assert_eq!(result.repair.estimate_tax_cents, Some(1_900));
@@ -645,13 +706,17 @@ fn finalize_requires_notes_and_sets_waiting_customer() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     let err = complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Finalize,
             diagnosis_notes: Some("  ".into()),
             expected_pickup_at: None,
@@ -669,7 +734,7 @@ fn finalize_requires_notes_and_sets_waiting_customer() {
     let result = complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Finalize,
             diagnosis_notes: Some("Board short".into()),
             expected_pickup_at: None,
@@ -678,7 +743,10 @@ fn finalize_requires_notes_and_sets_waiting_customer() {
     )
     .expect("finalize");
     assert_eq!(result.repair.status, "waiting_customer");
-    assert_eq!(result.repair.diagnosis_notes.as_deref(), Some("Board short"));
+    assert_eq!(
+        result.repair.diagnosis_notes.as_deref(),
+        Some("Board short")
+    );
     assert_eq!(result.repair.estimate_base_cents, Some(5_000));
     assert_eq!(result.repair.estimate_tax_cents, Some(950));
     assert_eq!(result.repair.estimate_gross_cents, Some(5_950));
@@ -689,13 +757,17 @@ fn rejects_clearing_estimate_once_set() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Draft,
             diagnosis_notes: Some("WIP".into()),
             expected_pickup_at: None,
@@ -707,7 +779,7 @@ fn rejects_clearing_estimate_once_set() {
     let err = complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Draft,
             diagnosis_notes: Some("WIP".into()),
             expected_pickup_at: None,
@@ -728,13 +800,17 @@ fn draft_does_not_downgrade_past_diagnosis() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Finalize,
             diagnosis_notes: Some("Done".into()),
             expected_pickup_at: None,
@@ -743,12 +819,12 @@ fn draft_does_not_downgrade_past_diagnosis() {
     )
     .expect("finalize");
 
-    advance_from_waiting_customer_to_in_repair(&db, created.id);
+    advance_from_waiting_customer_to_in_repair(&db, &created.id.clone());
 
     let drafted = complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Draft,
             diagnosis_notes: Some("Still Done".into()),
             expected_pickup_at: None,
@@ -765,16 +841,20 @@ fn rejects_diagnosis_on_cancelled_repair() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     update_repair(
         db.conn(),
-        created.id,
+        created.id.clone(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: Some("cancelled".into()),
             reported_problem: None,
             accessories_received: None,
@@ -790,7 +870,7 @@ fn rejects_diagnosis_on_cancelled_repair() {
     let err = complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id: created.id,
+            repair_id: created.id.clone(),
             mode: CompleteDiagnosisMode::Draft,
             diagnosis_notes: Some("Nope".into()),
             expected_pickup_at: None,
@@ -806,28 +886,37 @@ fn workflow_advances_through_all_statuses() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-WF");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-WF");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
-    advance_to_in_repair(&db, created.id);
-    let in_repair = get_repair(db.conn(), created.id).expect("get");
+    advance_to_in_repair(&db, &created.id.clone());
+    let in_repair = get_repair(db.conn(), created.id.clone()).expect("get");
     assert_eq!(in_repair.status, "in_repair");
 
     use crate::domain::repairs::list_repair_documents;
 
-    let docs = list_repair_documents(db.conn(), created.id).expect("list docs");
+    let docs = list_repair_documents(db.conn(), created.id.clone()).expect("list docs");
     assert!(docs.iter().any(|d| d.document_type == "diagnosisSigned"));
 
-    let ready = complete_repair_protocol(&db, created.id, "Replaced board".into()).expect("protocol");
+    let ready = complete_repair_protocol(&db, created.id.clone(), "Replaced board".into())
+        .expect("protocol");
     assert_eq!(ready.status, "ready");
     assert_eq!(ready.work_performed.as_deref(), Some("Replaced board"));
 
-    let awaiting = confirm_repair_summary(&db, ready.id).expect("summary");
+    let awaiting = confirm_repair_summary(&db, ready.id.clone()).expect("summary");
     assert_eq!(awaiting.status, "awaiting_pickup");
 
-    let collected = complete_repair_pickup(&db, created.id, "2026-08-28".into()).expect("pickup");
+    let collected =
+        complete_repair_pickup(&db, created.id.clone(), "2026-08-28".into()).expect("pickup");
     assert_eq!(collected.status, "collected");
-    assert_eq!(collected.collected_at.as_deref(), Some("2026-08-28T00:00:00Z"));
+    assert_eq!(
+        collected.collected_at.as_deref(),
+        Some("2026-08-28T00:00:00Z")
+    );
 }
 
 #[test]
@@ -835,16 +924,20 @@ fn blocks_manual_status_change_except_cancel() {
     let db = Db::open_in_memory().expect("db");
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     let err = update_repair(
         db.conn(),
-        created.id,
+        created.id.clone(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: Some("ready".into()),
             reported_problem: None,
             accessories_received: None,
@@ -866,11 +959,11 @@ fn blocks_manual_status_change_except_cancel() {
 
     let cancelled = update_repair(
         db.conn(),
-        created.id,
+        created.id.clone(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: Some("cancelled".into()),
             reported_problem: None,
             accessories_received: None,
@@ -890,15 +983,19 @@ fn upload_repair_document_rejects_wrong_workflow_for_customer_approval_only() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
     let pdf = db.paths().root.join("signed.pdf");
     write_sample_pdf(&pdf);
 
     let doc = upload_repair_document(
         &db,
-        created.id,
+        created.id.clone(),
         RepairDocumentType::EntranceSigned,
         pdf.to_string_lossy().into_owned(),
     )
@@ -912,13 +1009,17 @@ fn confirm_repair_intake_advances_to_diagnosis() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-INT");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-INT");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
-    let updated = confirm_repair_intake(&db, created.id).expect("intake");
+    let updated = confirm_repair_intake(&db, created.id.clone()).expect("intake");
     assert_eq!(updated.status, "diagnosis");
 
-    let err = confirm_repair_intake(&db, created.id).expect_err("already past received");
+    let err = confirm_repair_intake(&db, created.id.clone()).expect_err("already past received");
     assert!(matches!(err, AppError::Validation { .. }));
 }
 
@@ -927,17 +1028,21 @@ fn confirm_repair_summary_advances_to_awaiting_pickup() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-SUM");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-SUM");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
-    advance_to_in_repair(&db, created.id);
-    let ready = complete_repair_protocol(&db, created.id, "Done".into()).expect("protocol");
+    advance_to_in_repair(&db, &created.id.clone());
+    let ready = complete_repair_protocol(&db, created.id.clone(), "Done".into()).expect("protocol");
     assert_eq!(ready.status, "ready");
 
-    let awaiting = confirm_repair_summary(&db, ready.id).expect("summary");
+    let awaiting = confirm_repair_summary(&db, ready.id.clone()).expect("summary");
     assert_eq!(awaiting.status, "awaiting_pickup");
 
-    let err = confirm_repair_summary(&db, created.id).expect_err("wrong status");
+    let err = confirm_repair_summary(&db, created.id.clone()).expect_err("wrong status");
     assert!(matches!(err, AppError::Validation { .. }));
 }
 
@@ -946,10 +1051,14 @@ fn confirm_customer_approval_requires_waiting_customer() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
 
-    let err = confirm_customer_approval(&db, created.id).expect_err("wrong status");
+    let err = confirm_customer_approval(&db, created.id.clone()).expect_err("wrong status");
     assert!(matches!(err, AppError::Validation { .. }));
 }
 
@@ -958,11 +1067,16 @@ fn complete_protocol_requires_work_performed() {
     let (_dir, db) = open_temp_db();
     let company_id = company(&db);
     let customer_id = customer(&db, "Owner");
-    let device_id = device(&db, customer_id, "SN-1");
-    let created = create_repair(db.conn(), sample_repair(customer_id, device_id, company_id)).expect("create");
-    advance_to_in_repair(&db, created.id);
+    let device_id = device(&db, &customer_id, "SN-1");
+    let created = create_repair(
+        db.conn(),
+        sample_repair(&customer_id, &device_id, &company_id),
+    )
+    .expect("create");
+    advance_to_in_repair(&db, &created.id.clone());
 
-    let err = complete_repair_protocol(&db, created.id, "  ".into()).expect_err("empty work");
+    let err =
+        complete_repair_protocol(&db, created.id.clone(), "  ".into()).expect_err("empty work");
     match err {
         AppError::Validation { field, .. } => {
             assert_eq!(field.as_deref(), Some("workPerformed"));

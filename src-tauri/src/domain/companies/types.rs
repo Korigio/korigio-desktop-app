@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Company {
-    pub id: i64,
+    pub id: String,
     pub legal_name: String,
     pub trade_name: Option<String>,
     pub tax_id: Option<String>,
@@ -51,7 +51,7 @@ pub struct CompanyListResult {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AttachCompanyLogoInput {
-    pub company_id: i64,
+    pub company_id: String,
     pub source_path: String,
 }
 

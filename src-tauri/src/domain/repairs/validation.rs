@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
-use time::Date;
 use time::format_description;
+use time::Date;
 
 use crate::domain::repairs::constants::{
     ACCESSORIES_RECEIVED_MAX_LEN, ALLOWED_REPAIR_DOCUMENT_EXTENSIONS, DEFAULT_STATUS,
@@ -17,9 +17,9 @@ use crate::error::AppError;
 
 #[derive(Debug)]
 pub struct ValidatedCreateRepairInput {
-    pub customer_id: i64,
-    pub device_id: i64,
-    pub company_id: i64,
+    pub customer_id: String,
+    pub device_id: String,
+    pub company_id: String,
     pub status: String,
     pub reported_problem: Option<String>,
     pub accessories_received: Option<String>,
@@ -60,33 +60,18 @@ pub struct EstimateSnapshot {
 }
 
 pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepairInput, AppError> {
-    if input.customer_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("customerId".into()),
-            message: "Customer is required.".into(),
-        });
-    }
-    if input.device_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("deviceId".into()),
-            message: "Device is required.".into(),
-        });
-    }
-    if input.company_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("companyId".into()),
-            message: "Company is required.".into(),
-        });
-    }
+    let customer_id = crate::domain::ids::parse_entity_id_field(&input.customer_id, "customerId")?;
+    let device_id = crate::domain::ids::parse_entity_id_field(&input.device_id, "deviceId")?;
+    let company_id = crate::domain::ids::parse_entity_id_field(&input.company_id, "companyId")?;
 
     let fields = validate_text_fields(input)?;
     let status = normalize_status(input.status.as_deref(), None)?;
     let expected_pickup_at = validate_expected_pickup_at(&input.expected_pickup_at)?;
 
     Ok(ValidatedCreateRepairInput {
-        customer_id: input.customer_id,
-        device_id: input.device_id,
-        company_id: input.company_id,
+        customer_id,
+        device_id,
+        company_id,
         status,
         reported_problem: fields.reported_problem,
         accessories_received: fields.accessories_received,
@@ -104,10 +89,7 @@ pub fn validate_update_input(
 ) -> Result<ValidatedUpdateRepairInput, AppError> {
     if let Some(raw) = input.status.as_deref() {
         let trimmed = raw.trim();
-        if !trimmed.is_empty()
-            && trimmed != existing_status
-            && trimmed != "cancelled"
-        {
+        if !trimmed.is_empty() && trimmed != existing_status && trimmed != "cancelled" {
             return Err(AppError::Validation {
                 field: Some("status".into()),
                 message: "Status can only be changed through workflow actions.".into(),
@@ -182,11 +164,12 @@ pub(crate) fn validate_expected_pickup_at(
             if trimmed.is_empty() {
                 return Ok(None);
             }
-            let format = format_description::parse_borrowed::<2>("[year]-[month]-[day]").map_err(
-                |err| AppError::Internal {
-                    message: format!("date format parse failed: {err}"),
-                },
-            )?;
+            let format =
+                format_description::parse_borrowed::<2>("[year]-[month]-[day]").map_err(|err| {
+                    AppError::Internal {
+                        message: format!("date format parse failed: {err}"),
+                    }
+                })?;
             match Date::parse(trimmed, &format) {
                 Ok(date) => {
                     let formatted = date.format(&format).map_err(|err| AppError::Internal {
@@ -231,7 +214,10 @@ pub fn validate_complete_diagnosis(
     )?;
 
     if input.mode == CompleteDiagnosisMode::Finalize
-        && diagnosis_notes.as_ref().map(|s| s.is_empty()).unwrap_or(true)
+        && diagnosis_notes
+            .as_ref()
+            .map(|s| s.is_empty())
+            .unwrap_or(true)
     {
         return Err(AppError::Validation {
             field: Some("diagnosisNotes".into()),
@@ -302,10 +288,7 @@ fn resolve_diagnosis_status(mode: CompleteDiagnosisMode, current: &str) -> Strin
     }
 }
 
-fn normalize_status(
-    status: Option<&str>,
-    existing: Option<&str>,
-) -> Result<String, AppError> {
+fn normalize_status(status: Option<&str>, existing: Option<&str>) -> Result<String, AppError> {
     match status {
         None => Ok(existing.unwrap_or(DEFAULT_STATUS).to_string()),
         Some(raw) => {
@@ -446,11 +429,12 @@ pub fn validate_work_performed(value: &str) -> Result<String, AppError> {
 /// Date-only pickup field (`YYYY-MM-DD`) stored as RFC3339 midnight UTC.
 pub fn validate_collected_at_date(value: &str) -> Result<String, AppError> {
     let trimmed = value.trim();
-    let format = format_description::parse_borrowed::<2>("[year]-[month]-[day]").map_err(|err| {
-        AppError::Internal {
-            message: format!("date format parse failed: {err}"),
-        }
-    })?;
+    let format =
+        format_description::parse_borrowed::<2>("[year]-[month]-[day]").map_err(|err| {
+            AppError::Internal {
+                message: format!("date format parse failed: {err}"),
+            }
+        })?;
     let date = Date::parse(trimmed, &format).map_err(|_| AppError::Validation {
         field: Some("collectedAt".into()),
         message: "Collection date must be YYYY-MM-DD.".into(),
@@ -467,9 +451,9 @@ mod tests {
 
     fn base_input() -> RepairInput {
         RepairInput {
-            customer_id: 1,
-            device_id: 2,
-            company_id: 3,
+            customer_id: crate::domain::ids::new_entity_id(),
+            device_id: crate::domain::ids::new_entity_id(),
+            company_id: crate::domain::ids::new_entity_id(),
             status: None,
             reported_problem: None,
             accessories_received: None,
@@ -484,7 +468,7 @@ mod tests {
     #[test]
     fn rejects_missing_company_id() {
         let mut input = base_input();
-        input.company_id = 0;
+        input.company_id = String::new();
         let err = validate_create_input(&input).expect_err("company required");
         match err {
             AppError::Validation { field, .. } => {

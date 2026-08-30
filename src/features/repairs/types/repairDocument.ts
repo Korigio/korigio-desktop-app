@@ -7,7 +7,7 @@ export const REPAIR_DOCUMENT_TYPES = [
 export type RepairDocumentType = (typeof REPAIR_DOCUMENT_TYPES)[number];
 
 export type RepairDocument = {
-  repairId: number;
+  repairId: string;
   documentType: RepairDocumentType;
   originalFilename: string;
   createdAt: string;
@@ -16,7 +16,7 @@ export type RepairDocument = {
 
 export const REPAIR_DOCUMENT_PRINT_PATHS: Record<
   RepairDocumentType,
-  (repairId: number) => string
+  (repairId: string) => string
 > = {
   entranceSigned: (repairId) => `/repairs/${repairId}/print`,
   diagnosisSigned: (repairId) => `/repairs/${repairId}/print/diagnosis`,

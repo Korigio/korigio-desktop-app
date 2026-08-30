@@ -6,7 +6,7 @@ import { Card, PaginationBar, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
-  customerId: number;
+  customerId: string;
 };
 
 /** Devices belonging to one customer — used on customer detail. */

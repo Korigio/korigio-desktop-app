@@ -1,50 +1,61 @@
-use rusqlite::{Connection, OptionalExtension, Transaction, params};
+use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
 use crate::db::repository::like_pattern;
 use crate::domain::repairs::types::{Repair, RepairListItem};
 use crate::domain::repairs::validation::{ValidatedCreateRepairInput, ValidatedUpdateRepairInput};
+use crate::domain::sync::WriteContext;
 use crate::error::AppError;
 
 pub fn allocate_repair_number(
     tx: &Transaction<'_>,
     year: i32,
+    device_code: &str,
 ) -> Result<String, AppError> {
     tx.execute(
-        "INSERT INTO repair_number_sequences (year, last_value) VALUES (?1, 0)
-         ON CONFLICT(year) DO NOTHING",
-        params![year],
+        "INSERT INTO repair_number_sequences (year, device_code, last_value) VALUES (?1, ?2, 0)
+         ON CONFLICT(year, device_code) DO NOTHING",
+        params![year, device_code],
     )?;
     tx.execute(
-        "UPDATE repair_number_sequences SET last_value = last_value + 1 WHERE year = ?1",
-        params![year],
+        "UPDATE repair_number_sequences SET last_value = last_value + 1
+         WHERE year = ?1 AND device_code = ?2",
+        params![year, device_code],
     )?;
     let seq: i64 = tx.query_row(
-        "SELECT last_value FROM repair_number_sequences WHERE year = ?1",
-        params![year],
+        "SELECT last_value FROM repair_number_sequences WHERE year = ?1 AND device_code = ?2",
+        params![year, device_code],
         |row| row.get(0),
     )?;
-    Ok(format!("{year}-{seq:06}"))
+    Ok(format!("{year}-{device_code}-{seq:06}"))
 }
 
 pub fn insert_repair(
     tx: &Transaction<'_>,
+    id: &str,
     repair_number: &str,
     input: &ValidatedCreateRepairInput,
     received_at: &str,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Repair, AppError> {
     tx.execute(
         "INSERT INTO repairs (
-            repair_number, customer_id, device_id, company_id, status, received_at,
-            reported_problem, accessories_received, device_condition,
+            id, repair_number, customer_id, device_id, company_id, assigned_to_staff_id,
+            status, received_at, reported_problem, accessories_received, device_condition,
             diagnosis_notes, work_performed, notes, expected_pickup_at,
-            ready_at, collected_at, created_at, updated_at, archived_at
-         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, NULL, NULL, ?14, ?15, NULL)",
+            ready_at, collected_at, created_at, updated_at, archived_at,
+            hlc_wall_ms, hlc_counter, origin_device_id, updated_by_staff_id, deleted_at
+         ) VALUES (
+            ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15,
+            NULL, NULL, ?16, ?17, NULL, ?18, ?19, ?20, ?21, NULL
+         )",
         params![
+            id,
             repair_number,
             input.customer_id,
             input.device_id,
             input.company_id,
+            ctx.staff_id,
             input.status,
             received_at,
             input.reported_problem,
@@ -56,9 +67,12 @@ pub fn insert_repair(
             input.expected_pickup_at,
             now,
             now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
         ],
     )?;
-    let id = tx.last_insert_rowid();
     get_repair_by_id(tx, id)?.ok_or(AppError::Internal {
         message: "repair missing after insert".into(),
     })
@@ -66,11 +80,12 @@ pub fn insert_repair(
 
 pub fn update_repair(
     conn: &Connection,
-    id: i64,
+    id: &str,
     input: &ValidatedUpdateRepairInput,
     ready_at: Option<&str>,
     collected_at: Option<&str>,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Repair, AppError> {
     let updated = conn.execute(
         "UPDATE repairs SET
@@ -84,8 +99,9 @@ pub fn update_repair(
             expected_pickup_at = ?8,
             ready_at = ?9,
             collected_at = ?10,
-            updated_at = ?11
-         WHERE id = ?12 AND archived_at IS NULL",
+            updated_at = ?11,
+            hlc_wall_ms = ?12, hlc_counter = ?13, origin_device_id = ?14, updated_by_staff_id = ?15
+         WHERE id = ?16 AND archived_at IS NULL AND deleted_at IS NULL",
         params![
             input.status,
             input.reported_problem,
@@ -98,6 +114,10 @@ pub fn update_repair(
             ready_at,
             collected_at,
             now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
             id,
         ],
     )?;
@@ -113,7 +133,7 @@ pub fn update_repair(
     get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
 }
 
-pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, AppError> {
+pub fn get_repair_by_id(conn: &Connection, id: &str) -> Result<Option<Repair>, AppError> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {REPAIR_SELECT_COLS} FROM repairs WHERE id = ?1"
     ))?;
@@ -122,7 +142,8 @@ pub fn get_repair_by_id(conn: &Connection, id: i64) -> Result<Option<Repair>, Ap
 }
 
 const REPAIR_SELECT_COLS: &str = "repairs.id, repairs.repair_number, repairs.customer_id,
-        repairs.device_id, repairs.company_id, repairs.status, repairs.received_at,
+        repairs.device_id, repairs.company_id, repairs.assigned_to_staff_id,
+        repairs.updated_by_staff_id, repairs.status, repairs.received_at,
         repairs.reported_problem, repairs.accessories_received, repairs.device_condition,
         repairs.diagnosis_notes, repairs.work_performed, repairs.notes,
         repairs.expected_pickup_at,
@@ -144,8 +165,8 @@ const SEARCH_MATCH_SQL: &str = "(
 pub fn list_repairs(
     conn: &Connection,
     search: Option<&str>,
-    customer_id: Option<i64>,
-    device_id: Option<i64>,
+    customer_id: Option<&str>,
+    device_id: Option<&str>,
     status: Option<&str>,
     limit: u32,
     offset: u32,
@@ -153,7 +174,8 @@ pub fn list_repairs(
     let pattern = like_pattern(search);
     let needs_device_join = pattern.is_some();
 
-    let mut where_parts = vec!["repairs.archived_at IS NULL".to_string()];
+    let mut where_parts =
+        vec!["repairs.archived_at IS NULL AND repairs.deleted_at IS NULL".to_string()];
     if customer_id.is_some() {
         where_parts.push("repairs.customer_id = ?1".into());
     }
@@ -162,9 +184,7 @@ pub fn list_repairs(
         where_parts.push(format!("repairs.device_id = ?{idx}"));
     }
     if status.is_some() {
-        let idx = 1
-            + usize::from(customer_id.is_some())
-            + usize::from(device_id.is_some());
+        let idx = 1 + usize::from(customer_id.is_some()) + usize::from(device_id.is_some());
         where_parts.push(format!("repairs.status = ?{idx}"));
     }
     if pattern.is_some() {
@@ -204,7 +224,14 @@ pub fn list_repairs(
          LIMIT {limit_ph} OFFSET {offset_ph}"
     );
 
-    let total = query_count(conn, &count_sql, customer_id, device_id, status, pattern.as_deref())?;
+    let total = query_count(
+        conn,
+        &count_sql,
+        customer_id,
+        device_id,
+        status,
+        pattern.as_deref(),
+    )?;
 
     let mut stmt = conn.prepare(&list_sql)?;
     let rows = query_rows(
@@ -223,8 +250,8 @@ pub fn list_repairs(
 fn query_count(
     conn: &Connection,
     sql: &str,
-    customer_id: Option<i64>,
-    device_id: Option<i64>,
+    customer_id: Option<&str>,
+    device_id: Option<&str>,
     status: Option<&str>,
     pattern: Option<&str>,
 ) -> Result<i64, AppError> {
@@ -261,8 +288,8 @@ fn query_count(
 
 fn query_rows(
     stmt: &mut rusqlite::Statement<'_>,
-    customer_id: Option<i64>,
-    device_id: Option<i64>,
+    customer_id: Option<&str>,
+    device_id: Option<&str>,
     status: Option<&str>,
     pattern: Option<&str>,
     limit: u32,
@@ -324,7 +351,7 @@ fn query_rows(
 fn map_repair_list_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<RepairListItem> {
     Ok(RepairListItem {
         repair: map_repair(row)?,
-        customer_name: row.get(23)?,
+        customer_name: row.get(25)?,
     })
 }
 
@@ -335,29 +362,31 @@ fn map_repair(row: &rusqlite::Row<'_>) -> rusqlite::Result<Repair> {
         customer_id: row.get(2)?,
         device_id: row.get(3)?,
         company_id: row.get(4)?,
-        status: row.get(5)?,
-        received_at: row.get(6)?,
-        reported_problem: row.get(7)?,
-        accessories_received: row.get(8)?,
-        device_condition: row.get(9)?,
-        diagnosis_notes: row.get(10)?,
-        work_performed: row.get(11)?,
-        notes: row.get(12)?,
-        expected_pickup_at: row.get(13)?,
-        estimate_base_cents: row.get(14)?,
-        estimate_tax_rate_bps: row.get(15)?,
-        estimate_tax_cents: row.get(16)?,
-        estimate_gross_cents: row.get(17)?,
-        ready_at: row.get(18)?,
-        collected_at: row.get(19)?,
-        created_at: row.get(20)?,
-        updated_at: row.get(21)?,
-        archived_at: row.get(22)?,
+        assigned_to_staff_id: row.get(5)?,
+        updated_by_staff_id: row.get(6)?,
+        status: row.get(7)?,
+        received_at: row.get(8)?,
+        reported_problem: row.get(9)?,
+        accessories_received: row.get(10)?,
+        device_condition: row.get(11)?,
+        diagnosis_notes: row.get(12)?,
+        work_performed: row.get(13)?,
+        notes: row.get(14)?,
+        expected_pickup_at: row.get(15)?,
+        estimate_base_cents: row.get(16)?,
+        estimate_tax_rate_bps: row.get(17)?,
+        estimate_tax_cents: row.get(18)?,
+        estimate_gross_cents: row.get(19)?,
+        ready_at: row.get(20)?,
+        collected_at: row.get(21)?,
+        created_at: row.get(22)?,
+        updated_at: row.get(23)?,
+        archived_at: row.get(24)?,
     })
 }
 pub fn update_repair_diagnosis(
     conn: &Connection,
-    id: i64,
+    id: &str,
     status: &str,
     diagnosis_notes: Option<&str>,
     expected_pickup_at: Option<&str>,
@@ -366,6 +395,7 @@ pub fn update_repair_diagnosis(
     estimate_tax_cents: Option<i64>,
     estimate_gross_cents: Option<i64>,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Repair, AppError> {
     let updated = conn.execute(
         "UPDATE repairs SET
@@ -376,8 +406,9 @@ pub fn update_repair_diagnosis(
             estimate_tax_rate_bps = ?5,
             estimate_tax_cents = ?6,
             estimate_gross_cents = ?7,
-            updated_at = ?8
-         WHERE id = ?9 AND archived_at IS NULL",
+            updated_at = ?8,
+            hlc_wall_ms = ?9, hlc_counter = ?10, origin_device_id = ?11, updated_by_staff_id = ?12
+         WHERE id = ?13 AND archived_at IS NULL AND deleted_at IS NULL",
         params![
             status,
             diagnosis_notes,
@@ -387,6 +418,10 @@ pub fn update_repair_diagnosis(
             estimate_tax_cents,
             estimate_gross_cents,
             now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
             id,
         ],
     )?;
@@ -404,14 +439,24 @@ pub fn update_repair_diagnosis(
 
 pub fn update_repair_status(
     conn: &Connection,
-    id: i64,
+    id: &str,
     status: &str,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Repair, AppError> {
     let updated = conn.execute(
-        "UPDATE repairs SET status = ?1, updated_at = ?2
-         WHERE id = ?3 AND archived_at IS NULL",
-        params![status, now, id],
+        "UPDATE repairs SET status = ?1, updated_at = ?2,
+            hlc_wall_ms = ?3, hlc_counter = ?4, origin_device_id = ?5, updated_by_staff_id = ?6
+         WHERE id = ?7 AND archived_at IS NULL AND deleted_at IS NULL",
+        params![
+            status,
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
     )?;
     if updated == 0 {
         return match get_repair_by_id(conn, id)? {
@@ -427,19 +472,30 @@ pub fn update_repair_status(
 
 pub fn update_repair_protocol_complete(
     conn: &Connection,
-    id: i64,
+    id: &str,
     work_performed: &str,
     ready_at: Option<&str>,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Repair, AppError> {
     let updated = conn.execute(
         "UPDATE repairs SET
             status = 'ready',
             work_performed = ?1,
             ready_at = ?2,
-            updated_at = ?3
-         WHERE id = ?4 AND archived_at IS NULL",
-        params![work_performed, ready_at, now, id],
+            updated_at = ?3,
+            hlc_wall_ms = ?4, hlc_counter = ?5, origin_device_id = ?6, updated_by_staff_id = ?7
+         WHERE id = ?8 AND archived_at IS NULL AND deleted_at IS NULL",
+        params![
+            work_performed,
+            ready_at,
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
     )?;
     if updated == 0 {
         return match get_repair_by_id(conn, id)? {
@@ -455,17 +511,27 @@ pub fn update_repair_protocol_complete(
 
 pub fn update_repair_pickup_complete(
     conn: &Connection,
-    id: i64,
+    id: &str,
     collected_at: &str,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Repair, AppError> {
     let updated = conn.execute(
         "UPDATE repairs SET
             status = 'collected',
             collected_at = ?1,
-            updated_at = ?2
-         WHERE id = ?3 AND archived_at IS NULL",
-        params![collected_at, now, id],
+            updated_at = ?2,
+            hlc_wall_ms = ?3, hlc_counter = ?4, origin_device_id = ?5, updated_by_staff_id = ?6
+         WHERE id = ?7 AND archived_at IS NULL AND deleted_at IS NULL",
+        params![
+            collected_at,
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
     )?;
     if updated == 0 {
         return match get_repair_by_id(conn, id)? {
@@ -475,6 +541,33 @@ pub fn update_repair_pickup_complete(
             }),
             None => Err(AppError::NotFound),
         };
+    }
+    get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
+}
+
+pub fn set_assigned_staff(
+    conn: &Connection,
+    id: &str,
+    staff_id: &str,
+    now: &str,
+    ctx: &WriteContext,
+) -> Result<Repair, AppError> {
+    let updated = conn.execute(
+        "UPDATE repairs SET assigned_to_staff_id = ?1, updated_at = ?2,
+            hlc_wall_ms = ?3, hlc_counter = ?4, origin_device_id = ?5, updated_by_staff_id = ?6
+         WHERE id = ?7 AND archived_at IS NULL AND deleted_at IS NULL",
+        params![
+            staff_id,
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
+    )?;
+    if updated == 0 {
+        return Err(AppError::NotFound);
     }
     get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
 }

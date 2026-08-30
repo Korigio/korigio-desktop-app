@@ -1,5 +1,77 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 
+export class CommandError extends Error {
+  readonly code: string;
+  readonly field?: string;
+
+  constructor(code: string, message: string, field?: string) {
+    super(message);
+    this.name = "CommandError";
+    this.code = code;
+    if (field) {
+      this.field = field;
+    }
+  }
+}
+
+export function isCommandError(error: unknown): error is CommandError {
+  return error instanceof CommandError;
+}
+
+export function isUnauthorizedError(error: unknown): boolean {
+  return isCommandError(error) && error.code === "unauthorized";
+}
+
+type UnauthorizedListener = () => void;
+const unauthorizedListeners = new Set<UnauthorizedListener>();
+
+export function subscribeUnauthorized(
+  listener: UnauthorizedListener,
+): () => void {
+  unauthorizedListeners.add(listener);
+  return () => {
+    unauthorizedListeners.delete(listener);
+  };
+}
+
+function notifyUnauthorized() {
+  unauthorizedListeners.forEach((listener) => {
+    listener();
+  });
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === "object") {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
+function parseCommandError(error: unknown): CommandError | null {
+  if (typeof error === "string") {
+    const trimmed = error.trim();
+    if (trimmed.startsWith("{")) {
+      try {
+        return parseCommandError(JSON.parse(trimmed) as unknown);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+  const record = asRecord(error);
+  if (!record) {
+    return null;
+  }
+  const code = typeof record.code === "string" ? record.code : null;
+  const message = typeof record.message === "string" ? record.message : null;
+  if (!code || !message?.trim()) {
+    return null;
+  }
+  const field = typeof record.field === "string" ? record.field : undefined;
+  return new CommandError(code, message, field);
+}
+
 function errorMessage(error: unknown): string | null {
   if (typeof error === "string" && error.trim()) {
     return error;
@@ -7,8 +79,8 @@ function errorMessage(error: unknown): string | null {
   if (error instanceof Error && error.message.trim()) {
     return error.message;
   }
-  if (error && typeof error === "object") {
-    const record = error as Record<string, unknown>;
+  const record = asRecord(error);
+  if (record) {
     if (typeof record.message === "string" && record.message.trim()) {
       return record.message;
     }
@@ -26,6 +98,13 @@ export async function invoke<T>(
   try {
     return await tauriInvoke<T>(command, args);
   } catch (error) {
+    const commandError = parseCommandError(error);
+    if (commandError) {
+      if (commandError.code === "unauthorized") {
+        notifyUnauthorized();
+      }
+      throw commandError;
+    }
     const message = errorMessage(error);
     throw new Error(message ?? `Command failed: ${command}`);
   }

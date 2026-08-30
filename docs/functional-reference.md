@@ -26,7 +26,7 @@ Customers, devices, repairs, diagnosis templates, images, search, backup/restore
 
 ## Out of scope for v1 (propose only)
 
-Appointments/calendar, multi-user password roles, network/Dropbox sync, inventory, invoices/payments, SMS/email, cloud, automatic updates, customer portal.
+Appointments/calendar, inventory, invoices/payments, SMS/email, cloud, automatic updates, customer portal. (Local Wi‑Fi team sync is Phase 17 — not Dropbox/cloud.)
 
 ## Legacy we will not reproduce
 

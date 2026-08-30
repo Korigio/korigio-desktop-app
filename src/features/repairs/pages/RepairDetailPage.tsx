@@ -6,6 +6,7 @@ import { ConfirmCustomerApprovalModal } from "@/features/repairs/components/Conf
 import { ConfirmIntakeModal } from "@/features/repairs/components/ConfirmIntakeModal";
 import { ConfirmPartsModal } from "@/features/repairs/components/ConfirmPartsModal";
 import { RecordPickupModal } from "@/features/repairs/components/RecordPickupModal";
+import { RepairAssigneeBar } from "@/features/repairs/components/RepairAssigneeBar";
 import { RepairClientInfoCard } from "@/features/repairs/components/RepairClientInfoCard";
 import { RepairDetailActions } from "@/features/repairs/components/RepairDetailActions";
 import { RepairDetailStatusPanel } from "@/features/repairs/components/RepairDetailStatusPanel";
@@ -30,7 +31,7 @@ import { Page, PageHeader } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useNavigate } from "react-router";
 
-type Props = { repairId: number };
+type Props = { repairId: string };
 
 type ModalKey =
   | "confirmIntake"
@@ -181,6 +182,8 @@ export function RepairDetailPage({ repairId }: Props) {
 
       <div className="flex flex-col gap-4">
         <RepairDetailStatusPanel repair={repair} />
+
+        <RepairAssigneeBar repair={repair} onRepairChange={setRepair} />
 
         <RepairWorkflowBanner
           repair={repair}

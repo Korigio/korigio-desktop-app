@@ -16,23 +16,24 @@ use crate::domain::settings;
 use crate::error::AppError;
 
 /// Assemble a print report for `repair_id`. Returns [`AppError::NotFound`] if the repair is missing.
-pub fn get_repair_print_report(db: &Db, repair_id: i64) -> Result<RepairPrintReport, AppError> {
-    let repair = repairs::get_repair(db.conn(), repair_id)?;
+pub fn get_repair_print_report(db: &Db, repair_id: String) -> Result<RepairPrintReport, AppError> {
+    let repair = repairs::get_repair(db.conn(), repair_id.clone())?;
     let customer = customers::get_customer(db.conn(), repair.customer_id)?;
     let device = devices::get_device(db.conn(), repair.device_id)?;
-    let diagnosis = diagnosis::get_repair_diagnosis(db.conn(), repair_id)?.map(|d| PrintDiagnosis {
-        items: d
-            .result
-            .items
-            .into_iter()
-            .map(|item| PrintDiagnosisItem {
-                id: item.id,
-                label: item.label,
-                kind: item.kind,
-                value: map_diagnosis_value(item.value),
-            })
-            .collect(),
-    });
+    let diagnosis =
+        diagnosis::get_repair_diagnosis(db.conn(), repair_id)?.map(|d| PrintDiagnosis {
+            items: d
+                .result
+                .items
+                .into_iter()
+                .map(|item| PrintDiagnosisItem {
+                    id: item.id,
+                    label: item.label,
+                    kind: item.kind,
+                    value: map_diagnosis_value(item.value),
+                })
+                .collect(),
+        });
 
     let (company, company_logo_absolute_path) = resolve_company(db, repair.company_id)?;
 
@@ -63,7 +64,7 @@ pub fn get_repair_print_report(db: &Db, repair_id: i64) -> Result<RepairPrintRep
 /// Diagnosis paper: company, customer, device, notes, estimate snapshot, pickup, currency.
 pub fn get_repair_diagnosis_print_report(
     db: &Db,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<DiagnosisPrintReport, AppError> {
     let repair = repairs::get_repair(db.conn(), repair_id)?;
     let customer = customers::get_customer(db.conn(), repair.customer_id)?;
@@ -94,7 +95,7 @@ pub fn get_repair_diagnosis_print_report(
 /// Repair summary paper: entrance info, estimate, work performed, key dates, currency.
 pub fn get_repair_summary_print_report(
     db: &Db,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<SummaryPrintReport, AppError> {
     let repair = repairs::get_repair(db.conn(), repair_id)?;
     let customer = customers::get_customer(db.conn(), repair.customer_id)?;
@@ -130,7 +131,7 @@ pub fn get_repair_summary_print_report(
 
 fn resolve_company(
     db: &Db,
-    company_id: Option<i64>,
+    company_id: Option<String>,
 ) -> Result<(Option<PrintCompany>, Option<String>), AppError> {
     match company_id {
         Some(company_id) => {

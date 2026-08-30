@@ -27,7 +27,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   onSuccess: (repair: Repair) => void;
   onDocumentsChange: () => void;
-  onConfirm: (repairId: number) => Promise<Repair>;
+  onConfirm: (repairId: string) => Promise<Repair>;
 };
 
 export function ConfirmSignedDocumentModal({

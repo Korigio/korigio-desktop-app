@@ -17,7 +17,7 @@ fn lock_db<'a>(
 #[tauri::command(rename_all = "camelCase")]
 pub fn get_repair_print_report(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<RepairPrintReport, CommandError> {
     let db = lock_db(&state)?;
     Ok(print::get_repair_print_report(&db, repair_id)?)
@@ -26,7 +26,7 @@ pub fn get_repair_print_report(
 #[tauri::command(rename_all = "camelCase")]
 pub fn get_repair_diagnosis_print_report(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<DiagnosisPrintReport, CommandError> {
     let db = lock_db(&state)?;
     Ok(print::get_repair_diagnosis_print_report(&db, repair_id)?)
@@ -35,7 +35,7 @@ pub fn get_repair_diagnosis_print_report(
 #[tauri::command(rename_all = "camelCase")]
 pub fn get_repair_summary_print_report(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<SummaryPrintReport, CommandError> {
     let db = lock_db(&state)?;
     Ok(print::get_repair_summary_print_report(&db, repair_id)?)

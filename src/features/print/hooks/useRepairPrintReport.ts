@@ -3,7 +3,7 @@ import { printApi } from "@/features/print/api/printApi";
 import type { RepairPrintReport } from "@/features/print/types/printReport";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-export function useRepairPrintReport(repairId: number) {
+export function useRepairPrintReport(repairId: string) {
   const { t } = useI18n();
   const [report, setReport] = useState<RepairPrintReport | null>(null);
   const [loading, setLoading] = useState(true);

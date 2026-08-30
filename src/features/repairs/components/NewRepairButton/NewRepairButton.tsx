@@ -5,8 +5,8 @@ export function NewRepairButton({
   customerId,
   deviceId,
 }: {
-  customerId?: number;
-  deviceId?: number;
+  customerId?: string;
+  deviceId?: string;
 }) {
   const { t } = useI18n();
   const params = new URLSearchParams();

@@ -3,9 +3,9 @@
 use serde_json::json;
 
 use crate::db::Db;
-use crate::domain::companies::{CompanyInput, create_company};
-use crate::domain::customers::{CustomerInput, create_customer};
-use crate::domain::devices::{DeviceInput, create_device};
+use crate::domain::companies::{create_company, CompanyInput};
+use crate::domain::customers::{create_customer, CustomerInput};
+use crate::domain::devices::{create_device, DeviceInput};
 use crate::domain::diagnosis::constants::{KIND_CHECKBOX, KIND_TEXT};
 use crate::domain::diagnosis::types::{
     DiagnosisResult, DiagnosisResultItem, DiagnosisTemplateBody, DiagnosisTemplateBodyItem,
@@ -16,7 +16,7 @@ use crate::domain::diagnosis::{
     get_repair_diagnosis, list_diagnosis_templates, update_diagnosis_template,
     upsert_repair_diagnosis,
 };
-use crate::domain::repairs::{RepairInput, create_repair};
+use crate::domain::repairs::{create_repair, RepairInput};
 
 fn body_item(id: &str, label: &str, kind: &str) -> DiagnosisTemplateBodyItem {
     DiagnosisTemplateBodyItem {
@@ -57,8 +57,7 @@ fn sample_result() -> DiagnosisResult {
     }
 }
 
-
-fn company(db: &Db) -> i64 {
+fn company(db: &Db) -> String {
     create_company(
         db.conn(),
         CompanyInput {
@@ -75,7 +74,7 @@ fn company(db: &Db) -> i64 {
     .id
 }
 
-fn seed_repair(db: &Db) -> i64 {
+fn seed_repair(db: &Db) -> String {
     let company_id = company(db);
     let customer_id = create_customer(
         db.conn(),
@@ -92,7 +91,7 @@ fn seed_repair(db: &Db) -> i64 {
     let device_id = create_device(
         db.conn(),
         DeviceInput {
-            customer_id,
+            customer_id: customer_id.to_string(),
             device_type: Some("Phone".into()),
             manufacturer: Some("Acme".into()),
             model: Some("X1".into()),
@@ -106,9 +105,9 @@ fn seed_repair(db: &Db) -> i64 {
     create_repair(
         db.conn(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: None,
             reported_problem: Some("Broken".into()),
             accessories_received: None,
@@ -128,7 +127,7 @@ fn template_crud_flow() {
     let db = Db::open_in_memory().expect("db");
     let created =
         create_diagnosis_template(db.conn(), sample_template("Intake checklist")).expect("create");
-    assert!(created.id > 0);
+    assert!(!created.id.clone().is_empty());
     assert_eq!(created.name, "Intake checklist");
     assert_eq!(created.body.items.len(), 2);
 
@@ -146,7 +145,7 @@ fn template_crud_flow() {
 
     let updated = update_diagnosis_template(
         db.conn(),
-        created.id,
+        created.id.clone(),
         DiagnosisTemplateInput {
             name: "Updated checklist".into(),
             body: DiagnosisTemplateBody {
@@ -158,32 +157,31 @@ fn template_crud_flow() {
     assert_eq!(updated.name, "Updated checklist");
     assert_eq!(updated.body.items.len(), 1);
 
-    let fetched = get_diagnosis_template(db.conn(), created.id).expect("get");
+    let fetched = get_diagnosis_template(db.conn(), created.id.clone()).expect("get");
     assert_eq!(fetched.name, "Updated checklist");
 
-    delete_diagnosis_template(db.conn(), created.id).expect("delete");
-    let err = get_diagnosis_template(db.conn(), created.id).expect_err("gone");
+    delete_diagnosis_template(db.conn(), created.id.clone()).expect("delete");
+    let err = get_diagnosis_template(db.conn(), created.id.clone()).expect_err("gone");
     assert_eq!(err.code(), "not_found");
 }
 
 #[test]
 fn delete_blocked_when_template_used() {
     let db = Db::open_in_memory().expect("db");
-    let template =
-        create_diagnosis_template(db.conn(), sample_template("Used")).expect("template");
+    let template = create_diagnosis_template(db.conn(), sample_template("Used")).expect("template");
     let repair_id = seed_repair(&db);
 
     upsert_repair_diagnosis(
         db.conn(),
         RepairDiagnosisInput {
-            repair_id,
-            template_id: Some(template.id),
+            repair_id: repair_id.clone(),
+            template_id: Some(template.id.clone()),
             result: sample_result(),
         },
     )
     .expect("upsert");
 
-    let err = delete_diagnosis_template(db.conn(), template.id).expect_err("blocked");
+    let err = delete_diagnosis_template(db.conn(), template.id.clone()).expect_err("blocked");
     assert_eq!(err.code(), "validation");
 }
 
@@ -197,14 +195,14 @@ fn upsert_creates_then_updates_same_repair() {
     let created = upsert_repair_diagnosis(
         db.conn(),
         RepairDiagnosisInput {
-            repair_id,
-            template_id: Some(template.id),
+            repair_id: repair_id.clone(),
+            template_id: Some(template.id.clone()),
             result: sample_result(),
         },
     )
     .expect("create");
-    assert_eq!(created.repair_id, repair_id);
-    assert_eq!(created.template_id, Some(template.id));
+    assert_eq!(created.repair_id, repair_id.clone());
+    assert_eq!(created.template_id, Some(template.id.clone()));
 
     let mut updated_result = sample_result();
     updated_result.items[0].value = json!(true);
@@ -213,20 +211,20 @@ fn upsert_creates_then_updates_same_repair() {
     let updated = upsert_repair_diagnosis(
         db.conn(),
         RepairDiagnosisInput {
-            repair_id,
-            template_id: Some(template.id),
+            repair_id: repair_id.clone(),
+            template_id: Some(template.id.clone()),
             result: updated_result,
         },
     )
     .expect("update");
-    assert_eq!(updated.id, created.id);
+    assert_eq!(updated.id.clone(), created.id.clone());
     assert_eq!(updated.result.items[0].value, json!(true));
     assert_eq!(updated.result.items[1].value, json!("Fixed"));
 
-    let fetched = get_repair_diagnosis(db.conn(), repair_id)
+    let fetched = get_repair_diagnosis(db.conn(), repair_id.clone())
         .expect("get")
         .expect("present");
-    assert_eq!(fetched.id, created.id);
+    assert_eq!(fetched.id.clone(), created.id.clone());
 }
 
 #[test]
@@ -257,7 +255,7 @@ fn rejects_invalid_kind_and_value() {
     let value_err = upsert_repair_diagnosis(
         db.conn(),
         RepairDiagnosisInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             template_id: None,
             result: DiagnosisResult {
                 items: vec![DiagnosisResultItem {

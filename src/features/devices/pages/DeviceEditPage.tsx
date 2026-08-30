@@ -6,7 +6,7 @@ import type { Device } from "@/features/devices/types/device";
 import { Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-type Props = { deviceId: number };
+type Props = { deviceId: string };
 
 export function DeviceEditPage({ deviceId }: Props) {
   const { t } = useI18n();

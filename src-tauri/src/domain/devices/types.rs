@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Device {
-    pub id: i64,
-    pub customer_id: i64,
+    pub id: String,
+    pub customer_id: String,
     pub device_type: Option<String>,
     pub manufacturer: Option<String>,
     pub model: Option<String>,
@@ -19,7 +19,7 @@ pub struct Device {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeviceInput {
-    pub customer_id: i64,
+    pub customer_id: String,
     pub device_type: Option<String>,
     pub manufacturer: Option<String>,
     pub model: Option<String>,
@@ -32,7 +32,7 @@ pub struct DeviceInput {
 #[serde(rename_all = "camelCase")]
 pub struct DeviceListQuery {
     pub query: Option<String>,
-    pub customer_id: Option<i64>,
+    pub customer_id: Option<String>,
     pub include_archived: Option<bool>,
     pub page: Option<u32>,
     pub page_size: Option<u32>,

@@ -41,7 +41,7 @@ pub struct SummaryPrintReport {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PrintRepairCore {
-    pub id: i64,
+    pub id: String,
     pub repair_number: String,
     pub status: String,
     pub received_at: String,
@@ -59,7 +59,7 @@ pub struct PrintRepairCore {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DiagnosisPrintRepair {
-    pub id: i64,
+    pub id: String,
     pub repair_number: String,
     pub status: String,
     pub diagnosis_notes: Option<String>,
@@ -73,7 +73,7 @@ pub struct DiagnosisPrintRepair {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SummaryPrintRepair {
-    pub id: i64,
+    pub id: String,
     pub repair_number: String,
     pub status: String,
     pub received_at: String,
@@ -93,7 +93,7 @@ pub struct SummaryPrintRepair {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PrintCustomer {
-    pub id: i64,
+    pub id: String,
     pub name: String,
     pub phone: Option<String>,
     pub email: Option<String>,
@@ -103,7 +103,7 @@ pub struct PrintCustomer {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PrintDevice {
-    pub id: i64,
+    pub id: String,
     pub device_type: String,
     pub manufacturer: Option<String>,
     pub model: Option<String>,
@@ -113,7 +113,7 @@ pub struct PrintDevice {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PrintCompany {
-    pub id: i64,
+    pub id: String,
     pub legal_name: String,
     pub trade_name: Option<String>,
     pub tax_id: Option<String>,

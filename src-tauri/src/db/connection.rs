@@ -10,7 +10,7 @@ use crate::error::AppError;
 use crate::paths::AppPaths;
 
 /// Shared database handle managed by Tauri.
-pub struct DbState(pub Mutex<Db>);
+pub struct DbState(pub std::sync::Arc<Mutex<Db>>);
 
 pub struct Db {
     conn: Connection,
@@ -23,6 +23,7 @@ impl Db {
         let db = Self { conn, paths };
         db.configure()?;
         migrate::run(&db.conn)?;
+        crate::domain::identity::ensure_local_identity(&db.conn)?;
         Ok(db)
     }
 
@@ -34,6 +35,8 @@ impl Db {
             database: PathBuf::from(":memory:"),
             images: PathBuf::from(":memory:/images"),
             thumbs: PathBuf::from(":memory:/thumbs"),
+            documents: PathBuf::from(":memory:/documents"),
+            blobs: PathBuf::from(":memory:/blobs"),
             backups: PathBuf::from(":memory:/backups"),
             logs: PathBuf::from(":memory:/logs"),
         };
@@ -41,6 +44,7 @@ impl Db {
         let db = Self { conn, paths };
         db.configure()?;
         migrate::run(&db.conn)?;
+        crate::domain::identity::ensure_local_identity(&db.conn)?;
         Ok(db)
     }
 
@@ -95,16 +99,17 @@ impl Db {
         drop(old);
         self.configure()?;
         migrate::run(&self.conn)?;
+        crate::domain::identity::ensure_local_identity(&self.conn)?;
         Ok(())
     }
 
     /// Lightweight health check used by smoke commands/tests.
     pub fn health_check(&self) -> Result<DbHealth, AppError> {
-        let migrations_applied: i64 = self.conn.query_row(
-            "SELECT COUNT(*) FROM schema_migrations",
-            [],
-            |row| row.get(0),
-        )?;
+        let migrations_applied: i64 =
+            self.conn
+                .query_row("SELECT COUNT(*) FROM schema_migrations", [], |row| {
+                    row.get(0)
+                })?;
         let customers: i64 = self
             .conn
             .query_row("SELECT COUNT(*) FROM customers", [], |row| row.get(0))?;

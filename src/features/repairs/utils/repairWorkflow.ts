@@ -87,7 +87,7 @@ export function workflowActionLabel(key: RepairWorkflowActionKey): string {
 }
 
 export function workflowActionHref(
-  repairId: number,
+  repairId: string,
   key: RepairWorkflowActionKey,
 ): string {
   if (MODAL_WORKFLOW_ACTIONS.has(key)) {

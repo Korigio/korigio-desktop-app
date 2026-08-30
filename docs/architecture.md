@@ -14,7 +14,7 @@ Product name: **Servioo** (npm package `servioo`; Tauri identifier `com.servioo.
 | Forms / tables | TanStack Form + TanStack Table (mandatory) |
 | Backend | Rust |
 | Database | SQLite via `rusqlite` |
-| IPC | Tauri commands only (no local HTTP server) |
+| IPC | Tauri commands only (no local HTTP server). Native → UI events: `open-settings`, `open-repair-intake`, `sync-applied`. |
 
 ## Layers
 
@@ -26,8 +26,10 @@ Tauri commands (thin)
 domain services (validation + business rules)
         ↓
 repositories (SQL) / filesystem (images, backups)
+        ↘
+sync_net (UDP discovery + encrypted TCP mesh) — Rust only, no HTTP
         ↓
-AppData: SQLite, images, backups, logs
+AppData: SQLite, images, thumbs, documents, blobs, backups, logs
 ```
 
 ## Non-negotiable rules
@@ -55,6 +57,7 @@ src/                     # React frontend (RR appDirectory)
 src-tauri/               # Rust backend
   src/commands/          # IPC adapters (= routes)
   src/domain/<domain>/   # constants, types, validation, service, repository
+  src/sync_net/          # LAN mesh (UDP/TCP); never a localhost HTTP API
   src/db/                # connection, migrations
   migrations/
 docs/                    # architecture and ADRs

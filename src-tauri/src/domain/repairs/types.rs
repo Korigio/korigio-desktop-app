@@ -3,12 +3,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Repair {
-    pub id: i64,
+    pub id: String,
     pub repair_number: String,
-    pub customer_id: i64,
-    pub device_id: i64,
+    pub customer_id: String,
+    pub device_id: String,
     /// Nullable in SQL for migrate safety on leftover rows; required on create.
-    pub company_id: Option<i64>,
+    pub company_id: Option<String>,
+    pub assigned_to_staff_id: Option<String>,
+    pub updated_by_staff_id: Option<String>,
     pub status: String,
     pub received_at: String,
     pub reported_problem: Option<String>,
@@ -69,7 +71,7 @@ impl RepairDocumentType {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairDocument {
-    pub repair_id: i64,
+    pub repair_id: String,
     pub document_type: String,
     pub original_filename: String,
     pub created_at: String,
@@ -86,7 +88,7 @@ pub enum CompleteDiagnosisMode {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CompleteRepairDiagnosisInput {
-    pub repair_id: i64,
+    pub repair_id: String,
     pub mode: CompleteDiagnosisMode,
     pub diagnosis_notes: Option<String>,
     pub expected_pickup_at: Option<String>,
@@ -103,10 +105,10 @@ pub struct CompleteRepairDiagnosisResult {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairInput {
-    pub customer_id: i64,
-    pub device_id: i64,
+    pub customer_id: String,
+    pub device_id: String,
     /// Required on create; ignored on update (company cannot change after create).
-    pub company_id: i64,
+    pub company_id: String,
     pub status: Option<String>,
     pub reported_problem: Option<String>,
     pub accessories_received: Option<String>,
@@ -121,8 +123,8 @@ pub struct RepairInput {
 #[serde(rename_all = "camelCase")]
 pub struct RepairListQuery {
     pub query: Option<String>,
-    pub customer_id: Option<i64>,
-    pub device_id: Option<i64>,
+    pub customer_id: Option<String>,
+    pub device_id: Option<String>,
     pub status: Option<String>,
     pub page: Option<u32>,
     pub page_size: Option<u32>,

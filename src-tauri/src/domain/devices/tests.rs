@@ -1,14 +1,14 @@
 //! Device domain integration tests (temporary / in-memory DB only).
 
 use crate::db::Db;
-use crate::domain::customers::{CustomerInput, create_customer};
+use crate::domain::customers::{create_customer, CustomerInput};
 use crate::domain::devices::{
-    DeviceInput, DeviceListQuery, archive_device, create_device, get_device, list_devices,
-    unarchive_device, update_device,
+    archive_device, create_device, get_device, list_devices, unarchive_device, update_device,
+    DeviceInput, DeviceListQuery,
 };
 use crate::error::AppError;
 
-fn customer(db: &Db, name: &str) -> i64 {
+fn customer(db: &Db, name: &str) -> String {
     create_customer(
         db.conn(),
         CustomerInput {
@@ -23,9 +23,9 @@ fn customer(db: &Db, name: &str) -> i64 {
     .id
 }
 
-fn sample(customer_id: i64, serial: &str) -> DeviceInput {
+fn sample(customer_id: &str, serial: &str) -> DeviceInput {
     DeviceInput {
-        customer_id,
+        customer_id: customer_id.to_string(),
         device_type: Some("Phone".into()),
         manufacturer: Some("Acme".into()),
         model: Some("X1".into()),
@@ -40,8 +40,8 @@ fn create_list_get_update_archive_flow() {
     let db = Db::open_in_memory().expect("db");
     let customer_id = customer(&db, "Owner");
 
-    let created = create_device(db.conn(), sample(customer_id, "SN-100")).expect("create");
-    assert!(created.id > 0);
+    let created = create_device(db.conn(), sample(&customer_id, "SN-100")).expect("create");
+    assert!(!created.id.clone().is_empty());
     assert_eq!(created.customer_id, customer_id);
 
     let listed = list_devices(
@@ -61,7 +61,7 @@ fn create_list_get_update_archive_flow() {
         db.conn(),
         DeviceListQuery {
             query: None,
-            customer_id: Some(customer_id),
+            customer_id: Some(customer_id.clone()),
             include_archived: Some(false),
             page: Some(1),
             page_size: Some(10),
@@ -72,9 +72,9 @@ fn create_list_get_update_archive_flow() {
 
     let updated = update_device(
         db.conn(),
-        created.id,
+        created.id.clone(),
         DeviceInput {
-            customer_id,
+            customer_id: customer_id.to_string(),
             device_type: Some("Tablet".into()),
             manufacturer: Some("Acme".into()),
             model: Some("X2".into()),
@@ -87,7 +87,7 @@ fn create_list_get_update_archive_flow() {
     assert_eq!(updated.device_type.as_deref(), Some("Tablet"));
     assert_eq!(updated.notes.as_deref(), Some("screen crack"));
 
-    let archived = archive_device(db.conn(), created.id).expect("archive");
+    let archived = archive_device(db.conn(), created.id.clone()).expect("archive");
     assert!(archived.archived_at.is_some());
 
     let active = list_devices(
@@ -103,10 +103,10 @@ fn create_list_get_update_archive_flow() {
     .expect("active");
     assert_eq!(active.total, 0);
 
-    let restored = unarchive_device(db.conn(), created.id).expect("unarchive");
+    let restored = unarchive_device(db.conn(), created.id.clone()).expect("unarchive");
     assert!(restored.archived_at.is_none());
     assert_eq!(
-        get_device(db.conn(), created.id)
+        get_device(db.conn(), created.id.clone())
             .expect("get")
             .model
             .as_deref(),
@@ -118,9 +118,10 @@ fn create_list_get_update_archive_flow() {
 fn rejects_device_for_archived_customer() {
     let db = Db::open_in_memory().expect("db");
     let customer_id = customer(&db, "Gone");
-    crate::domain::customers::archive_customer(db.conn(), customer_id).expect("archive cust");
+    crate::domain::customers::archive_customer(db.conn(), customer_id.clone())
+        .expect("archive cust");
 
-    let err = create_device(db.conn(), sample(customer_id, "SN-9")).expect_err("blocked");
+    let err = create_device(db.conn(), sample(&customer_id, "SN-9")).expect_err("blocked");
     assert_eq!(err.code(), "validation");
 }
 
@@ -131,7 +132,7 @@ fn rejects_empty_device_identity() {
     let err = create_device(
         db.conn(),
         DeviceInput {
-            customer_id,
+            customer_id: customer_id.to_string(),
             device_type: None,
             manufacturer: None,
             model: None,

@@ -4,7 +4,7 @@ import { Button, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useNavigate } from "react-router";
 
-type Props = { repairId: number };
+type Props = { repairId: string };
 
 export function RepairPrintPage({ repairId }: Props) {
   const { t } = useI18n();

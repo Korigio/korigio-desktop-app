@@ -3,10 +3,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct RepairImage {
-    pub id: i64,
-    pub repair_id: i64,
+    pub id: String,
+    pub repair_id: String,
     pub original_path: String,
     pub thumb_path: Option<String>,
+    pub content_hash: String,
     pub caption: Option<String>,
     pub sort_order: i64,
     pub created_at: String,
@@ -15,7 +16,7 @@ pub struct RepairImage {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AttachRepairImagesInput {
-    pub repair_id: i64,
+    pub repair_id: String,
     pub source_paths: Vec<String>,
 }
 

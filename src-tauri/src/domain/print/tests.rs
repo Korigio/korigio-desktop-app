@@ -3,25 +3,24 @@
 use serde_json::json;
 
 use crate::db::Db;
-use crate::domain::companies::{CompanyInput, create_company};
-use crate::domain::customers::{CustomerInput, create_customer};
-use crate::domain::devices::{DeviceInput, create_device};
+use crate::domain::companies::{create_company, CompanyInput};
+use crate::domain::customers::{create_customer, CustomerInput};
+use crate::domain::devices::{create_device, DeviceInput};
 use crate::domain::diagnosis::constants::{KIND_CHECKBOX, KIND_TEXT};
-use crate::domain::diagnosis::types::{
-    DiagnosisResult, DiagnosisResultItem, RepairDiagnosisInput,
-};
+use crate::domain::diagnosis::types::{DiagnosisResult, DiagnosisResultItem, RepairDiagnosisInput};
 use crate::domain::diagnosis::upsert_repair_diagnosis;
-use crate::domain::print::{get_repair_diagnosis_print_report, get_repair_print_report, get_repair_summary_print_report};
+use crate::domain::print::types::PrintDiagnosisValue;
+use crate::domain::print::{
+    get_repair_diagnosis_print_report, get_repair_print_report, get_repair_summary_print_report,
+};
 use crate::domain::repairs::types::CompleteDiagnosisMode;
 use crate::domain::repairs::{
-    CompleteRepairDiagnosisInput, RepairInput, complete_repair_diagnosis, create_repair,
+    complete_repair_diagnosis, create_repair, CompleteRepairDiagnosisInput, RepairInput,
 };
-use crate::domain::print::types::PrintDiagnosisValue;
-use crate::domain::settings::{ShopSettingsInput, set_shop_settings};
+use crate::domain::settings::{set_shop_settings, ShopSettingsInput};
 use crate::error::AppError;
 
-
-fn company(db: &Db) -> i64 {
+fn company(db: &Db) -> String {
     create_company(
         db.conn(),
         CompanyInput {
@@ -38,7 +37,7 @@ fn company(db: &Db) -> i64 {
     .id
 }
 
-fn seed_repair(db: &Db) -> (i64, String) {
+fn seed_repair(db: &Db) -> (String, String) {
     let company_id = company(db);
     let customer = create_customer(
         db.conn(),
@@ -54,7 +53,7 @@ fn seed_repair(db: &Db) -> (i64, String) {
     let device = create_device(
         db.conn(),
         DeviceInput {
-            customer_id: customer.id,
+            customer_id: customer.id.clone(),
             device_type: Some("Laptop".into()),
             manufacturer: Some("Lenovo".into()),
             model: Some("T14".into()),
@@ -67,8 +66,8 @@ fn seed_repair(db: &Db) -> (i64, String) {
     let repair = create_repair(
         db.conn(),
         RepairInput {
-            customer_id: customer.id,
-            device_id: device.id,
+            customer_id: customer.id.clone(),
+            device_id: device.id.clone(),
             company_id,
             status: None,
             reported_problem: Some("Won't boot".into()),
@@ -81,7 +80,7 @@ fn seed_repair(db: &Db) -> (i64, String) {
         },
     )
     .expect("repair");
-    (repair.id, repair.repair_number)
+    (repair.id.clone(), repair.repair_number)
 }
 
 #[test]
@@ -89,7 +88,7 @@ fn print_report_assembles_core_fields_without_diagnosis() {
     let db = Db::open_in_memory().expect("db");
     let (repair_id, repair_number) = seed_repair(&db);
 
-    let report = get_repair_print_report(&db, repair_id).expect("report");
+    let report = get_repair_print_report(&db, repair_id.clone()).expect("report");
 
     assert_eq!(report.repair.id, repair_id);
     assert_eq!(report.repair.repair_number, repair_number);
@@ -120,7 +119,7 @@ fn print_report_includes_diagnosis_items() {
     upsert_repair_diagnosis(
         db.conn(),
         RepairDiagnosisInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             template_id: None,
             result: DiagnosisResult {
                 items: vec![
@@ -142,7 +141,7 @@ fn print_report_includes_diagnosis_items() {
     )
     .expect("diagnosis");
 
-    let report = get_repair_print_report(&db, repair_id).expect("report");
+    let report = get_repair_print_report(&db, repair_id.clone()).expect("report");
     let diagnosis = report.diagnosis.expect("diagnosis present");
     assert_eq!(diagnosis.items.len(), 2);
     assert_eq!(diagnosis.items[0].id, "screen");
@@ -156,7 +155,8 @@ fn print_report_includes_diagnosis_items() {
 #[test]
 fn print_report_missing_repair_is_not_found() {
     let db = Db::open_in_memory().expect("db");
-    let err = get_repair_print_report(&db, 999_999).expect_err("missing");
+    let err =
+        get_repair_print_report(&db, crate::domain::ids::new_entity_id()).expect_err("missing");
     assert!(matches!(err, AppError::NotFound));
 }
 
@@ -177,7 +177,7 @@ fn diagnosis_print_report_includes_estimate_and_currency() {
     complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             mode: CompleteDiagnosisMode::Finalize,
             diagnosis_notes: Some("Needs board".into()),
             expected_pickup_at: Some("2026-10-01".into()),
@@ -186,11 +186,17 @@ fn diagnosis_print_report_includes_estimate_and_currency() {
     )
     .expect("diagnose");
 
-    let report = get_repair_diagnosis_print_report(&db, repair_id).expect("report");
+    let report = get_repair_diagnosis_print_report(&db, repair_id.clone()).expect("report");
     assert_eq!(report.repair.repair_number, repair_number);
     assert_eq!(report.repair.status, "waiting_customer");
-    assert_eq!(report.repair.diagnosis_notes.as_deref(), Some("Needs board"));
-    assert_eq!(report.repair.expected_pickup_at.as_deref(), Some("2026-10-01"));
+    assert_eq!(
+        report.repair.diagnosis_notes.as_deref(),
+        Some("Needs board")
+    );
+    assert_eq!(
+        report.repair.expected_pickup_at.as_deref(),
+        Some("2026-10-01")
+    );
     assert_eq!(report.repair.estimate_base_cents, Some(10_000));
     assert_eq!(report.repair.estimate_tax_rate_bps, Some(1_900));
     assert_eq!(report.repair.estimate_tax_cents, Some(1_900));
@@ -218,7 +224,7 @@ fn summary_print_report_includes_work_and_dates() {
     complete_repair_diagnosis(
         db.conn(),
         CompleteRepairDiagnosisInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             mode: CompleteDiagnosisMode::Finalize,
             diagnosis_notes: Some("Screen fault".into()),
             expected_pickup_at: Some("2026-10-05".into()),
@@ -227,10 +233,16 @@ fn summary_print_report_includes_work_and_dates() {
     )
     .expect("diagnose");
 
-    let report = get_repair_summary_print_report(&db, repair_id).expect("report");
+    let report = get_repair_summary_print_report(&db, repair_id.clone()).expect("report");
     assert_eq!(report.repair.repair_number, repair_number);
-    assert_eq!(report.repair.reported_problem.as_deref(), Some("Won't boot"));
-    assert_eq!(report.repair.expected_pickup_at.as_deref(), Some("2026-10-05"));
+    assert_eq!(
+        report.repair.reported_problem.as_deref(),
+        Some("Won't boot")
+    );
+    assert_eq!(
+        report.repair.expected_pickup_at.as_deref(),
+        Some("2026-10-05")
+    );
     assert_eq!(report.repair.estimate_gross_cents, Some(9_520));
     assert_eq!(report.currency, "EUR");
     assert_eq!(report.customer.name, "Print Customer");

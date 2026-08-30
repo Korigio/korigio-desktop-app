@@ -8,17 +8,17 @@ use image::{ImageBuffer, Rgba};
 use zip::ZipArchive;
 
 use crate::db::Db;
-use crate::domain::companies::{CompanyInput, create_company};
 use crate::domain::backup::constants::MANIFEST_NAME;
 use crate::domain::backup::types::{BackupManifest, CreateBackupInput};
 use crate::domain::backup::{
     create_backup, list_local_backups, restore_backup, run_auto_backup_if_due, validate_backup,
 };
-use crate::domain::customers::{CustomerInput, create_customer};
-use crate::domain::devices::{DeviceInput, create_device};
+use crate::domain::companies::{create_company, CompanyInput};
+use crate::domain::customers::{create_customer, CustomerInput};
+use crate::domain::devices::{create_device, DeviceInput};
 use crate::domain::images::types::AttachRepairImagesInput;
 use crate::domain::images::{attach_repair_images, list_repair_images};
-use crate::domain::repairs::{RepairInput, create_repair};
+use crate::domain::repairs::{create_repair, RepairInput};
 
 fn open_temp_db() -> (tempfile::TempDir, Db) {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -26,8 +26,7 @@ fn open_temp_db() -> (tempfile::TempDir, Db) {
     (dir, db)
 }
 
-
-fn company(db: &Db) -> i64 {
+fn company(db: &Db) -> String {
     create_company(
         db.conn(),
         CompanyInput {
@@ -44,7 +43,7 @@ fn company(db: &Db) -> i64 {
     .id
 }
 
-fn seed_repair_with_image(db: &Db) -> i64 {
+fn seed_repair_with_image(db: &Db) -> String {
     let company_id = company(db);
     let customer_id = create_customer(
         db.conn(),
@@ -61,7 +60,7 @@ fn seed_repair_with_image(db: &Db) -> i64 {
     let device_id = create_device(
         db.conn(),
         DeviceInput {
-            customer_id,
+            customer_id: customer_id.to_string(),
             device_type: Some("Phone".into()),
             manufacturer: Some("Acme".into()),
             model: Some("X1".into()),
@@ -75,9 +74,9 @@ fn seed_repair_with_image(db: &Db) -> i64 {
     let repair_id = create_repair(
         db.conn(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: None,
             reported_problem: Some("Broken".into()),
             accessories_received: None,
@@ -98,7 +97,7 @@ fn seed_repair_with_image(db: &Db) -> i64 {
     attach_repair_images(
         db,
         AttachRepairImagesInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             source_paths: vec![png.to_string_lossy().into_owned()],
         },
     )
@@ -131,12 +130,7 @@ fn create_backup_contains_manifest_and_db() {
     drop(manifest_file);
     let manifest: BackupManifest = serde_json::from_str(&raw).expect("parse");
     assert_eq!(manifest.app_version, env!("CARGO_PKG_VERSION"));
-    assert!(
-        manifest
-            .files
-            .iter()
-            .any(|f| f.path == "database.sqlite")
-    );
+    assert!(manifest.files.iter().any(|f| f.path == "database.sqlite"));
     assert!(archive.by_name("database.sqlite").is_ok());
 
     let validation = validate_backup(Path::new(&info.path)).expect("validate");
@@ -192,19 +186,22 @@ fn corrupt_checksum_is_invalid() {
 
     let validation = validate_backup(&corrupt_path).expect("validate");
     assert!(!validation.valid);
-    assert!(
-        validation
-            .errors
-            .iter()
-            .any(|e| e.to_lowercase().contains("checksum"))
-    );
+    assert!(validation
+        .errors
+        .iter()
+        .any(|e| e.to_lowercase().contains("checksum")));
 }
 
 #[test]
 fn restore_creates_safety_and_reopens_db() {
     let (dir, mut db) = open_temp_db();
     let repair_id = seed_repair_with_image(&db);
-    assert_eq!(list_repair_images(&db, repair_id).expect("list").len(), 1);
+    assert_eq!(
+        list_repair_images(&db, repair_id.clone())
+            .expect("list")
+            .len(),
+        1
+    );
 
     let backup = create_backup(
         &db,
@@ -242,12 +239,10 @@ fn restore_creates_safety_and_reopens_db() {
 
     let listed = list_local_backups(db.paths()).expect("list");
     assert!(listed.items.iter().any(|b| b.path == backup.path));
-    assert!(
-        listed
-            .items
-            .iter()
-            .any(|b| b.path == result.safety_backup_path)
-    );
+    assert!(listed
+        .items
+        .iter()
+        .any(|b| b.path == result.safety_backup_path));
 }
 
 #[test]

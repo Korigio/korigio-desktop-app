@@ -4,6 +4,7 @@ import type {
   Company,
   CompanyListResult,
 } from "@/features/companies/types/company";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 export function useCompanyList() {
   const [query, setQuery] = useState("");
@@ -13,28 +14,45 @@ export function useCompanyList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await companiesApi.list({
-        query: query.trim() || undefined,
-        includeArchived,
-        page,
-        pageSize: 25,
-      });
-      setResult(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load companies");
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, includeArchived, page]);
+  const reload = useCallback(
+    async (reloadOptions?: { silent?: boolean }) => {
+      const silent = reloadOptions?.silent === true;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const next = await companiesApi.list({
+          query: query.trim() || undefined,
+          includeArchived,
+          page,
+          pageSize: 25,
+        });
+        setResult(next);
+        setError(null);
+      } catch (err) {
+        if (!silent) {
+          setError(
+            err instanceof Error ? err.message : "Failed to load companies",
+          );
+          setResult(null);
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [query, includeArchived, page],
+  );
 
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useSyncApplied(() => {
+    void reload({ silent: true });
+  });
 
   const archive = useCallback(
     async (company: Company) => {

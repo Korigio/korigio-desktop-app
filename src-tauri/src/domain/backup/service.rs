@@ -28,11 +28,7 @@ pub fn create_backup(db: &Db, input: CreateBackupInput) -> Result<BackupInfo, Ap
 }
 
 pub fn create_safety_backup(db: &Db) -> Result<BackupInfo, AppError> {
-    let file_name = format!(
-        "Servioo-safety-{}.{}",
-        local_stamp()?,
-        BACKUP_EXTENSION
-    );
+    let file_name = format!("Servioo-safety-{}.{}", local_stamp()?, BACKUP_EXTENSION);
     let dest = db.paths().backups.join(&file_name);
     write_backup_package(db, &dest, BackupKind::Safety)
 }
@@ -116,12 +112,12 @@ pub fn validate_backup(path: &Path) -> Result<BackupValidationResult, AppError> 
                         .query_row("PRAGMA integrity_check", [], |row| row.get(0))
                         .unwrap_or_else(|err| format!("error:{err}"));
                     if check != "ok" {
-                        errors.push(format!(
-                            "Restored database failed integrity check: {check}"
-                        ));
+                        errors.push(format!("Restored database failed integrity check: {check}"));
                     }
                 }
-                Err(err) => errors.push(format!("database.sqlite is not a valid SQLite file: {err}")),
+                Err(err) => {
+                    errors.push(format!("database.sqlite is not a valid SQLite file: {err}"))
+                }
             }
         }
     }
@@ -161,6 +157,21 @@ pub fn restore_backup(db: &mut Db, path: &Path) -> Result<RestoreBackupResult, A
         });
     }
 
+    let max_version: i64 = {
+        let conn = Connection::open(&staged_db)?;
+        conn.query_row(
+            "SELECT COALESCE(MAX(version), 0) FROM schema_migrations",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap_or(0)
+    };
+    if max_version < 10 {
+        return Err(AppError::conflict(
+            "This backup is from an older Servioo version and cannot be restored.",
+        ));
+    }
+
     db.checkpoint_wal()?;
     db.close_connection_for_restore()?;
 
@@ -191,7 +202,11 @@ pub fn list_local_backups(paths: &AppPaths) -> Result<LocalBackupListResult, App
         }
     }
     collect_backups_in_dir(&paths.backups_auto(), BackupKind::Auto, &mut items)?;
-    items.sort_by(|a, b| b.created_at.cmp(&a.created_at).then(b.file_name.cmp(&a.file_name)));
+    items.sort_by(|a, b| {
+        b.created_at
+            .cmp(&a.created_at)
+            .then(b.file_name.cmp(&a.file_name))
+    });
     Ok(LocalBackupListResult { items })
 }
 
@@ -216,11 +231,7 @@ pub fn run_auto_backup_if_due(db: &Db) -> Result<AutoBackupResult, AppError> {
     })
 }
 
-fn write_backup_package(
-    db: &Db,
-    dest: &Path,
-    kind: BackupKind,
-) -> Result<BackupInfo, AppError> {
+fn write_backup_package(db: &Db, dest: &Path, kind: BackupKind) -> Result<BackupInfo, AppError> {
     if let Some(parent) = dest.parent() {
         fs::create_dir_all(parent)?;
     }
@@ -311,11 +322,9 @@ fn add_tree_to_zip(
         return Ok(());
     }
     for entry in walkdir(root)? {
-        let rel = entry
-            .strip_prefix(root)
-            .map_err(|err| AppError::Internal {
-                message: format!("path strip failed: {err}"),
-            })?;
+        let rel = entry.strip_prefix(root).map_err(|err| AppError::Internal {
+            message: format!("path strip failed: {err}"),
+        })?;
         let entry_name = format!("{prefix}/{}", path_to_unix(rel));
         add_file_to_zip(zip, options, &entry_name, &entry, files_meta)?;
     }
@@ -407,10 +416,7 @@ fn extract_backup_to(path: &Path, dest: &Path) -> Result<(), AppError> {
 
 fn has_unsafe_zip_path(name: &str) -> bool {
     let path = Path::new(name);
-    path.is_absolute()
-        || path
-            .components()
-            .any(|c| matches!(c, Component::ParentDir))
+    path.is_absolute() || path.components().any(|c| matches!(c, Component::ParentDir))
 }
 
 fn replace_file(src: &Path, dest: &Path) -> Result<(), AppError> {
@@ -463,11 +469,9 @@ fn resolve_manual_destination(
                 Ok(path)
             }
         }
-        _ => Ok(paths.backups.join(format!(
-            "Servioo-{}.{}",
-            local_stamp()?,
-            BACKUP_EXTENSION
-        ))),
+        _ => Ok(paths
+            .backups
+            .join(format!("Servioo-{}.{}", local_stamp()?, BACKUP_EXTENSION))),
     }
 }
 
@@ -607,10 +611,7 @@ fn kind_from_path(path: &Path) -> BackupKind {
         .unwrap_or_default();
     if name.contains("-safety-") {
         BackupKind::Safety
-    } else if path
-        .parent()
-        .is_some_and(|p| p.ends_with("auto"))
-    {
+    } else if path.parent().is_some_and(|p| p.ends_with("auto")) {
         BackupKind::Auto
     } else {
         BackupKind::Manual

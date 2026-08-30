@@ -26,7 +26,7 @@ pub fn list_customers(
 }
 
 #[tauri::command]
-pub fn get_customer(state: State<'_, DbState>, id: i64) -> Result<Customer, CommandError> {
+pub fn get_customer(state: State<'_, DbState>, id: String) -> Result<Customer, CommandError> {
     let db = lock_db(&state)?;
     Ok(customers::get_customer(db.conn(), id)?)
 }
@@ -43,7 +43,7 @@ pub fn create_customer(
 #[tauri::command]
 pub fn update_customer(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
     input: CustomerInput,
 ) -> Result<Customer, CommandError> {
     let db = lock_db(&state)?;
@@ -51,13 +51,13 @@ pub fn update_customer(
 }
 
 #[tauri::command]
-pub fn archive_customer(state: State<'_, DbState>, id: i64) -> Result<Customer, CommandError> {
+pub fn archive_customer(state: State<'_, DbState>, id: String) -> Result<Customer, CommandError> {
     let db = lock_db(&state)?;
     Ok(customers::archive_customer(db.conn(), id)?)
 }
 
 #[tauri::command]
-pub fn unarchive_customer(state: State<'_, DbState>, id: i64) -> Result<Customer, CommandError> {
+pub fn unarchive_customer(state: State<'_, DbState>, id: String) -> Result<Customer, CommandError> {
     let db = lock_db(&state)?;
     Ok(customers::unarchive_customer(db.conn(), id)?)
 }

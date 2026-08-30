@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { companiesApi } from "@/features/companies/api/companiesApi";
 import type { Company } from "@/features/companies/types/company";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 type Options = {
   company: Company;
@@ -37,6 +38,25 @@ export function useCompanyLogo({
   useEffect(() => {
     void reloadLogoUrl();
   }, [reloadLogoUrl]);
+
+  const silentRefresh = useCallback(async () => {
+    try {
+      const next = await companiesApi.get(company.id);
+      onCompanyChange(next);
+      if (!next.logoPath) {
+        setLogoUrl(null);
+        return;
+      }
+      const resolved = await companiesApi.resolveLogoPath(next.id);
+      setLogoUrl(convertFileSrc(resolved.absolutePath));
+    } catch {
+      // Keep the last resolved logo.
+    }
+  }, [company.id, onCompanyChange]);
+
+  useSyncApplied(() => {
+    void silentRefresh();
+  });
 
   const uploadLogo = useCallback(async () => {
     if (disabled) {

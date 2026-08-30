@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Customer {
-    pub id: i64,
+    pub id: String,
     pub name: String,
     pub phone: Option<String>,
     pub email: Option<String>,

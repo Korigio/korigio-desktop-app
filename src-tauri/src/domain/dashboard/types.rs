@@ -12,7 +12,7 @@ pub struct StatusCount {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct DashboardRepairRow {
-    pub id: i64,
+    pub id: String,
     pub repair_number: String,
     pub status: String,
     pub customer_name: String,

@@ -48,6 +48,17 @@ pub const TAX_RATE_PERCENT_KEY: &str = "tax_rate_percent";
 pub const CURRENCY_KEY: &str = "currency";
 pub const DEFAULT_TAX_RATE_PERCENT: &str = "19";
 pub const DEFAULT_CURRENCY: &str = "EUR";
+pub const SHOP_SETTINGS_ID: &str = "shop";
+pub const SYNC_INTERVAL_KEY: &str = "sync_interval_secs";
+pub const DEFAULT_SYNC_INTERVAL_SECS: u64 = 5;
+pub const MIN_SYNC_INTERVAL_SECS: u64 = 2;
+pub const MAX_SYNC_INTERVAL_SECS: u64 = 60;
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncIntervalSettings {
+    pub interval_seconds: u64,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]

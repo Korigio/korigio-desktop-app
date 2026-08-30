@@ -5,10 +5,11 @@ import type {
   RepairStatus,
 } from "@/features/repairs/types/repair";
 import { REPAIR_STATUSES } from "@/features/repairs/types/repair";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 type Options = {
-  customerId?: number;
-  deviceId?: number;
+  customerId?: string;
+  deviceId?: string;
   initialStatus?: RepairStatus | "";
 };
 
@@ -37,30 +38,45 @@ export function useRepairList(options: Options = {}) {
     setPage(1);
   }, [options.initialStatus]);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await repairsApi.list({
-        query: query.trim() || undefined,
-        customerId: options.customerId,
-        deviceId: options.deviceId,
-        status: status || undefined,
-        page,
-        pageSize: 25,
-      });
-      setResult(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load repairs");
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, status, page, options.customerId, options.deviceId]);
+  const reload = useCallback(
+    async (reloadOptions?: { silent?: boolean }) => {
+      const silent = reloadOptions?.silent === true;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const next = await repairsApi.list({
+          query: query.trim() || undefined,
+          customerId: options.customerId,
+          deviceId: options.deviceId,
+          status: status || undefined,
+          page,
+          pageSize: 25,
+        });
+        setResult(next);
+        setError(null);
+      } catch (err) {
+        if (!silent) {
+          setError(err instanceof Error ? err.message : "Failed to load repairs");
+          setResult(null);
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [query, status, page, options.customerId, options.deviceId],
+  );
 
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useSyncApplied(() => {
+    void reload({ silent: true });
+  });
 
   return {
     query,

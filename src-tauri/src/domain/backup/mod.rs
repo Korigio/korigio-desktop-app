@@ -9,6 +9,6 @@ pub use service::{
     create_backup, list_local_backups, restore_backup, run_auto_backup_if_due, validate_backup,
 };
 pub use types::{
-    AutoBackupResult, BackupInfo, BackupValidationResult, CreateBackupInput,
-    LocalBackupListResult, RestoreBackupResult,
+    AutoBackupResult, BackupInfo, BackupValidationResult, CreateBackupInput, LocalBackupListResult,
+    RestoreBackupResult,
 };

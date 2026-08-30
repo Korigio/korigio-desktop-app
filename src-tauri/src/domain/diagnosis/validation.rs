@@ -19,8 +19,8 @@ pub struct ValidatedTemplateInput {
 
 #[derive(Debug)]
 pub struct ValidatedRepairDiagnosisInput {
-    pub repair_id: i64,
-    pub template_id: Option<i64>,
+    pub repair_id: String,
+    pub template_id: Option<String>,
     pub result: DiagnosisResult,
 }
 
@@ -35,25 +35,19 @@ pub fn validate_template_input(
 pub fn validate_repair_diagnosis_input(
     input: &RepairDiagnosisInput,
 ) -> Result<ValidatedRepairDiagnosisInput, AppError> {
-    if input.repair_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("repairId".into()),
-            message: "Repair is required.".into(),
-        });
-    }
-    if let Some(template_id) = input.template_id {
-        if template_id <= 0 {
-            return Err(AppError::Validation {
-                field: Some("templateId".into()),
-                message: "Template id is invalid.".into(),
-            });
-        }
-    }
+    let repair_id = crate::domain::ids::parse_entity_id_field(&input.repair_id, "repairId")?;
+    let template_id = match &input.template_id {
+        Some(raw) => Some(crate::domain::ids::parse_entity_id_field(
+            raw,
+            "templateId",
+        )?),
+        None => None,
+    };
 
     let result = validate_result(&input.result)?;
     Ok(ValidatedRepairDiagnosisInput {
-        repair_id: input.repair_id,
-        template_id: input.template_id,
+        repair_id,
+        template_id,
         result,
     })
 }
@@ -279,7 +273,7 @@ mod tests {
     #[test]
     fn rejects_mismatched_checkbox_value() {
         let err = validate_repair_diagnosis_input(&RepairDiagnosisInput {
-            repair_id: 1,
+            repair_id: crate::domain::ids::new_entity_id(),
             template_id: None,
             result: DiagnosisResult {
                 items: vec![DiagnosisResultItem {

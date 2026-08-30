@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use rusqlite::{Connection, params};
+use rusqlite::{params, Connection};
 
 use crate::domain::dashboard::constants::DASHBOARD_LIST_LIMIT;
 use crate::domain::dashboard::types::{StatusCount, TodayCounts};
@@ -11,7 +11,7 @@ use crate::error::AppError;
 
 /// Raw row before `days_in_status` is computed in the service layer.
 pub struct DashboardRepairRaw {
-    pub id: i64,
+    pub id: String,
     pub repair_number: String,
     pub status: String,
     pub customer_name: String,

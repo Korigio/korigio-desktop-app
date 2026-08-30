@@ -9,13 +9,33 @@ use crate::error::AppError;
 pub const MIGRATIONS: &[(i64, &str)] = &[
     (1, include_str!("../../migrations/001_initial.sql")),
     (2, include_str!("../../migrations/002_search_indexes.sql")),
-    (3, include_str!("../../migrations/003_diagnosis_unique_repair.sql")),
-    (4, include_str!("../../migrations/004_expected_pickup_at.sql")),
+    (
+        3,
+        include_str!("../../migrations/003_diagnosis_unique_repair.sql"),
+    ),
+    (
+        4,
+        include_str!("../../migrations/004_expected_pickup_at.sql"),
+    ),
     (5, include_str!("../../migrations/005_companies.sql")),
-    (6, include_str!("../../migrations/006_repair_estimate_settings.sql")),
-    (7, include_str!("../../migrations/007_repair_workflow_documents.sql")),
+    (
+        6,
+        include_str!("../../migrations/006_repair_estimate_settings.sql"),
+    ),
+    (
+        7,
+        include_str!("../../migrations/007_repair_workflow_documents.sql"),
+    ),
     (8, include_str!("../../migrations/008_repair_documents.sql")),
-    (9, include_str!("../../migrations/009_repair_awaiting_pickup_status.sql")),
+    (
+        9,
+        include_str!("../../migrations/009_repair_awaiting_pickup_status.sql"),
+    ),
+    (
+        10,
+        include_str!("../../migrations/010_phase17_uuid_team_sync.sql"),
+    ),
+    (11, include_str!("../../migrations/011_team_pin.sql")),
 ];
 
 pub fn run(conn: &Connection) -> Result<(), AppError> {
@@ -35,9 +55,10 @@ pub fn run(conn: &Connection) -> Result<(), AppError> {
 
         conn.pragma_update(None, "foreign_keys", false)?;
         let tx = conn.unchecked_transaction()?;
-        tx.execute_batch(sql).map_err(|source| AppError::Migration {
-            message: format!("migration {version} failed: {source}"),
-        })?;
+        tx.execute_batch(sql)
+            .map_err(|source| AppError::Migration {
+                message: format!("migration {version} failed: {source}"),
+            })?;
 
         let applied_at = OffsetDateTime::now_utc()
             .format(&time::format_description::well_known::Rfc3339)
@@ -72,8 +93,7 @@ mod tests {
     #[test]
     fn applies_initial_migration_once() {
         let conn = Connection::open_in_memory().expect("open");
-        conn.pragma_update(None, "foreign_keys", true)
-            .expect("fk");
+        conn.pragma_update(None, "foreign_keys", true).expect("fk");
         run(&conn).expect("migrate");
         run(&conn).expect("migrate again");
 
@@ -82,7 +102,7 @@ mod tests {
                 row.get(0)
             })
             .expect("count");
-        assert_eq!(count, 9);
+        assert_eq!(count, 11);
 
         let tables: i64 = conn
             .query_row(

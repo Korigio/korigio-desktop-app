@@ -27,7 +27,7 @@ pub fn list_repairs(
 }
 
 #[tauri::command]
-pub fn get_repair(state: State<'_, DbState>, id: i64) -> Result<Repair, CommandError> {
+pub fn get_repair(state: State<'_, DbState>, id: String) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
     Ok(repairs::get_repair(db.conn(), id)?)
 }
@@ -44,7 +44,7 @@ pub fn create_repair(
 #[tauri::command]
 pub fn update_repair(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
     input: RepairInput,
 ) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
@@ -63,7 +63,7 @@ pub fn complete_repair_diagnosis(
 #[tauri::command(rename_all = "camelCase")]
 pub fn list_repair_documents(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<Vec<RepairDocument>, CommandError> {
     let db = lock_db(&state)?;
     Ok(repairs::list_repair_documents(db.conn(), repair_id)?)
@@ -72,7 +72,7 @@ pub fn list_repair_documents(
 #[tauri::command(rename_all = "camelCase")]
 pub fn upload_repair_document(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
     document_type: RepairDocumentType,
     source_path: String,
 ) -> Result<RepairDocument, CommandError> {
@@ -88,27 +88,35 @@ pub fn upload_repair_document(
 #[tauri::command(rename_all = "camelCase")]
 pub fn delete_repair_document(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
     document_type: RepairDocumentType,
 ) -> Result<(), CommandError> {
     let db = lock_db(&state)?;
-    Ok(repairs::delete_repair_document(&db, repair_id, document_type)?)
+    Ok(repairs::delete_repair_document(
+        &db,
+        repair_id,
+        document_type,
+    )?)
 }
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn open_repair_document(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
     document_type: RepairDocumentType,
 ) -> Result<(), CommandError> {
     let db = lock_db(&state)?;
-    Ok(repairs::open_repair_document(&db, repair_id, document_type)?)
+    Ok(repairs::open_repair_document(
+        &db,
+        repair_id,
+        document_type,
+    )?)
 }
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn confirm_repair_intake(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
     Ok(repairs::confirm_repair_intake(&db, repair_id)?)
@@ -117,7 +125,7 @@ pub fn confirm_repair_intake(
 #[tauri::command(rename_all = "camelCase")]
 pub fn confirm_customer_approval(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
     Ok(repairs::confirm_customer_approval(&db, repair_id)?)
@@ -126,7 +134,7 @@ pub fn confirm_customer_approval(
 #[tauri::command(rename_all = "camelCase")]
 pub fn confirm_repair_parts_received(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
     Ok(repairs::confirm_repair_parts_received(&db, repair_id)?)
@@ -135,17 +143,21 @@ pub fn confirm_repair_parts_received(
 #[tauri::command(rename_all = "camelCase")]
 pub fn complete_repair_protocol(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
     work_performed: String,
 ) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
-    Ok(repairs::complete_repair_protocol(&db, repair_id, work_performed)?)
+    Ok(repairs::complete_repair_protocol(
+        &db,
+        repair_id,
+        work_performed,
+    )?)
 }
 
 #[tauri::command(rename_all = "camelCase")]
 pub fn confirm_repair_summary(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
     Ok(repairs::confirm_repair_summary(&db, repair_id)?)
@@ -154,9 +166,32 @@ pub fn confirm_repair_summary(
 #[tauri::command(rename_all = "camelCase")]
 pub fn complete_repair_pickup(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
     collected_at: String,
 ) -> Result<Repair, CommandError> {
     let db = lock_db(&state)?;
-    Ok(repairs::complete_repair_pickup(&db, repair_id, collected_at)?)
+    Ok(repairs::complete_repair_pickup(
+        &db,
+        repair_id,
+        collected_at,
+    )?)
+}
+
+#[tauri::command(rename_all = "camelCase")]
+pub fn assign_repair(
+    state: State<'_, DbState>,
+    repair_id: String,
+    staff_id: String,
+) -> Result<Repair, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(repairs::assign_repair(db.conn(), repair_id, staff_id)?)
+}
+
+#[tauri::command(rename_all = "camelCase")]
+pub fn take_over_repair(
+    state: State<'_, DbState>,
+    repair_id: String,
+) -> Result<Repair, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(repairs::take_over_repair(db.conn(), repair_id)?)
 }

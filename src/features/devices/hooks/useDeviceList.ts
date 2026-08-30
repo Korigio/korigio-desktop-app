@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { devicesApi } from "@/features/devices/api/devicesApi";
 import type { Device, DeviceListResult } from "@/features/devices/types/device";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 type Options = {
-  customerId?: number;
+  customerId?: string;
 };
 
 export function useDeviceList(options: Options = {}) {
@@ -14,29 +15,44 @@ export function useDeviceList(options: Options = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await devicesApi.list({
-        query: query.trim() || undefined,
-        customerId: options.customerId,
-        includeArchived,
-        page,
-        pageSize: 25,
-      });
-      setResult(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load devices");
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, includeArchived, page, options.customerId]);
+  const reload = useCallback(
+    async (reloadOptions?: { silent?: boolean }) => {
+      const silent = reloadOptions?.silent === true;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const next = await devicesApi.list({
+          query: query.trim() || undefined,
+          customerId: options.customerId,
+          includeArchived,
+          page,
+          pageSize: 25,
+        });
+        setResult(next);
+        setError(null);
+      } catch (err) {
+        if (!silent) {
+          setError(err instanceof Error ? err.message : "Failed to load devices");
+          setResult(null);
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [query, includeArchived, page, options.customerId],
+  );
 
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useSyncApplied(() => {
+    void reload({ silent: true });
+  });
 
   const archive = useCallback(
     async (device: Device) => {

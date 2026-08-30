@@ -23,6 +23,7 @@ Do not combine phases without permission. Do not implement unsolicited features.
 | 14 | Windows installer | **Done** — NSIS offline WebView2 setup.exe |
 | 15 | GitHub Actions | **Done** — Windows release artifact workflow |
 | 16 | Production QA | **Done** — Checklist and audit |
+| 17 | Local WiFi team sync | **Done** — UUID PKs, staff/roles, LAN mesh gossip, no cloud |
 
 ## Required output after every phase
 

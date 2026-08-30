@@ -3,7 +3,7 @@ import { useSummaryPrintReport } from "@/features/print/hooks/useSummaryPrintRep
 import { Button, StatusMessage } from "@/ui";
 import { useNavigate } from "react-router";
 
-type Props = { repairId: number };
+type Props = { repairId: string };
 
 export function SummaryPrintPage({ repairId }: Props) {
   const navigate = useNavigate();

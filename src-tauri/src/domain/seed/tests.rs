@@ -2,8 +2,8 @@
 
 use crate::db::Db;
 use crate::domain::seed::repository::count_rows;
-use crate::domain::seed::types::SeedSyntheticDataInput;
 use crate::domain::seed::seed_synthetic_data;
+use crate::domain::seed::types::SeedSyntheticDataInput;
 use crate::error::AppError;
 
 #[test]
@@ -97,4 +97,3 @@ fn seed_rejects_devices_without_customers() {
     .expect_err("devices need customers");
     assert!(matches!(err, AppError::Validation { .. }));
 }
-

@@ -6,7 +6,7 @@ import type { DiagnosisTemplate } from "@/features/diagnosis/types/diagnosis";
 import { Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-type Props = { templateId: number };
+type Props = { templateId: string };
 
 export function DiagnosisTemplateEditPage({ templateId }: Props) {
   const { t } = useI18n();

@@ -8,7 +8,7 @@ export type PrintDiagnosisItem = {
 };
 
 export type PrintCompany = {
-  id: number;
+  id: string;
   legalName: string;
   tradeName: string | null;
   taxId: string | null;
@@ -19,7 +19,7 @@ export type PrintCompany = {
 };
 
 export type PrintCustomer = {
-  id: number;
+  id: string;
   name: string;
   phone: string | null;
   email: string | null;
@@ -27,7 +27,7 @@ export type PrintCustomer = {
 };
 
 export type PrintDevice = {
-  id: number;
+  id: string;
   deviceType: string;
   manufacturer: string | null;
   model: string | null;
@@ -36,7 +36,7 @@ export type PrintDevice = {
 
 export type RepairPrintReport = {
   repair: {
-    id: number;
+    id: string;
     repairNumber: string;
     status: string;
     receivedAt: string;
@@ -61,7 +61,7 @@ export type RepairPrintReport = {
 
 export type SummaryPrintReport = {
   repair: {
-    id: number;
+    id: string;
     repairNumber: string;
     status: string;
     receivedAt: string;
@@ -86,7 +86,7 @@ export type SummaryPrintReport = {
 
 export type DiagnosisPrintReport = {
   repair: {
-    id: number;
+    id: string;
     repairNumber: string;
     status: string;
     diagnosisNotes: string | null;

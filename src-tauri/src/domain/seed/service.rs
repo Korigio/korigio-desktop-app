@@ -24,7 +24,12 @@ pub fn seed_synthetic_data(
         });
     }
 
-    let customers = resolve_count(input.customers, DEFAULT_CUSTOMERS, MAX_CUSTOMERS, "customers")?;
+    let customers = resolve_count(
+        input.customers,
+        DEFAULT_CUSTOMERS,
+        MAX_CUSTOMERS,
+        "customers",
+    )?;
     let devices = resolve_count(input.devices, DEFAULT_DEVICES, MAX_DEVICES, "devices")?;
     let repairs = resolve_count(input.repairs, DEFAULT_REPAIRS, MAX_REPAIRS, "repairs")?;
 
@@ -52,14 +57,14 @@ pub fn seed_synthetic_data(
     let company_id = if repairs > 0 {
         repository::ensure_seed_company(&tx, &now)?
     } else {
-        0
+        String::new()
     };
     repository::insert_repairs(
         &tx,
         repairs,
         &device_pairs,
         &repair_numbers,
-        company_id,
+        &company_id,
         &now,
     )?;
     tx.commit()?;
@@ -74,12 +79,7 @@ pub fn seed_synthetic_data(
     })
 }
 
-fn resolve_count(
-    value: Option<u32>,
-    default: u32,
-    max: u32,
-    field: &str,
-) -> Result<u32, AppError> {
+fn resolve_count(value: Option<u32>, default: u32, max: u32, field: &str) -> Result<u32, AppError> {
     let count = value.unwrap_or(default);
     if count > max {
         return Err(AppError::Validation {

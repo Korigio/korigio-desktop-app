@@ -4,6 +4,7 @@ import type {
   DiagnosisTemplate,
   DiagnosisTemplateListResult,
 } from "@/features/diagnosis/types/diagnosis";
+import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 export function useDiagnosisTemplateList() {
   const [query, setQuery] = useState("");
@@ -14,31 +15,46 @@ export function useDiagnosisTemplateList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const next = await diagnosisTemplatesApi.list({
-        query: query.trim() || undefined,
-        page,
-        pageSize: 25,
-      });
-      setResult(next);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to load diagnosis templates",
-      );
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, page]);
+  const reload = useCallback(
+    async (reloadOptions?: { silent?: boolean }) => {
+      const silent = reloadOptions?.silent === true;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const next = await diagnosisTemplatesApi.list({
+          query: query.trim() || undefined,
+          page,
+          pageSize: 25,
+        });
+        setResult(next);
+        setError(null);
+      } catch (err) {
+        if (!silent) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load diagnosis templates",
+          );
+          setResult(null);
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [query, page],
+  );
 
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useSyncApplied(() => {
+    void reload({ silent: true });
+  });
 
   const remove = useCallback(
     async (template: DiagnosisTemplate) => {

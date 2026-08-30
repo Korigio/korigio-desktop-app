@@ -1,11 +1,17 @@
 use rusqlite::Connection;
 
 use crate::domain::settings::repository;
+use crate::domain::settings::types::SHOP_SETTINGS_ID;
 use crate::domain::settings::types::{
-    CURRENCY_KEY, DEFAULT_CURRENCY, DEFAULT_TAX_RATE_PERCENT, LocalePreference, LocaleSettings,
-    ShopSettings, ShopSettingsInput, TAX_RATE_PERCENT_KEY,
+    LocalePreference, LocaleSettings, ShopSettings, ShopSettingsInput, SyncIntervalSettings,
+    CURRENCY_KEY, DEFAULT_CURRENCY, DEFAULT_SYNC_INTERVAL_SECS, DEFAULT_TAX_RATE_PERCENT,
+    SYNC_INTERVAL_KEY, TAX_RATE_PERCENT_KEY,
 };
-use crate::domain::settings::validation::{normalize_currency, parse_tax_rate_percent};
+use crate::domain::settings::validation::{
+    normalize_currency, parse_sync_interval_secs, parse_tax_rate_percent,
+    validate_sync_interval_secs,
+};
+use crate::domain::sync::{self, begin_write};
 use crate::error::AppError;
 
 /// Best-effort OS locale tag (e.g. `de-DE`). Falls back to `es` when unknown.
@@ -99,13 +105,44 @@ pub fn set_shop_settings(
         let code = normalize_currency(raw)?;
         repository::upsert_setting(conn, CURRENCY_KEY, &code)?;
     }
-    get_shop_settings(conn)
+    let settings = get_shop_settings(conn)?;
+    let ctx = begin_write(conn)?;
+    sync::record_upsert(
+        conn,
+        "shop_settings",
+        SHOP_SETTINGS_ID,
+        serde_json::json!({
+            "id": SHOP_SETTINGS_ID,
+            "taxRatePercent": settings.tax_rate_percent,
+            "currency": settings.currency,
+        }),
+        &ctx,
+    )?;
+    Ok(settings)
+}
+
+pub fn get_sync_interval(conn: &Connection) -> Result<SyncIntervalSettings, AppError> {
+    let interval_seconds = match repository::get_setting(conn, SYNC_INTERVAL_KEY)? {
+        Some(raw) => parse_sync_interval_secs(&raw).unwrap_or(DEFAULT_SYNC_INTERVAL_SECS),
+        None => DEFAULT_SYNC_INTERVAL_SECS,
+    };
+    Ok(SyncIntervalSettings { interval_seconds })
+}
+
+pub fn set_sync_interval(
+    conn: &Connection,
+    interval_seconds: u64,
+) -> Result<SyncIntervalSettings, AppError> {
+    let interval_seconds = validate_sync_interval_secs(interval_seconds)?;
+    repository::upsert_setting(conn, SYNC_INTERVAL_KEY, &interval_seconds.to_string())?;
+    get_sync_interval(conn)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::db::Db;
+    use crate::domain::settings::types::SYNC_INTERVAL_KEY;
 
     #[test]
     fn maps_german_tags() {
@@ -120,10 +157,7 @@ mod tests {
 
     #[test]
     fn system_preference_uses_os() {
-        assert_eq!(
-            resolve_catalog(LocalePreference::System, "de-CH"),
-            "de"
-        );
+        assert_eq!(resolve_catalog(LocalePreference::System, "de-CH"), "de");
         assert_eq!(resolve_catalog(LocalePreference::En, "de-CH"), "en");
     }
 
@@ -168,5 +202,98 @@ mod tests {
         )
         .expect_err("invalid currency");
         assert!(matches!(err, AppError::Validation { .. }));
+    }
+
+    #[test]
+    fn sync_interval_defaults_to_five() {
+        let db = Db::open_in_memory().expect("db");
+        let settings = get_sync_interval(db.conn()).expect("get");
+        assert_eq!(settings.interval_seconds, 5);
+    }
+
+    #[test]
+    fn sync_interval_rejects_out_of_range() {
+        let db = Db::open_in_memory().expect("db");
+        for bad in [0u64, 1, 61, 120] {
+            let err = set_sync_interval(db.conn(), bad).expect_err("invalid");
+            match err {
+                AppError::Validation { field, .. } => {
+                    assert_eq!(field.as_deref(), Some("intervalSeconds"));
+                }
+                other => panic!("expected validation, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn sync_interval_round_trip_bounds() {
+        let db = Db::open_in_memory().expect("db");
+        for secs in [2u64, 5, 60] {
+            let set = set_sync_interval(db.conn(), secs).expect("set");
+            assert_eq!(set.interval_seconds, secs);
+            let got = get_sync_interval(db.conn()).expect("get");
+            assert_eq!(got.interval_seconds, secs);
+        }
+    }
+
+    #[test]
+    fn sync_interval_corrupt_key_falls_back_to_default() {
+        let db = Db::open_in_memory().expect("db");
+        super::repository::upsert_setting(db.conn(), SYNC_INTERVAL_KEY, "not-a-number")
+            .expect("corrupt");
+        assert_eq!(
+            get_sync_interval(db.conn()).expect("get").interval_seconds,
+            5
+        );
+        super::repository::upsert_setting(db.conn(), SYNC_INTERVAL_KEY, "1").expect("too small");
+        assert_eq!(
+            get_sync_interval(db.conn()).expect("get").interval_seconds,
+            5
+        );
+        super::repository::upsert_setting(db.conn(), SYNC_INTERVAL_KEY, "").expect("empty");
+        assert_eq!(
+            get_sync_interval(db.conn()).expect("get").interval_seconds,
+            5
+        );
+    }
+
+    #[test]
+    fn sync_interval_is_local_only() {
+        let db = Db::open_in_memory().expect("db");
+        set_sync_interval(db.conn(), 30).expect("set");
+
+        let sync_count: i64 = db
+            .conn()
+            .query_row("SELECT COUNT(*) FROM sync_changes", [], |row| row.get(0))
+            .expect("count");
+        assert_eq!(sync_count, 0);
+
+        let shop_count: i64 = db
+            .conn()
+            .query_row(
+                "SELECT COUNT(*) FROM sync_changes WHERE entity_table = 'shop_settings'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("shop count");
+        assert_eq!(shop_count, 0);
+
+        let stored = super::repository::get_setting(db.conn(), SYNC_INTERVAL_KEY)
+            .expect("read")
+            .expect("present");
+        assert_eq!(stored, "30");
+
+        let (_version, rows) =
+            crate::domain::sync::snapshot::dump_snapshot(db.conn()).expect("snapshot");
+        for row in rows {
+            if row.table == "shop_settings" {
+                assert!(row.payload.get("syncIntervalSecs").is_none());
+                assert!(row.payload.get("sync_interval_secs").is_none());
+                assert_eq!(
+                    row.payload.get("taxRatePercent").and_then(|v| v.as_str()),
+                    Some("19")
+                );
+            }
+        }
     }
 }

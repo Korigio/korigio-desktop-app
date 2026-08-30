@@ -7,7 +7,7 @@ use crate::error::AppError;
 
 #[derive(Debug)]
 pub struct ValidatedDeviceInput {
-    pub customer_id: i64,
+    pub customer_id: String,
     pub device_type: Option<String>,
     pub manufacturer: Option<String>,
     pub model: Option<String>,
@@ -17,27 +17,17 @@ pub struct ValidatedDeviceInput {
 }
 
 pub fn validate_device_input(input: &DeviceInput) -> Result<ValidatedDeviceInput, AppError> {
-    if input.customer_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("customerId".into()),
-            message: "Customer is required.".into(),
-        });
-    }
+    let customer_id = crate::domain::ids::parse_entity_id_field(&input.customer_id, "customerId")?;
 
     let device_type = normalize_optional(&input.device_type, "deviceType", DEVICE_TYPE_MAX_LEN)?;
     let manufacturer =
         normalize_optional(&input.manufacturer, "manufacturer", MANUFACTURER_MAX_LEN)?;
     let model = normalize_optional(&input.model, "model", MODEL_MAX_LEN)?;
-    let serial_number =
-        normalize_optional(&input.serial_number, "serialNumber", SERIAL_MAX_LEN)?;
-    let accessories =
-        normalize_optional(&input.accessories, "accessories", ACCESSORIES_MAX_LEN)?;
+    let serial_number = normalize_optional(&input.serial_number, "serialNumber", SERIAL_MAX_LEN)?;
+    let accessories = normalize_optional(&input.accessories, "accessories", ACCESSORIES_MAX_LEN)?;
     let notes = normalize_optional(&input.notes, "notes", NOTES_MAX_LEN)?;
 
-    if device_type.is_none()
-        && manufacturer.is_none()
-        && model.is_none()
-        && serial_number.is_none()
+    if device_type.is_none() && manufacturer.is_none() && model.is_none() && serial_number.is_none()
     {
         return Err(AppError::Validation {
             field: None,
@@ -46,7 +36,7 @@ pub fn validate_device_input(input: &DeviceInput) -> Result<ValidatedDeviceInput
     }
 
     Ok(ValidatedDeviceInput {
-        customer_id: input.customer_id,
+        customer_id,
         device_type,
         manufacturer,
         model,
@@ -86,7 +76,7 @@ mod tests {
     #[test]
     fn rejects_empty_identity() {
         let err = validate_device_input(&DeviceInput {
-            customer_id: 1,
+            customer_id: crate::domain::ids::new_entity_id(),
             device_type: None,
             manufacturer: Some("  ".into()),
             model: None,
@@ -101,7 +91,7 @@ mod tests {
     #[test]
     fn accepts_serial_only() {
         let ok = validate_device_input(&DeviceInput {
-            customer_id: 1,
+            customer_id: crate::domain::ids::new_entity_id(),
             device_type: None,
             manufacturer: None,
             model: None,

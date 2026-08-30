@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useNavigate } from "react-router";
 import { devicesApi } from "@/features/devices/api/devicesApi";
 import type { Device, DeviceInput } from "@/features/devices/types/device";
+import { isEntityId } from "@/shared/utils/entityId";
 
 type FormValues = {
   customerId: string;
@@ -17,14 +18,14 @@ type FormValues = {
 type Options = {
   device?: Device;
   mode: "create" | "edit";
-  defaultCustomerId?: number;
+  defaultCustomerId?: string;
   onSuccess?: (entity: Device) => void;
   navigateOnSuccess?: boolean;
 };
 
-function toValues(device?: Device, defaultCustomerId?: number): FormValues {
+function toValues(device?: Device, defaultCustomerId?: string): FormValues {
   return {
-    customerId: String(device?.customerId ?? defaultCustomerId ?? ""),
+    customerId: device?.customerId ?? defaultCustomerId ?? "",
     deviceType: device?.deviceType ?? "",
     manufacturer: device?.manufacturer ?? "",
     model: device?.model ?? "",
@@ -50,8 +51,8 @@ export function useDeviceForm({
   const form = useForm({
     defaultValues: toValues(device, defaultCustomerId),
     onSubmit: async ({ value }) => {
-      const customerId = Number(value.customerId);
-      if (!Number.isFinite(customerId) || customerId <= 0) {
+      const customerId = value.customerId;
+      if (!isEntityId(customerId)) {
         throw new Error("Customer is required");
       }
 

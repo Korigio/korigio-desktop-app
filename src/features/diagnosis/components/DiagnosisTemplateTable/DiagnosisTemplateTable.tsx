@@ -12,7 +12,7 @@ import { useI18n } from "@/shared/hooks/useI18n";
 type Props = {
   templates: DiagnosisTemplate[];
   onDelete: (template: DiagnosisTemplate) => void;
-  deletingId?: number | null;
+  deletingId?: string | null;
 };
 
 export function DiagnosisTemplateTable({

@@ -27,7 +27,7 @@ pub fn list_companies(
 }
 
 #[tauri::command]
-pub fn get_company(state: State<'_, DbState>, id: i64) -> Result<Company, CommandError> {
+pub fn get_company(state: State<'_, DbState>, id: String) -> Result<Company, CommandError> {
     let db = lock_db(&state)?;
     Ok(companies::get_company(db.conn(), id)?)
 }
@@ -44,7 +44,7 @@ pub fn create_company(
 #[tauri::command]
 pub fn update_company(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
     input: CompanyInput,
 ) -> Result<Company, CommandError> {
     let db = lock_db(&state)?;
@@ -52,19 +52,19 @@ pub fn update_company(
 }
 
 #[tauri::command]
-pub fn archive_company(state: State<'_, DbState>, id: i64) -> Result<Company, CommandError> {
+pub fn archive_company(state: State<'_, DbState>, id: String) -> Result<Company, CommandError> {
     let db = lock_db(&state)?;
     Ok(companies::archive_company(db.conn(), id)?)
 }
 
 #[tauri::command]
-pub fn unarchive_company(state: State<'_, DbState>, id: i64) -> Result<Company, CommandError> {
+pub fn unarchive_company(state: State<'_, DbState>, id: String) -> Result<Company, CommandError> {
     let db = lock_db(&state)?;
     Ok(companies::unarchive_company(db.conn(), id)?)
 }
 
 #[tauri::command]
-pub fn set_default_company(state: State<'_, DbState>, id: i64) -> Result<Company, CommandError> {
+pub fn set_default_company(state: State<'_, DbState>, id: String) -> Result<Company, CommandError> {
     let db = lock_db(&state)?;
     Ok(companies::set_default_company(db.conn(), id)?)
 }
@@ -79,7 +79,7 @@ pub fn attach_company_logo(
 }
 
 #[tauri::command]
-pub fn clear_company_logo(state: State<'_, DbState>, id: i64) -> Result<Company, CommandError> {
+pub fn clear_company_logo(state: State<'_, DbState>, id: String) -> Result<Company, CommandError> {
     let db = lock_db(&state)?;
     Ok(companies::clear_company_logo(&db, id)?)
 }
@@ -87,7 +87,7 @@ pub fn clear_company_logo(state: State<'_, DbState>, id: i64) -> Result<Company,
 #[tauri::command]
 pub fn resolve_company_logo_path(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
 ) -> Result<ResolveCompanyLogoPathResult, CommandError> {
     let db = lock_db(&state)?;
     Ok(companies::resolve_company_logo_path(&db, id)?)

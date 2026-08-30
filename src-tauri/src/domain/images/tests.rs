@@ -5,19 +5,17 @@ use std::path::PathBuf;
 use image::{ImageBuffer, Rgb, Rgba};
 
 use crate::db::Db;
-use crate::domain::companies::{CompanyInput, create_company};
-use crate::domain::customers::{CustomerInput, create_customer};
-use crate::domain::devices::{DeviceInput, create_device};
+use crate::domain::companies::{create_company, CompanyInput};
+use crate::domain::customers::{create_customer, CustomerInput};
+use crate::domain::devices::{create_device, DeviceInput};
 use crate::domain::images::constants::MAX_IMAGES_PER_REPAIR;
 use crate::domain::images::service::resolve_safe_absolute;
-use crate::domain::images::types::{
-    AttachRepairImagesInput, ImageVariant, UpdateRepairImageInput,
-};
+use crate::domain::images::types::{AttachRepairImagesInput, ImageVariant, UpdateRepairImageInput};
 use crate::domain::images::{
     attach_repair_images, delete_repair_image, list_repair_images, resolve_repair_image_path,
     update_repair_image,
 };
-use crate::domain::repairs::{RepairInput, create_repair};
+use crate::domain::repairs::{create_repair, RepairInput};
 use crate::error::AppError;
 
 fn open_temp_db() -> (tempfile::TempDir, Db) {
@@ -26,8 +24,7 @@ fn open_temp_db() -> (tempfile::TempDir, Db) {
     (dir, db)
 }
 
-
-fn company(db: &Db) -> i64 {
+fn company(db: &Db) -> String {
     create_company(
         db.conn(),
         CompanyInput {
@@ -44,7 +41,7 @@ fn company(db: &Db) -> i64 {
     .id
 }
 
-fn seed_repair(db: &Db) -> i64 {
+fn seed_repair(db: &Db) -> String {
     let company_id = company(db);
     let customer_id = create_customer(
         db.conn(),
@@ -61,7 +58,7 @@ fn seed_repair(db: &Db) -> i64 {
     let device_id = create_device(
         db.conn(),
         DeviceInput {
-            customer_id,
+            customer_id: customer_id.to_string(),
             device_type: Some("Phone".into()),
             manufacturer: Some("Acme".into()),
             model: Some("X1".into()),
@@ -75,9 +72,9 @@ fn seed_repair(db: &Db) -> i64 {
     create_repair(
         db.conn(),
         RepairInput {
-            customer_id,
-            device_id,
-            company_id,
+            customer_id: customer_id.to_string(),
+            device_id: device_id.to_string(),
+            company_id: company_id.to_string(),
             status: None,
             reported_problem: Some("Broken".into()),
             accessories_received: None,
@@ -94,12 +91,7 @@ fn seed_repair(db: &Db) -> i64 {
 
 fn write_test_png(path: &std::path::Path) {
     let img: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::from_fn(64, 48, |x, y| {
-        Rgba([
-            (x % 255) as u8,
-            (y % 255) as u8,
-            120,
-            255,
-        ])
+        Rgba([(x % 255) as u8, (y % 255) as u8, 120, 255])
     });
     img.save(path).expect("png");
 }
@@ -123,7 +115,7 @@ fn attach_valid_jpeg_and_png() {
     let attached = attach_repair_images(
         &db,
         AttachRepairImagesInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             source_paths: vec![
                 png.to_string_lossy().into_owned(),
                 jpeg.to_string_lossy().into_owned(),
@@ -134,15 +126,13 @@ fn attach_valid_jpeg_and_png() {
 
     assert_eq!(attached.len(), 2);
     assert!(db.paths().root.join(&attached[0].original_path).is_file());
-    assert!(
-        attached[0]
-            .thumb_path
-            .as_ref()
-            .map(|p| db.paths().root.join(p).is_file())
-            .unwrap_or(false)
-    );
+    assert!(attached[0]
+        .thumb_path
+        .as_ref()
+        .map(|p| db.paths().root.join(p).is_file())
+        .unwrap_or(false));
 
-    let listed = list_repair_images(&db, repair_id).expect("list");
+    let listed = list_repair_images(&db, repair_id.clone()).expect("list");
     assert_eq!(listed.len(), 2);
     assert!(listed[0].sort_order <= listed[1].sort_order);
 }
@@ -157,7 +147,7 @@ fn rejects_bad_extension_and_oversize() {
     let err = attach_repair_images(
         &db,
         AttachRepairImagesInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             source_paths: vec![gif.to_string_lossy().into_owned()],
         },
     )
@@ -173,7 +163,7 @@ fn rejects_bad_extension_and_oversize() {
     let err = attach_repair_images(
         &db,
         AttachRepairImagesInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             source_paths: vec![big.to_string_lossy().into_owned()],
         },
     )
@@ -193,7 +183,7 @@ fn rejects_over_thirty_images() {
         attach_repair_images(
             &db,
             AttachRepairImagesInput {
-                repair_id,
+                repair_id: repair_id.clone(),
                 source_paths: vec![path.clone()],
             },
         )
@@ -203,7 +193,7 @@ fn rejects_over_thirty_images() {
     let err = attach_repair_images(
         &db,
         AttachRepairImagesInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             source_paths: vec![path],
         },
     )
@@ -221,12 +211,12 @@ fn update_caption_and_delete_removes_files() {
     let attached = attach_repair_images(
         &db,
         AttachRepairImagesInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             source_paths: vec![png.to_string_lossy().into_owned()],
         },
     )
     .expect("attach");
-    let id = attached[0].id;
+    let id = attached[0].id.clone();
     let original = db.paths().root.join(&attached[0].original_path);
     let thumb = db
         .paths()
@@ -235,7 +225,7 @@ fn update_caption_and_delete_removes_files() {
 
     let updated = update_repair_image(
         &db,
-        id,
+        id.clone(),
         UpdateRepairImageInput {
             caption: Some(Some("Front cracked".into())),
             sort_order: Some(5),
@@ -245,10 +235,12 @@ fn update_caption_and_delete_removes_files() {
     assert_eq!(updated.caption.as_deref(), Some("Front cracked"));
     assert_eq!(updated.sort_order, 5);
 
-    delete_repair_image(&db, id).expect("delete");
+    delete_repair_image(&db, id.clone()).expect("delete");
     assert!(!original.exists());
     assert!(!thumb.exists());
-    assert!(list_repair_images(&db, repair_id).expect("list").is_empty());
+    assert!(list_repair_images(&db, repair_id.clone())
+        .expect("list")
+        .is_empty());
 }
 
 #[test]
@@ -260,13 +252,13 @@ fn resolve_rejects_path_escape() {
     let attached = attach_repair_images(
         &db,
         AttachRepairImagesInput {
-            repair_id,
+            repair_id: repair_id.clone(),
             source_paths: vec![png.to_string_lossy().into_owned()],
         },
     )
     .expect("attach");
 
-    let resolved = resolve_repair_image_path(&db, attached[0].id, ImageVariant::Original)
+    let resolved = resolve_repair_image_path(&db, attached[0].id.clone(), ImageVariant::Original)
         .expect("resolve");
     assert!(PathBuf::from(&resolved.absolute_path).is_file());
 

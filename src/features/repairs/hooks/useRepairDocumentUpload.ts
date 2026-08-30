@@ -5,7 +5,7 @@ import type { RepairDocumentType } from "@/features/repairs/types/repairDocument
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Options = {
-  repairId: number;
+  repairId: string;
   onUploaded?: () => void;
 };
 

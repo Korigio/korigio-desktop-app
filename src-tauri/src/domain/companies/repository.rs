@@ -1,22 +1,27 @@
-use rusqlite::{Connection, OptionalExtension, params};
+use rusqlite::{params, Connection, OptionalExtension};
 
 use crate::db::repository::like_pattern;
 use crate::domain::companies::types::Company;
 use crate::domain::companies::validation::ValidatedCompanyInput;
+use crate::domain::sync::WriteContext;
 use crate::error::AppError;
 
 pub fn insert_company(
     conn: &Connection,
+    id: &str,
     input: &ValidatedCompanyInput,
     is_default: bool,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Company, AppError> {
     conn.execute(
         "INSERT INTO companies (
-            legal_name, trade_name, tax_id, address, phone, email, website,
-            logo_path, is_default, created_at, updated_at, archived_at
-         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, NULL, ?8, ?9, ?10, NULL)",
+            id, legal_name, trade_name, tax_id, address, phone, email, website,
+            logo_path, logo_content_hash, is_default, created_at, updated_at, archived_at,
+            hlc_wall_ms, hlc_counter, origin_device_id, updated_by_staff_id, deleted_at
+         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, NULL, ?9, ?10, ?11, NULL, ?12, ?13, ?14, ?15, NULL)",
         params![
+            id,
             input.legal_name,
             input.trade_name,
             input.tax_id,
@@ -26,10 +31,13 @@ pub fn insert_company(
             input.website,
             i64::from(is_default),
             now,
-            now
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id
         ],
     )?;
-    let id = conn.last_insert_rowid();
     get_company_by_id(conn, id)?.ok_or(AppError::Internal {
         message: "company missing after insert".into(),
     })
@@ -37,9 +45,10 @@ pub fn insert_company(
 
 pub fn update_company(
     conn: &Connection,
-    id: i64,
+    id: &str,
     input: &ValidatedCompanyInput,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Company, AppError> {
     let updated = conn.execute(
         "UPDATE companies SET
@@ -50,8 +59,9 @@ pub fn update_company(
             phone = ?5,
             email = ?6,
             website = ?7,
-            updated_at = ?8
-         WHERE id = ?9 AND archived_at IS NULL",
+            updated_at = ?8,
+            hlc_wall_ms = ?9, hlc_counter = ?10, origin_device_id = ?11, updated_by_staff_id = ?12
+         WHERE id = ?13 AND archived_at IS NULL",
         params![
             input.legal_name,
             input.trade_name,
@@ -61,6 +71,10 @@ pub fn update_company(
             input.email,
             input.website,
             now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
             id
         ],
     )?;
@@ -76,7 +90,7 @@ pub fn update_company(
     get_company_by_id(conn, id)?.ok_or(AppError::NotFound)
 }
 
-pub fn get_company_by_id(conn: &Connection, id: i64) -> Result<Option<Company>, AppError> {
+pub fn get_company_by_id(conn: &Connection, id: &str) -> Result<Option<Company>, AppError> {
     let mut stmt = conn.prepare(
         "SELECT id, legal_name, trade_name, tax_id, address, phone, email, website,
                 logo_path, is_default, created_at, updated_at, archived_at
@@ -92,20 +106,41 @@ pub fn count_companies(conn: &Connection) -> Result<i64, AppError> {
 
 pub fn set_archived_at(
     conn: &Connection,
-    id: i64,
+    id: &str,
     archived_at: Option<&str>,
     clear_default: bool,
     now: &str,
+    ctx: &WriteContext,
 ) -> Result<Company, AppError> {
     let updated = if clear_default {
         conn.execute(
-            "UPDATE companies SET archived_at = ?1, is_default = 0, updated_at = ?2 WHERE id = ?3",
-            params![archived_at, now, id],
+            "UPDATE companies SET archived_at = ?1, is_default = 0, updated_at = ?2,
+                hlc_wall_ms = ?3, hlc_counter = ?4, origin_device_id = ?5, updated_by_staff_id = ?6
+             WHERE id = ?7",
+            params![
+                archived_at,
+                now,
+                ctx.hlc.wall,
+                ctx.hlc.counter,
+                ctx.hlc.origin_device_id,
+                ctx.staff_id,
+                id
+            ],
         )?
     } else {
         conn.execute(
-            "UPDATE companies SET archived_at = ?1, updated_at = ?2 WHERE id = ?3",
-            params![archived_at, now, id],
+            "UPDATE companies SET archived_at = ?1, updated_at = ?2,
+                hlc_wall_ms = ?3, hlc_counter = ?4, origin_device_id = ?5, updated_by_staff_id = ?6
+             WHERE id = ?7",
+            params![
+                archived_at,
+                now,
+                ctx.hlc.wall,
+                ctx.hlc.counter,
+                ctx.hlc.origin_device_id,
+                ctx.staff_id,
+                id
+            ],
         )?
     };
     if updated == 0 {
@@ -114,13 +149,46 @@ pub fn set_archived_at(
     get_company_by_id(conn, id)?.ok_or(AppError::NotFound)
 }
 
+pub fn list_default_company_ids(conn: &Connection) -> Result<Vec<String>, AppError> {
+    let mut stmt = conn.prepare("SELECT id FROM companies WHERE is_default = 1")?;
+    let rows = stmt
+        .query_map([], |row| row.get(0))?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(rows)
+}
+
 /// Clear all defaults, then set `id` as the sole default. Caller must hold a transaction.
-pub fn set_default_in_tx(conn: &Connection, id: i64, now: &str) -> Result<Company, AppError> {
-    conn.execute("UPDATE companies SET is_default = 0 WHERE is_default = 1", [])?;
+pub fn set_default_in_tx(
+    conn: &Connection,
+    id: &str,
+    now: &str,
+    ctx: &WriteContext,
+) -> Result<Company, AppError> {
+    conn.execute(
+        "UPDATE companies SET is_default = 0, updated_at = ?1,
+            hlc_wall_ms = ?2, hlc_counter = ?3, origin_device_id = ?4, updated_by_staff_id = ?5
+         WHERE is_default = 1 AND id != ?6",
+        params![
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
+    )?;
     let updated = conn.execute(
-        "UPDATE companies SET is_default = 1, updated_at = ?1
-         WHERE id = ?2 AND archived_at IS NULL",
-        params![now, id],
+        "UPDATE companies SET is_default = 1, updated_at = ?1,
+            hlc_wall_ms = ?2, hlc_counter = ?3, origin_device_id = ?4, updated_by_staff_id = ?5
+         WHERE id = ?6 AND archived_at IS NULL",
+        params![
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
     )?;
     if updated == 0 {
         return match get_company_by_id(conn, id)? {
@@ -136,14 +204,26 @@ pub fn set_default_in_tx(conn: &Connection, id: i64, now: &str) -> Result<Compan
 
 pub fn set_logo_path(
     conn: &Connection,
-    id: i64,
+    id: &str,
     logo_path: Option<&str>,
+    logo_content_hash: Option<&str>,
     now: &str,
 ) -> Result<Company, AppError> {
+    let ctx = crate::domain::sync::begin_write(conn)?;
     let updated = conn.execute(
-        "UPDATE companies SET logo_path = ?1, updated_at = ?2
-         WHERE id = ?3 AND archived_at IS NULL",
-        params![logo_path, now, id],
+        "UPDATE companies SET logo_path = ?1, logo_content_hash = ?2, updated_at = ?3,
+            hlc_wall_ms = ?4, hlc_counter = ?5, origin_device_id = ?6, updated_by_staff_id = ?7
+         WHERE id = ?8 AND archived_at IS NULL",
+        params![
+            logo_path,
+            logo_content_hash,
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
     )?;
     if updated == 0 {
         return match get_company_by_id(conn, id)? {
@@ -154,7 +234,12 @@ pub fn set_logo_path(
             None => Err(AppError::NotFound),
         };
     }
-    get_company_by_id(conn, id)?.ok_or(AppError::NotFound)
+    let company = get_company_by_id(conn, id)?.ok_or(AppError::NotFound)?;
+    let payload = serde_json::to_value(&company).map_err(|err| AppError::Internal {
+        message: format!("serialize company: {err}"),
+    })?;
+    crate::domain::sync::record_upsert(conn, "companies", id, payload, &ctx)?;
+    Ok(company)
 }
 
 pub fn list_companies(

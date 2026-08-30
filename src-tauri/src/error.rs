@@ -34,9 +34,51 @@ pub enum AppError {
 
     #[error("Not found")]
     NotFound,
+
+    #[error("Unauthorized")]
+    Unauthorized { message: String },
+
+    #[error("Forbidden")]
+    Forbidden { message: String },
+
+    #[error("Conflict")]
+    Conflict { message: String },
+
+    #[error("Sync error")]
+    Sync { message: String },
 }
 
 impl AppError {
+    pub fn unauthorized() -> Self {
+        Self::Unauthorized {
+            message: "You need to sign in to continue.".into(),
+        }
+    }
+
+    pub fn invalid_credentials() -> Self {
+        Self::Unauthorized {
+            message: "PIN or staff is not valid.".into(),
+        }
+    }
+
+    pub fn forbidden(message: impl Into<String>) -> Self {
+        Self::Forbidden {
+            message: message.into(),
+        }
+    }
+
+    pub fn conflict(message: impl Into<String>) -> Self {
+        Self::Conflict {
+            message: message.into(),
+        }
+    }
+
+    pub fn sync_err(message: impl Into<String>) -> Self {
+        Self::Sync {
+            message: message.into(),
+        }
+    }
+
     pub fn code(&self) -> &'static str {
         match self {
             Self::Database { .. } => "database",
@@ -46,6 +88,10 @@ impl AppError {
             Self::Internal { .. } => "internal",
             Self::Validation { .. } => "validation",
             Self::NotFound => "not_found",
+            Self::Unauthorized { .. } => "unauthorized",
+            Self::Forbidden { .. } => "forbidden",
+            Self::Conflict { .. } => "conflict",
+            Self::Sync { .. } => "sync",
         }
     }
 
@@ -63,6 +109,10 @@ impl AppError {
             Self::Internal { .. } => "Something went wrong. Please try again.".into(),
             Self::Validation { message, .. } => message.clone(),
             Self::NotFound => "The requested record was not found.".into(),
+            Self::Unauthorized { message } => message.clone(),
+            Self::Forbidden { message } => message.clone(),
+            Self::Conflict { message } => message.clone(),
+            Self::Sync { message } => message.clone(),
         }
     }
 

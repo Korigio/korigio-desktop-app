@@ -10,7 +10,7 @@ import { Page, PageHeader } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useNavigate } from "react-router";
 
-type Props = { companyId: number };
+type Props = { companyId: string };
 
 export function CompanyDetailPage({ companyId }: Props) {
   const { t } = useI18n();

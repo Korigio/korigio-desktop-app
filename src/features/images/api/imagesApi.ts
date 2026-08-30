@@ -8,20 +8,20 @@ import type {
 } from "@/features/images/types/image";
 
 export const imagesApi = {
-  list(repairId: number): Promise<RepairImage[]> {
+  list(repairId: string): Promise<RepairImage[]> {
     return invoke<RepairImage[]>("list_repair_images", { repairId });
   },
   attach(input: AttachRepairImagesInput): Promise<RepairImage[]> {
     return invoke<RepairImage[]>("attach_repair_images", { input });
   },
-  update(id: number, input: UpdateRepairImageInput): Promise<RepairImage> {
+  update(id: string, input: UpdateRepairImageInput): Promise<RepairImage> {
     return invoke<RepairImage>("update_repair_image", { id, input });
   },
-  delete(id: number): Promise<void> {
+  delete(id: string): Promise<void> {
     return invoke<void>("delete_repair_image", { id });
   },
   resolvePath(
-    id: number,
+    id: string,
     variant: ImageVariant,
   ): Promise<ResolveRepairImagePathResult> {
     return invoke<ResolveRepairImagePathResult>("resolve_repair_image_path", {

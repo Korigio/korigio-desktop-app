@@ -29,7 +29,7 @@ pub fn list_diagnosis_templates(
 #[tauri::command]
 pub fn get_diagnosis_template(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
 ) -> Result<DiagnosisTemplate, CommandError> {
     let db = lock_db(&state)?;
     Ok(diagnosis::get_diagnosis_template(db.conn(), id)?)
@@ -47,7 +47,7 @@ pub fn create_diagnosis_template(
 #[tauri::command]
 pub fn update_diagnosis_template(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
     input: DiagnosisTemplateInput,
 ) -> Result<DiagnosisTemplate, CommandError> {
     let db = lock_db(&state)?;
@@ -57,7 +57,7 @@ pub fn update_diagnosis_template(
 #[tauri::command]
 pub fn delete_diagnosis_template(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
 ) -> Result<(), CommandError> {
     let db = lock_db(&state)?;
     Ok(diagnosis::delete_diagnosis_template(db.conn(), id)?)
@@ -66,7 +66,7 @@ pub fn delete_diagnosis_template(
 #[tauri::command(rename_all = "camelCase")]
 pub fn get_repair_diagnosis(
     state: State<'_, DbState>,
-    repair_id: i64,
+    repair_id: String,
 ) -> Result<Option<RepairDiagnosis>, CommandError> {
     let db = lock_db(&state)?;
     Ok(diagnosis::get_repair_diagnosis(db.conn(), repair_id)?)

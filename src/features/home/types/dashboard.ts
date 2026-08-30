@@ -4,7 +4,7 @@ export type StatusCount = {
 };
 
 export type DashboardRepairRow = {
-  id: number;
+  id: string;
   repairNumber: string;
   status: string;
   customerName: string;

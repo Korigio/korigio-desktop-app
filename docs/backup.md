@@ -32,6 +32,8 @@ Settings → Restore backup.
 
 Never overwrite a working DB without a safety backup.
 
+**Phase 17:** refuse to restore a package whose `schema_migrations` max version is below **10**. Those backups used integer primary keys and cannot be upgraded in place. Tell the user to start from an empty shop or keep using the old app with that backup.
+
 ## Automatic backups
 
 Daily copies under `backups/auto/`.

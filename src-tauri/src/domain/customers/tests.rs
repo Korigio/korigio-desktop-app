@@ -2,8 +2,8 @@
 
 use crate::db::Db;
 use crate::domain::customers::{
-    CustomerInput, CustomerListQuery, archive_customer, create_customer, get_customer,
-    list_customers, unarchive_customer, update_customer,
+    archive_customer, create_customer, get_customer, list_customers, unarchive_customer,
+    update_customer, CustomerInput, CustomerListQuery,
 };
 
 fn sample(name: &str) -> CustomerInput {
@@ -20,7 +20,7 @@ fn sample(name: &str) -> CustomerInput {
 fn create_list_get_update_archive_flow() {
     let db = Db::open_in_memory().expect("db");
     let created = create_customer(db.conn(), sample("Ada Lovelace")).expect("create");
-    assert!(created.id > 0);
+    assert!(!created.id.clone().is_empty());
 
     let listed = list_customers(
         db.conn(),
@@ -37,7 +37,7 @@ fn create_list_get_update_archive_flow() {
 
     let updated = update_customer(
         db.conn(),
-        created.id,
+        created.id.clone(),
         CustomerInput {
             name: "Ada L.".into(),
             phone: None,
@@ -50,7 +50,7 @@ fn create_list_get_update_archive_flow() {
     assert_eq!(updated.name, "Ada L.");
     assert_eq!(updated.notes.as_deref(), Some("VIP"));
 
-    let archived = archive_customer(db.conn(), created.id).expect("archive");
+    let archived = archive_customer(db.conn(), created.id.clone()).expect("archive");
     assert!(archived.archived_at.is_some());
 
     let active = list_customers(
@@ -77,9 +77,14 @@ fn create_list_get_update_archive_flow() {
     .expect("all");
     assert_eq!(with_archived.total, 1);
 
-    let restored = unarchive_customer(db.conn(), created.id).expect("unarchive");
+    let restored = unarchive_customer(db.conn(), created.id.clone()).expect("unarchive");
     assert!(restored.archived_at.is_none());
-    assert_eq!(get_customer(db.conn(), created.id).expect("get").name, "Ada L.");
+    assert_eq!(
+        get_customer(db.conn(), created.id.clone())
+            .expect("get")
+            .name,
+        "Ada L."
+    );
 }
 
 #[test]

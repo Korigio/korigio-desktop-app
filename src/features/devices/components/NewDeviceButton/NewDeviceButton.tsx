@@ -1,7 +1,7 @@
 import { LinkButton } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-export function NewDeviceButton({ customerId }: { customerId?: number }) {
+export function NewDeviceButton({ customerId }: { customerId?: string }) {
   const { t } = useI18n();
   const to = customerId
     ? `/devices/new?customerId=${customerId}`

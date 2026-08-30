@@ -13,12 +13,14 @@ export const REPAIR_STATUSES = [
 export type RepairStatus = (typeof REPAIR_STATUSES)[number];
 
 export type Repair = {
-  id: number;
+  id: string;
   repairNumber: string;
-  customerId: number;
-  deviceId: number;
+  customerId: string;
+  deviceId: string;
   /** Present after create; may be null on legacy rows. */
-  companyId: number | null;
+  companyId: string | null;
+  assignedToStaffId: string | null;
+  updatedByStaffId: string | null;
   status: RepairStatus;
   receivedAt: string;
   reportedProblem: string | null;
@@ -44,7 +46,7 @@ export type Repair = {
 export type CompleteDiagnosisMode = "draft" | "finalize";
 
 export type CompleteRepairDiagnosisInput = {
-  repairId: number;
+  repairId: string;
   mode: CompleteDiagnosisMode;
   diagnosisNotes: string | null;
   expectedPickupAt: string | null;
@@ -57,10 +59,10 @@ export type CompleteRepairDiagnosisResult = {
 };
 
 export type RepairInput = {
-  customerId: number;
-  deviceId: number;
+  customerId: string;
+  deviceId: string;
   /** Required on create; ignored on update. */
-  companyId: number;
+  companyId: string;
   status?: RepairStatus | null;
   reportedProblem?: string | null;
   accessoriesReceived?: string | null;
@@ -73,8 +75,8 @@ export type RepairInput = {
 
 export type RepairListQuery = {
   query?: string;
-  customerId?: number;
-  deviceId?: number;
+  customerId?: string;
+  deviceId?: string;
   status?: RepairStatus;
   page?: number;
   pageSize?: number;
@@ -98,7 +100,7 @@ export function repairToInput(
   return {
     customerId: repair.customerId,
     deviceId: repair.deviceId,
-    companyId: repair.companyId ?? 0,
+    companyId: repair.companyId ?? "",
     status: repair.status,
     reportedProblem: repair.reportedProblem,
     accessoriesReceived: repair.accessoriesReceived,

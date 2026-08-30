@@ -3,9 +3,7 @@
 use tauri::State;
 
 use crate::db::DbState;
-use crate::domain::devices::{
-    self, Device, DeviceInput, DeviceListQuery, DeviceListResult,
-};
+use crate::domain::devices::{self, Device, DeviceInput, DeviceListQuery, DeviceListResult};
 use crate::error::{AppError, CommandError};
 
 fn lock_db<'a>(
@@ -26,7 +24,7 @@ pub fn list_devices(
 }
 
 #[tauri::command]
-pub fn get_device(state: State<'_, DbState>, id: i64) -> Result<Device, CommandError> {
+pub fn get_device(state: State<'_, DbState>, id: String) -> Result<Device, CommandError> {
     let db = lock_db(&state)?;
     Ok(devices::get_device(db.conn(), id)?)
 }
@@ -43,7 +41,7 @@ pub fn create_device(
 #[tauri::command]
 pub fn update_device(
     state: State<'_, DbState>,
-    id: i64,
+    id: String,
     input: DeviceInput,
 ) -> Result<Device, CommandError> {
     let db = lock_db(&state)?;
@@ -51,13 +49,13 @@ pub fn update_device(
 }
 
 #[tauri::command]
-pub fn archive_device(state: State<'_, DbState>, id: i64) -> Result<Device, CommandError> {
+pub fn archive_device(state: State<'_, DbState>, id: String) -> Result<Device, CommandError> {
     let db = lock_db(&state)?;
     Ok(devices::archive_device(db.conn(), id)?)
 }
 
 #[tauri::command]
-pub fn unarchive_device(state: State<'_, DbState>, id: i64) -> Result<Device, CommandError> {
+pub fn unarchive_device(state: State<'_, DbState>, id: String) -> Result<Device, CommandError> {
     let db = lock_db(&state)?;
     Ok(devices::unarchive_device(db.conn(), id)?)
 }

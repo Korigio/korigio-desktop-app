@@ -10,7 +10,7 @@ import {
 import { Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-type Props = { companyId: number };
+type Props = { companyId: string };
 
 export function CompanyEditPage({ companyId }: Props) {
   const { t } = useI18n();

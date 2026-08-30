@@ -81,8 +81,8 @@ export function RepairForm({
     if (lockDevice || hideDeviceField) {
       return;
     }
-    const customerId = Number(selectedCustomerId);
-    if (!Number.isFinite(customerId) || customerId <= 0) {
+    const customerId = selectedCustomerId.trim();
+    if (!customerId) {
       setDevices([]);
       return;
     }

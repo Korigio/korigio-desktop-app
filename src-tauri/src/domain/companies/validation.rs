@@ -20,7 +20,7 @@ pub struct ValidatedCompanyInput {
 
 #[derive(Debug)]
 pub struct ValidatedAttachLogoInput {
-    pub company_id: i64,
+    pub company_id: String,
     pub source_path: PathBuf,
 }
 
@@ -69,18 +69,13 @@ pub fn validate_company_input(input: &CompanyInput) -> Result<ValidatedCompanyIn
 pub fn validate_attach_logo_input(
     input: &AttachCompanyLogoInput,
 ) -> Result<ValidatedAttachLogoInput, AppError> {
-    if input.company_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("companyId".into()),
-            message: "Company is required.".into(),
-        });
-    }
+    let company_id = crate::domain::ids::parse_entity_id_field(&input.company_id, "companyId")?;
 
     let path = PathBuf::from(input.source_path.trim());
     validate_logo_source(&path)?;
 
     Ok(ValidatedAttachLogoInput {
-        company_id: input.company_id,
+        company_id,
         source_path: path,
     })
 }
@@ -98,7 +93,10 @@ pub fn validate_logo_source(path: &Path) -> Result<(), AppError> {
         .and_then(|e| e.to_str())
         .map(|e| e.to_ascii_lowercase())
         .unwrap_or_default();
-    if !ALLOWED_LOGO_EXTENSIONS.iter().any(|allowed| *allowed == ext) {
+    if !ALLOWED_LOGO_EXTENSIONS
+        .iter()
+        .any(|allowed| *allowed == ext)
+    {
         return Err(AppError::Validation {
             field: Some("sourcePath".into()),
             message: "Only JPEG and PNG images are supported.".into(),

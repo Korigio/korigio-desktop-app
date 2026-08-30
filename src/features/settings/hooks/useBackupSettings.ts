@@ -2,6 +2,7 @@ import { open, save } from "@tauri-apps/plugin-dialog";
 import { useCallback, useEffect, useState } from "react";
 import { backupApi } from "@/features/settings/api/backupApi";
 import type { BackupInfo } from "@/features/settings/types/backup";
+import { isCommandError } from "@/shared/api/invoke";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 function defaultBackupFileName(): string {
@@ -103,11 +104,15 @@ export function useBackupSettings() {
       );
       await reload();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : t("settings.backup.errors.restoreFailed"),
-      );
+      if (isCommandError(err) && err.code === "conflict") {
+        setError(t("backup.restore.unsupportedSchema"));
+      } else {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t("settings.backup.errors.restoreFailed"),
+        );
+      }
     } finally {
       setBusy(false);
     }

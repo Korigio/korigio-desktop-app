@@ -28,6 +28,64 @@
     "clearSelection": "Clear selection",
     "close": "Close"
   },
+  "staff": {
+    "fields": {
+      "name": "Name"
+    }
+  },
+  "team": {
+    "title": "Team",
+    "enter": "Enter team",
+    "create": {
+      "title": "Create a team",
+      "name": "Team name",
+      "memberName": "Your name",
+      "pinShown": "Write down this PIN. You will need it on this computer.",
+      "submit": "Create team"
+    },
+    "join": {
+      "title": "Join a team",
+      "memberName": "Your name",
+      "pin": "PIN",
+      "nearbyEmpty": "No teams found on this network",
+      "pick": "Join team {name}",
+      "submit": "Join team"
+    },
+    "leave": {
+      "title": "Leave team",
+      "confirm": "Leave this team? This computer will stop syncing with the others.",
+      "submit": "Leave team"
+    },
+    "members": {
+      "title": "Members",
+      "open": "Open team",
+      "name": "Name",
+      "status": "Status",
+      "gigs": "Gigs",
+      "gigsHint": "Gigs are open jobs assigned to that person. Both computers should show the same people and numbers once they have synced.",
+      "empty": "No members yet"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "sync": {
+      "unreachable": "Could not reach the other computer. Allow Servioo on Local Network in System Settings, and keep both PCs on the same Wi-Fi.",
+      "waiting": "Waiting for another team computer on this network…",
+      "connected": "Connected to {count} other computer(s)."
+    },
+    "pin": {
+      "label": "PIN",
+      "help": "Share this PIN so others can join on this Wi-Fi.",
+      "unavailable": "The team PIN is not available on this computer."
+    },
+    "notInTeam": "This computer is not in a team",
+    "errors": {
+      "alreadyInTeam": "This computer is already in a team",
+      "noPeer": "No other team computer found on this network",
+      "lastAdminLeave": "Leave is blocked while other computers are still in the team and you are the last administrator."
+    }
+  },
   "home": {
     "title": "Home",
     "dashboard": {
@@ -225,6 +283,11 @@
     "invalidId": "Invalid repair id",
     "backToList": "Back to repairs",
     "archivedEditHint": "Unarchive the repair before editing.",
+    "assign": "Assign",
+    "takeOver": "Take over",
+    "assignedTo": "Assigned to {name}",
+    "unassigned": "Unassigned",
+    "selectAssignee": "Select assignee",
     "detail": {
       "subtitle": "Repair overview and workshop progress",
       "archived": "This repair is archived.",
@@ -638,6 +701,13 @@
       "en": "English",
       "error": "Could not save language preference."
     },
+    "syncInterval": {
+      "label": "Sync interval",
+      "hint": "How often this PC talks to other team PCs on the network. Default 5 seconds.",
+      "unit": "seconds",
+      "error": "Could not save sync interval.",
+      "rangeHint": "Between 2 and 60 seconds."
+    },
     "backup": {
       "title": "Backup and restore",
       "subtitle": "Create portable backups of the database and repair photos. Restore replaces current data after a safety backup.",
@@ -834,6 +904,11 @@
       "deleteFailed": "Could not delete photo.",
       "resolveFailed": "Could not open photo.",
       "limitReached": "This repair already has the maximum number of photos."
+    }
+  },
+  "backup": {
+    "restore": {
+      "unsupportedSchema": "This backup is from an older Servioo version and cannot be restored."
     }
   }
 }

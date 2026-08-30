@@ -28,6 +28,64 @@
     "clearSelection": "Auswahl löschen",
     "close": "Schließen"
   },
+  "staff": {
+    "fields": {
+      "name": "Name"
+    }
+  },
+  "team": {
+    "title": "Team",
+    "enter": "Team betreten",
+    "create": {
+      "title": "Team erstellen",
+      "name": "Teamname",
+      "memberName": "Ihr Name",
+      "pinShown": "Notieren Sie diese PIN. Sie brauchen sie an diesem Computer.",
+      "submit": "Team erstellen"
+    },
+    "join": {
+      "title": "Einem Team beitreten",
+      "memberName": "Ihr Name",
+      "pin": "PIN",
+      "nearbyEmpty": "Keine Teams in diesem Netzwerk gefunden",
+      "pick": "Team {name} beitreten",
+      "submit": "Team beitreten"
+    },
+    "leave": {
+      "title": "Team verlassen",
+      "confirm": "Dieses Team verlassen? Dieser Computer synchronisiert sich dann nicht mehr mit den anderen.",
+      "submit": "Team verlassen"
+    },
+    "members": {
+      "title": "Mitglieder",
+      "open": "Team öffnen",
+      "name": "Name",
+      "status": "Status",
+      "gigs": "Aufträge",
+      "gigsHint": "Aufträge sind offene Arbeiten, die dieser Person zugewiesen sind. Beide Computer sollten dieselben Personen und Zahlen anzeigen, sobald sie synchronisiert sind.",
+      "empty": "Noch keine Mitglieder"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "sync": {
+      "unreachable": "Der andere Computer war nicht erreichbar. Erlauben Sie Servioo im lokalen Netzwerk in den Systemeinstellungen und lassen Sie beide Computer im selben WLAN.",
+      "waiting": "Warten auf einen anderen Team-Computer in diesem Netzwerk…",
+      "connected": "Mit {count} anderen Computer(n) verbunden."
+    },
+    "pin": {
+      "label": "PIN",
+      "help": "Teilen Sie diese PIN, damit andere im WLAN beitreten können.",
+      "unavailable": "Die Team-PIN ist auf diesem Computer nicht verfügbar."
+    },
+    "notInTeam": "Dieser Computer ist in keinem Team",
+    "errors": {
+      "alreadyInTeam": "Dieser Computer ist bereits in einem Team",
+      "noPeer": "Kein anderer Team-Computer in diesem Netzwerk gefunden",
+      "lastAdminLeave": "Das Verlassen ist gesperrt, solange noch andere Computer im Team sind und Sie der letzte Administrator sind."
+    }
+  },
   "home": {
     "title": "Start",
     "dashboard": {
@@ -225,6 +283,11 @@
     "invalidId": "Ungültige Reparatur-ID",
     "backToList": "Zurück zu Reparaturen",
     "archivedEditHint": "Reparatur zuerst wiederherstellen, um zu bearbeiten.",
+    "assign": "Zuweisen",
+    "takeOver": "Übernehmen",
+    "assignedTo": "Zugewiesen an {name}",
+    "unassigned": "Nicht zugewiesen",
+    "selectAssignee": "Zuständigen auswählen",
     "detail": {
       "subtitle": "Reparaturübersicht und Werkstattfortschritt",
       "archived": "Diese Reparatur ist archiviert.",
@@ -638,6 +701,13 @@
       "en": "Englisch",
       "error": "Spracheinstellung konnte nicht gespeichert werden."
     },
+    "syncInterval": {
+      "label": "Sync-Intervall",
+      "hint": "Wie oft sich dieser Computer im Netzwerk mit anderen Team-Computern abstimmt. Standard: 5 Sekunden.",
+      "unit": "Sekunden",
+      "error": "Sync-Intervall konnte nicht gespeichert werden.",
+      "rangeHint": "Zwischen 2 und 60 Sekunden."
+    },
     "backup": {
       "title": "Sicherung und Wiederherstellung",
       "subtitle": "Erstellen Sie portable Sicherungen von Datenbank und Fotos. Die Wiederherstellung ersetzt aktuelle Daten nach einer Sicherheitssicherung.",
@@ -834,6 +904,11 @@
       "deleteFailed": "Foto konnte nicht gelöscht werden.",
       "resolveFailed": "Foto konnte nicht geöffnet werden.",
       "limitReached": "Diese Reparatur hat bereits die maximale Anzahl Fotos."
+    }
+  },
+  "backup": {
+    "restore": {
+      "unsupportedSchema": "Diese Sicherung stammt von einer älteren Servioo-Version und kann nicht wiederhergestellt werden."
     }
   }
 }

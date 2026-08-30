@@ -6,7 +6,7 @@ import type { Repair } from "@/features/repairs/types/repair";
 import { Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-type Props = { repairId: number };
+type Props = { repairId: string };
 
 export function RepairEditPage({ repairId }: Props) {
   const { t } = useI18n();

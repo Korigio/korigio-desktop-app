@@ -15,7 +15,9 @@ All mutable data lives under the OS application data directory (AppData). Instal
 
 ## Authentication
 
-Single-workstation tool for v1: **no required login**. Optional unlock later only with an ADR.
+Solo (no team): no required login. Optional named staff with PIN.
+
+In a team: mutating commands require a signed-in staff session (PIN, 4–8 digits). Roles are `admin` and `staff` (honest-client; see [ADR 011](decisions/011-staff-roles-honest-client.md)). Team LAN traffic uses a PSK and XChaCha20-Poly1305 ([ADR 013](decisions/013-team-psk-and-blobs.md)). Never log PINs, PSK, or customer PII.
 
 ## Encryption (Phase 12)
 

@@ -4,11 +4,11 @@ import { RepairForm } from "@/features/repairs/components/RepairForm";
 import { useRepairForm } from "@/features/repairs/hooks/useRepairForm";
 import { LinkButton, Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { parseEntityId } from "@/shared/utils/entityId";
 import { useSearchParams } from "react-router";
 
-function parseId(raw: string | null): number | undefined {
-  const id = Number(raw);
-  return Number.isFinite(id) && id > 0 ? id : undefined;
+function parseId(raw: string | null): string | undefined {
+  return parseEntityId(raw ?? undefined) ?? undefined;
 }
 
 export function RepairCreatePage() {
@@ -17,7 +17,7 @@ export function RepairCreatePage() {
   const defaultCustomerId = parseId(params.get("customerId"));
   const defaultDeviceId = parseId(params.get("deviceId"));
 
-  const [defaultCompanyId, setDefaultCompanyId] = useState<number | undefined>();
+  const [defaultCompanyId, setDefaultCompanyId] = useState<string | undefined>();
   const [companyGate, setCompanyGate] = useState<"loading" | "ready" | "empty">(
     "loading",
   );
@@ -99,9 +99,9 @@ function RepairCreateForm({
   defaultDeviceId,
   defaultCompanyId,
 }: {
-  defaultCustomerId?: number;
-  defaultDeviceId?: number;
-  defaultCompanyId: number;
+  defaultCustomerId?: string;
+  defaultDeviceId?: string;
+  defaultCompanyId: string;
 }) {
   const { t } = useI18n();
   const form = useRepairForm({

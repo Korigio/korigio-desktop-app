@@ -8,7 +8,7 @@ use crate::paths::AppPaths;
 fn opens_in_memory_and_reports_health() {
     let db = Db::open_in_memory().expect("open");
     let health = db.health_check().expect("health");
-    assert_eq!(health.migrations_applied, 9);
+    assert_eq!(health.migrations_applied, 11);
     assert_eq!(health.customers, 0);
 }
 
@@ -19,7 +19,7 @@ fn opens_file_database_under_temp_app_data() {
     let db = Db::open(paths).expect("open");
     assert!(db.database_path().exists());
     let health = db.health_check().expect("health");
-    assert_eq!(health.migrations_applied, 9);
+    assert_eq!(health.migrations_applied, 11);
 }
 
 #[test]
@@ -29,9 +29,16 @@ fn foreign_keys_reject_orphan_device() {
         .conn()
         .execute(
             "INSERT INTO devices (
-                customer_id, device_type, manufacturer, model, serial_number,
-                accessories, notes, created_at, updated_at, archived_at
-            ) VALUES (999, 'laptop', 'Lenovo', 'T480', 'ABC', NULL, NULL, '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL)",
+                id, customer_id, device_type, manufacturer, model, serial_number,
+                accessories, notes, created_at, updated_at, archived_at,
+                hlc_wall_ms, hlc_counter, origin_device_id, updated_by_staff_id, deleted_at
+            ) VALUES (
+                '01900000-0000-7000-8000-000000000099',
+                '01900000-0000-7000-8000-000000000001',
+                'laptop', 'Lenovo', 'T480', 'ABC', NULL, NULL,
+                '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL,
+                0, 0, 'dev', NULL, NULL
+            )",
             [],
         )
         .expect_err("fk should fail");
@@ -47,16 +54,30 @@ fn repair_status_check_constraint() {
     let db = Db::open_in_memory().expect("open");
     let conn = db.conn();
     conn.execute(
-        "INSERT INTO customers (name, phone, email, address, notes, created_at, updated_at, archived_at)
-         VALUES ('Test', NULL, NULL, NULL, NULL, '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL)",
+        "INSERT INTO customers (
+            id, name, phone, email, address, notes, created_at, updated_at, archived_at,
+            hlc_wall_ms, hlc_counter, origin_device_id, updated_by_staff_id, deleted_at
+         ) VALUES (
+            '01900000-0000-7000-8000-000000000001',
+            'Test', NULL, NULL, NULL, NULL,
+            '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL,
+            0, 0, 'dev', NULL, NULL
+         )",
         [],
     )
     .expect("customer");
     conn.execute(
         "INSERT INTO devices (
-            customer_id, device_type, manufacturer, model, serial_number,
-            accessories, notes, created_at, updated_at, archived_at
-         ) VALUES (1, 'laptop', 'Lenovo', 'T480', 'ABC', NULL, NULL, '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL)",
+            id, customer_id, device_type, manufacturer, model, serial_number,
+            accessories, notes, created_at, updated_at, archived_at,
+            hlc_wall_ms, hlc_counter, origin_device_id, updated_by_staff_id, deleted_at
+         ) VALUES (
+            '01900000-0000-7000-8000-000000000002',
+            '01900000-0000-7000-8000-000000000001',
+            'laptop', 'Lenovo', 'T480', 'ABC', NULL, NULL,
+            '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL,
+            0, 0, 'dev', NULL, NULL
+         )",
         [],
     )
     .expect("device");
@@ -64,14 +85,20 @@ fn repair_status_check_constraint() {
     let err = conn
         .execute(
             "INSERT INTO repairs (
-                repair_number, customer_id, device_id, status, received_at,
+                id, repair_number, customer_id, device_id, status, received_at,
                 reported_problem, accessories_received, device_condition,
                 diagnosis_notes, work_performed, notes, ready_at, collected_at,
-                created_at, updated_at, archived_at
+                created_at, updated_at, archived_at,
+                hlc_wall_ms, hlc_counter, origin_device_id, updated_by_staff_id, deleted_at
              ) VALUES (
-                '2026-000001', 1, 1, 'not_a_status', '2026-01-01',
+                '01900000-0000-7000-8000-000000000003',
+                '2026-AA-000001',
+                '01900000-0000-7000-8000-000000000001',
+                '01900000-0000-7000-8000-000000000002',
+                'not_a_status', '2026-01-01',
                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL
+                '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', NULL,
+                0, 0, 'dev', NULL, NULL
              )",
             [],
         )
@@ -92,6 +119,7 @@ fn migration_list_is_non_empty_and_ordered() {
         assert!(!sql.trim().is_empty());
         last = *version;
     }
+    assert_eq!(last, 11);
 }
 
 #[test]
@@ -108,6 +136,15 @@ fn schema_has_expected_core_tables() {
         "settings",
         "repair_number_sequences",
         "schema_migrations",
+        "staff",
+        "teams",
+        "team_devices",
+        "team_invites",
+        "local_identity",
+        "presence",
+        "sync_changes",
+        "sync_peer_cursors",
+        "content_blobs",
     ] {
         let count: i64 = db
             .conn()

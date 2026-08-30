@@ -1,6 +1,6 @@
 export type RepairImage = {
-  id: number;
-  repairId: number;
+  id: string;
+  repairId: string;
   originalPath: string;
   thumbPath: string | null;
   caption: string | null;
@@ -9,7 +9,7 @@ export type RepairImage = {
 };
 
 export type AttachRepairImagesInput = {
-  repairId: number;
+  repairId: string;
   sourcePaths: string[];
 };
 

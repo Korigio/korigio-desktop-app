@@ -1,14 +1,14 @@
 use std::path::{Path, PathBuf};
 
 use crate::domain::images::constants::{
-    ALLOWED_EXTENSIONS, CAPTION_MAX_LEN, MAX_IMAGE_BYTES, MAX_IMAGES_PER_REPAIR,
+    ALLOWED_EXTENSIONS, CAPTION_MAX_LEN, MAX_IMAGES_PER_REPAIR, MAX_IMAGE_BYTES,
 };
 use crate::domain::images::types::{AttachRepairImagesInput, UpdateRepairImageInput};
 use crate::error::AppError;
 
 #[derive(Debug)]
 pub struct ValidatedAttachInput {
-    pub repair_id: i64,
+    pub repair_id: String,
     pub source_paths: Vec<PathBuf>,
 }
 
@@ -21,12 +21,7 @@ pub struct ValidatedUpdateInput {
 pub fn validate_attach_input(
     input: &AttachRepairImagesInput,
 ) -> Result<ValidatedAttachInput, AppError> {
-    if input.repair_id <= 0 {
-        return Err(AppError::Validation {
-            field: Some("repairId".into()),
-            message: "Repair is required.".into(),
-        });
-    }
+    let repair_id = crate::domain::ids::parse_entity_id_field(&input.repair_id, "repairId")?;
     if input.source_paths.is_empty() {
         return Err(AppError::Validation {
             field: Some("sourcePaths".into()),
@@ -42,7 +37,7 @@ pub fn validate_attach_input(
     }
 
     Ok(ValidatedAttachInput {
-        repair_id: input.repair_id,
+        repair_id,
         source_paths,
     })
 }
@@ -117,17 +112,12 @@ pub fn validate_update_input(
     })
 }
 
-pub fn ensure_room_for_attachments(
-    current_count: i64,
-    incoming: usize,
-) -> Result<(), AppError> {
+pub fn ensure_room_for_attachments(current_count: i64, incoming: usize) -> Result<(), AppError> {
     let incoming = incoming as i64;
     if current_count + incoming > MAX_IMAGES_PER_REPAIR {
         return Err(AppError::Validation {
             field: Some("sourcePaths".into()),
-            message: format!(
-                "A repair can have at most {MAX_IMAGES_PER_REPAIR} images."
-            ),
+            message: format!("A repair can have at most {MAX_IMAGES_PER_REPAIR} images."),
         });
     }
     Ok(())

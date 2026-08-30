@@ -56,7 +56,7 @@ export function useRepairIntake() {
   const [deviceCreateOpen, setDeviceCreateOpen] = useState(false);
 
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const [createdCustomerId, setCreatedCustomerId] = useState<number | null>(
+  const [createdCustomerId, setCreatedCustomerId] = useState<string | null>(
     null,
   );
   const [device, setDevice] = useState<Device | null>(null);

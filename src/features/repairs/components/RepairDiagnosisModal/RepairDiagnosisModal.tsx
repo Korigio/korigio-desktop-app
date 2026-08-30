@@ -9,7 +9,7 @@ import { useI18n } from "@/shared/hooks/useI18n";
 import { Dialog, StatusMessage } from "@/ui";
 
 type Props = {
-  repairId: number;
+  repairId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: (repair: Repair) => void;

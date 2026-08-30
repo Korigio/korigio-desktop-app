@@ -9,7 +9,7 @@ import { useState } from "react";
 export function DiagnosisTemplatesPage() {
   const { t } = useI18n();
   const list = useDiagnosisTemplateList();
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const totalPages = list.result
     ? Math.max(1, Math.ceil(list.result.total / list.result.pageSize))

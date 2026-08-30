@@ -22,7 +22,7 @@ export type DiagnosisResult = {
 };
 
 export type DiagnosisTemplate = {
-  id: number;
+  id: string;
   name: string;
   body: DiagnosisTemplateBody;
   updatedAt: string;
@@ -47,15 +47,15 @@ export type DiagnosisTemplateListResult = {
 };
 
 export type RepairDiagnosis = {
-  id: number;
-  repairId: number;
-  templateId: number | null;
+  id: string;
+  repairId: string;
+  templateId: string | null;
   result: DiagnosisResult;
 };
 
 export type RepairDiagnosisInput = {
-  repairId: number;
-  templateId?: number | null;
+  repairId: string;
+  templateId?: string | null;
   result: DiagnosisResult;
 };
 

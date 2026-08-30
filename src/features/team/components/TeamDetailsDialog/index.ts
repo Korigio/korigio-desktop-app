@@ -1,0 +1,1 @@
+export { TeamDetailsDialog } from "./TeamDetailsDialog";

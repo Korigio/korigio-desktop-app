@@ -16,14 +16,14 @@ export const diagnosisTemplatesApi = {
       query,
     });
   },
-  get(id: number): Promise<DiagnosisTemplate> {
+  get(id: string): Promise<DiagnosisTemplate> {
     return invoke<DiagnosisTemplate>("get_diagnosis_template", { id });
   },
   create(input: DiagnosisTemplateInput): Promise<DiagnosisTemplate> {
     return invoke<DiagnosisTemplate>("create_diagnosis_template", { input });
   },
   update(
-    id: number,
+    id: string,
     input: DiagnosisTemplateInput,
   ): Promise<DiagnosisTemplate> {
     return invoke<DiagnosisTemplate>("update_diagnosis_template", {
@@ -31,13 +31,13 @@ export const diagnosisTemplatesApi = {
       input,
     });
   },
-  delete(id: number): Promise<void> {
+  delete(id: string): Promise<void> {
     return invoke<void>("delete_diagnosis_template", { id });
   },
 };
 
 export const repairDiagnosisApi = {
-  get(repairId: number): Promise<RepairDiagnosis | null> {
+  get(repairId: string): Promise<RepairDiagnosis | null> {
     return invoke<RepairDiagnosis | null>("get_repair_diagnosis", {
       repairId,
     });

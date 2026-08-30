@@ -11,7 +11,7 @@ import {
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
-  repairId: number;
+  repairId: string;
 };
 
 export function RepairDiagnosisSection({ repairId }: Props) {
