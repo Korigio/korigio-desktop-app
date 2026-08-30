@@ -120,11 +120,14 @@ pub fn create_team(
     Ok(CreateTeamResult { team, pin, session })
 }
 
-pub fn leave_team(conn: &Connection) -> Result<(), AppError> {
+/// Last-admin check + deactivate current staff + optional device tombstone.
+/// PSK and session stay valid so gossip can still push. Returns `false` when
+/// this computer is not in a team (no-op).
+pub fn write_leave_tombstones(conn: &Connection) -> Result<bool, AppError> {
     let session = staff::require_session(conn)?;
     let identity = identity::require_local_identity(conn)?;
     let Some(team_id) = identity.team_id.clone() else {
-        return Ok(());
+        return Ok(false);
     };
     let active = repository::count_active_devices(conn, &team_id)?;
     if active > 1 && session.staff.role == StaffRole::Admin {
@@ -135,6 +138,8 @@ pub fn leave_team(conn: &Connection) -> Result<(), AppError> {
             ));
         }
     }
+
+    staff::deactivate_current_on_leave(conn)?;
 
     if active > 1 {
         let ctx = begin_write(conn)?;
@@ -156,8 +161,20 @@ pub fn leave_team(conn: &Connection) -> Result<(), AppError> {
         )?;
     }
 
+    Ok(true)
+}
+
+pub fn finish_leave(conn: &Connection) -> Result<(), AppError> {
     repository::update_local_identity_team(conn, None, None, None, None, None)?;
     staff::sign_out_staff(conn)?;
+    Ok(())
+}
+
+/// Unit-test helper: tombstones then clear identity. No gossip wait.
+pub fn leave_team(conn: &Connection) -> Result<(), AppError> {
+    if write_leave_tombstones(conn)? {
+        finish_leave(conn)?;
+    }
     Ok(())
 }
 
@@ -236,11 +253,12 @@ pub fn list_team_members(
 
     let mut items: Vec<TeamMember> = repository::list_active_staff_gigs(conn, team_id)?
         .into_iter()
-        .map(|(id, name, gig_count)| {
+        .map(|(id, name, role, gig_count)| {
             let online = online_staff.contains(&id);
             TeamMember {
                 id,
                 name,
+                role,
                 online,
                 gig_count,
             }

@@ -1,4 +1,4 @@
-import type { Session } from "@/features/staff/types/staff";
+import type { Session, StaffRole } from "@/features/staff/types/staff";
 
 export type Team = {
   id: string;
@@ -52,6 +52,7 @@ export type TeamMember = {
   name: string;
   online: boolean;
   gigCount: number;
+  role: StaffRole;
 };
 
 export type TeamMembersResult = {

@@ -1,7 +1,6 @@
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::{Component, Path, PathBuf};
-use std::time::Duration;
 
 use rusqlite::{Connection, DatabaseName};
 use sha2::{Digest, Sha256};
@@ -13,12 +12,14 @@ use zip::{CompressionMethod, ZipArchive, ZipWriter};
 use crate::db::repository::now_utc_rfc3339;
 use crate::db::Db;
 use crate::domain::backup::constants::{
-    APP_VERSION, AUTO_RETENTION, BACKUP_EXTENSION, DATABASE_ENTRY, MANIFEST_NAME,
+    APP_VERSION, BACKUP_EXTENSION, DATABASE_ENTRY, MANIFEST_NAME,
 };
 use crate::domain::backup::types::{
-    AutoBackupResult, BackupInfo, BackupKind, BackupManifest, BackupManifestFile,
-    BackupValidationResult, CreateBackupInput, LocalBackupListResult, RestoreBackupResult,
+    AutoBackupResult, AutoBackupSkipReason, BackupInfo, BackupKind, BackupManifest,
+    BackupManifestFile, BackupValidationResult, CreateBackupInput, LocalBackupListResult,
+    RestoreBackupResult,
 };
+use crate::domain::settings::{self, AutoBackupInterval};
 use crate::error::AppError;
 use crate::paths::AppPaths;
 
@@ -33,9 +34,9 @@ pub fn create_safety_backup(db: &Db) -> Result<BackupInfo, AppError> {
     write_backup_package(db, &dest, BackupKind::Safety)
 }
 
-pub fn create_auto_backup(db: &Db) -> Result<BackupInfo, AppError> {
+pub fn create_auto_backup(db: &Db, dest_dir: &Path) -> Result<BackupInfo, AppError> {
     let file_name = format!("Servioo-{}.{}", local_stamp()?, BACKUP_EXTENSION);
-    let dest = db.paths().backups_auto().join(&file_name);
+    let dest = dest_dir.join(&file_name);
     write_backup_package(db, &dest, BackupKind::Auto)
 }
 
@@ -211,24 +212,109 @@ pub fn list_local_backups(paths: &AppPaths) -> Result<LocalBackupListResult, App
 }
 
 pub fn run_auto_backup_if_due(db: &Db) -> Result<AutoBackupResult, AppError> {
-    let auto_dir = db.paths().backups_auto();
-    fs::create_dir_all(&auto_dir)?;
-
-    if auto_backup_exists_today(&auto_dir)? {
-        return Ok(AutoBackupResult {
-            ran: false,
-            backup: None,
-            pruned_count: 0,
-        });
+    let settings = settings::get_auto_backup_settings(db.conn())?;
+    if settings.interval == AutoBackupInterval::Never {
+        return Ok(skipped_auto_backup(AutoBackupSkipReason::Disabled));
     }
 
-    let backup = create_auto_backup(db)?;
-    let pruned_count = prune_auto_backups(&auto_dir)?;
+    let Some(folder) = settings.folder_path.as_deref().filter(|s| !s.is_empty()) else {
+        return Ok(skipped_auto_backup(AutoBackupSkipReason::NoFolder));
+    };
+    let dest_dir = PathBuf::from(folder);
+    if !dest_dir.is_absolute() {
+        return Ok(skipped_auto_backup(AutoBackupSkipReason::NoFolder));
+    }
+    if fs::create_dir_all(&dest_dir).is_err() || !dest_dir.is_dir() {
+        return Ok(skipped_auto_backup(AutoBackupSkipReason::NoFolder));
+    }
+
+    if scheduled_backup_covers_period(&dest_dir, settings.interval)? {
+        return Ok(skipped_auto_backup(AutoBackupSkipReason::NotDue));
+    }
+
+    let backup = create_auto_backup(db, &dest_dir)?;
     Ok(AutoBackupResult {
         ran: true,
         backup: Some(backup),
-        pruned_count,
+        pruned_count: 0,
+        skipped_reason: None,
     })
+}
+
+fn skipped_auto_backup(reason: AutoBackupSkipReason) -> AutoBackupResult {
+    AutoBackupResult {
+        ran: false,
+        backup: None,
+        pruned_count: 0,
+        skipped_reason: Some(reason),
+    }
+}
+
+/// True when `name` is `Servioo-YYYY-MM-DD-HHmm.backup` and that date covers `today` for `interval`.
+pub fn filename_covers_period(name: &str, interval: AutoBackupInterval, today: Date) -> bool {
+    let Some(date) = parse_scheduled_backup_date(name) else {
+        return false;
+    };
+    match interval {
+        AutoBackupInterval::Never => false,
+        AutoBackupInterval::Day => date == today,
+        AutoBackupInterval::Week => {
+            let (iso_year, iso_week, _) = date.to_iso_week_date();
+            let (today_iso_year, today_iso_week, _) = today.to_iso_week_date();
+            iso_year == today_iso_year && iso_week == today_iso_week
+        }
+        AutoBackupInterval::Month => date.year() == today.year() && date.month() == today.month(),
+        AutoBackupInterval::Year => date.year() == today.year(),
+    }
+}
+
+fn parse_scheduled_backup_date(name: &str) -> Option<Date> {
+    let stem = name.strip_suffix(&format!(".{BACKUP_EXTENSION}"))?;
+    if stem.starts_with("Servioo-safety-") || !stem.starts_with("Servioo-") {
+        return None;
+    }
+    let rest = stem.get("Servioo-".len()..)?;
+    let parts: Vec<&str> = rest.split('-').collect();
+    if parts.len() != 4 {
+        return None;
+    }
+    let (year_s, month_s, day_s, hm) = (parts[0], parts[1], parts[2], parts[3]);
+    if year_s.len() != 4
+        || month_s.len() != 2
+        || day_s.len() != 2
+        || hm.len() != 4
+        || !year_s.chars().all(|c| c.is_ascii_digit())
+        || !month_s.chars().all(|c| c.is_ascii_digit())
+        || !day_s.chars().all(|c| c.is_ascii_digit())
+        || !hm.chars().all(|c| c.is_ascii_digit())
+    {
+        return None;
+    }
+    let year: i32 = year_s.parse().ok()?;
+    let month: u8 = month_s.parse().ok()?;
+    let day: u8 = day_s.parse().ok()?;
+    Date::from_calendar_date(year, time::Month::try_from(month).ok()?, day).ok()
+}
+
+fn scheduled_backup_covers_period(
+    dest_dir: &Path,
+    interval: AutoBackupInterval,
+) -> Result<bool, AppError> {
+    let today = local_today()?;
+    if !dest_dir.exists() {
+        return Ok(false);
+    }
+    for entry in fs::read_dir(dest_dir)? {
+        let entry = entry?;
+        if !entry.path().is_file() {
+            continue;
+        }
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if filename_covers_period(&name, interval, today) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 fn write_backup_package(db: &Db, dest: &Path, kind: BackupKind) -> Result<BackupInfo, AppError> {
@@ -280,8 +366,7 @@ fn write_backup_package(db: &Db, dest: &Path, kind: BackupKind) -> Result<Backup
         message: format!("failed to finalize backup archive: {err}"),
     })?;
 
-    let _ = kind; // encoded in destination path / filename
-    backup_info_for_path(dest, kind_from_path(dest))
+    backup_info_for_path(dest, kind)
 }
 
 fn online_backup_database(src: &Connection, dest: &Path) -> Result<(), AppError> {
@@ -493,26 +578,6 @@ fn local_today() -> Result<Date, AppError> {
     Ok(now.date())
 }
 
-fn auto_backup_exists_today(auto_dir: &Path) -> Result<bool, AppError> {
-    let today = local_today()?;
-    if !auto_dir.exists() {
-        return Ok(false);
-    }
-    for entry in fs::read_dir(auto_dir)? {
-        let entry = entry?;
-        let name = entry.file_name().to_string_lossy().into_owned();
-        if !name.ends_with(&format!(".{BACKUP_EXTENSION}")) {
-            continue;
-        }
-        if let Some(date) = parse_backup_date_from_name(&name) {
-            if date == today {
-                return Ok(true);
-            }
-        }
-    }
-    Ok(false)
-}
-
 fn parse_backup_date_from_name(name: &str) -> Option<Date> {
     // Servioo-YYYY-MM-DD-HHmm.backup or Servioo-safety-YYYY-MM-DD-HHmm.backup
     let stem = name.strip_suffix(&format!(".{BACKUP_EXTENSION}"))?;
@@ -529,43 +594,6 @@ fn parse_backup_date_from_name(name: &str) -> Option<Date> {
     let month: u8 = m.parse().ok()?;
     let day: u8 = d.parse().ok()?;
     Date::from_calendar_date(year, time::Month::try_from(month).ok()?, day).ok()
-}
-
-fn prune_auto_backups(auto_dir: &Path) -> Result<u32, AppError> {
-    let mut files = Vec::new();
-    for entry in fs::read_dir(auto_dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        if !path.is_file() {
-            continue;
-        }
-        let name = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or_default()
-            .to_string();
-        if !name.ends_with(&format!(".{BACKUP_EXTENSION}")) {
-            continue;
-        }
-        // Never treat safety backups as auto (they should not live here).
-        if name.contains("-safety-") {
-            continue;
-        }
-        let modified = entry
-            .metadata()
-            .and_then(|m| m.modified())
-            .ok()
-            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-            .unwrap_or(Duration::ZERO);
-        files.push((modified, path));
-    }
-    files.sort_by(|a, b| b.0.cmp(&a.0).then(b.1.cmp(&a.1)));
-    let mut pruned = 0_u32;
-    for (_ts, path) in files.into_iter().skip(AUTO_RETENTION) {
-        fs::remove_file(path)?;
-        pruned += 1;
-    }
-    Ok(pruned)
 }
 
 fn collect_backups_in_dir(
@@ -602,20 +630,6 @@ fn collect_backups_in_dir(
         items.push(backup_info_for_path(&path, kind)?);
     }
     Ok(())
-}
-
-fn kind_from_path(path: &Path) -> BackupKind {
-    let name = path
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or_default();
-    if name.contains("-safety-") {
-        BackupKind::Safety
-    } else if path.parent().is_some_and(|p| p.ends_with("auto")) {
-        BackupKind::Auto
-    } else {
-        BackupKind::Manual
-    }
 }
 
 fn backup_info_for_path(path: &Path, kind: BackupKind) -> Result<BackupInfo, AppError> {

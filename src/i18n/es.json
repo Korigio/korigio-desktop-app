@@ -61,6 +61,7 @@
       "title": "Miembros",
       "open": "Abrir equipo",
       "name": "Nombre",
+      "role": "Rol",
       "status": "Estado",
       "gigs": "Trabajos",
       "gigsHint": "Los trabajos son encargos abiertos asignados a esa persona. Ambos ordenadores deberían mostrar las mismas personas y números una vez sincronizados.",
@@ -69,6 +70,10 @@
     "status": {
       "online": "En línea",
       "offline": "Sin conexión"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "staff": "Personal"
     },
     "sync": {
       "unreachable": "No se pudo contactar con el otro ordenador. Permita Servioo en la red local en Ajustes del sistema y mantenga ambos ordenadores en el mismo Wi-Fi.",
@@ -84,7 +89,8 @@
     "errors": {
       "alreadyInTeam": "Este ordenador ya pertenece a un equipo",
       "noPeer": "No se encontró otro ordenador del equipo en esta red",
-      "lastAdminLeave": "No se puede salir mientras otros ordenadores siguen en el equipo y usted es el último administrador."
+      "lastAdminLeave": "No se puede salir mientras otros ordenadores siguen en el equipo y usted es el último administrador.",
+      "lastAdminRole": "No se puede cambiar el último administrador a personal."
     }
   },
   "home": {
@@ -100,7 +106,30 @@
       "readyAt": "Lista {date}",
       "staleTitle": "Estancadas (sin actualización en {days}+ días)",
       "staleEmpty": "No hay reparaciones abiertas estancadas.",
-      "daysInStatus": "{days}d"
+      "daysInStatus": "{days}d",
+      "kpi": {
+        "receivedToday": "Recibidas hoy",
+        "collectedToday": "Entregadas hoy",
+        "ready": "Listas",
+        "open": "Abiertas",
+        "stale": "Estancadas",
+        "collectedRevenueToday": "Estimaciones cobradas hoy",
+        "collectedRevenueWeek": "Estimaciones cobradas esta semana",
+        "openEstimate": "Estimaciones abiertas"
+      },
+      "charts": {
+        "statusTitle": "Abiertas por estado",
+        "statusEmpty": "No hay reparaciones abiertas para el gráfico.",
+        "intakeTitle": "Esta semana",
+        "intakeEmpty": "No hay entradas esta semana.",
+        "received": "Recibidas",
+        "collected": "Entregadas",
+        "ariaStatus": "Reparaciones abiertas por estado",
+        "ariaIntake": "Recibidas y entregadas esta semana",
+        "revenueTitle": "Estimaciones cobradas",
+        "revenueEmpty": "No hay estimaciones cobradas esta semana. Son presupuestos de reparación, no facturas.",
+        "ariaRevenue": "Totales de estimaciones cobradas por día esta semana"
+      }
     }
   },
   "customers": {
@@ -273,8 +302,6 @@
     "subtitle": "Buscar, crear y gestionar reparaciones",
     "customerSectionTitle": "Reparaciones",
     "deviceSectionTitle": "Reparaciones",
-    "createTitle": "Nueva reparación",
-    "createSubtitle": "Registrar una reparación para un cliente y dispositivo",
     "editTitle": "Editar reparación",
     "search": "Buscar",
     "searchPlaceholder": "Número, cliente o dispositivo",
@@ -350,7 +377,6 @@
     },
     "actions": {
       "new": "Nueva reparación",
-      "create": "Crear reparación",
       "save": "Guardar",
       "edit": "Editar",
       "print": "Imprimir",
@@ -708,6 +734,14 @@
       "en": "Inglés",
       "error": "No se pudo guardar la preferencia de idioma."
     },
+    "theme": {
+      "label": "Apariencia",
+      "hint": "Solo en este ordenador. «Automático» sigue el tema claro u oscuro del sistema. No se sincroniza con el equipo.",
+      "system": "Automático",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "error": "No se pudo guardar la preferencia de apariencia."
+    },
     "syncInterval": {
       "label": "Intervalo de sincronización",
       "hint": "Cada cuánto se comunica este ordenador con los demás del equipo en la red. El valor predeterminado es 5 segundos.",
@@ -726,6 +760,25 @@
       "actions": {
         "create": "Crear copia",
         "restore": "Restaurar copia"
+      },
+      "scheduled": {
+        "title": "Copias programadas",
+        "hint": "Por defecto no se crean copias automáticas. Elija una carpeta y un intervalo para activarlas. Las copias se guardan en esa carpeta.",
+        "intervalLabel": "Intervalo",
+        "folderLabel": "Carpeta",
+        "chooseFolder": "Elegir carpeta",
+        "folderUnset": "Sin carpeta",
+        "intervals": {
+          "never": "Nunca",
+          "day": "Cada día",
+          "week": "Cada semana",
+          "month": "Cada mes",
+          "year": "Cada año"
+        },
+        "errors": {
+          "loadFailed": "No se pudieron cargar los ajustes de copias programadas.",
+          "saveFailed": "No se pudieron guardar los ajustes de copias programadas. Elija una carpeta antes de activar un intervalo."
+        }
       },
       "kind": {
         "manual": "Manual",

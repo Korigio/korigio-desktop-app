@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { staffApi } from "@/features/staff/api/staffApi";
+import { useSession } from "@/features/staff/hooks/useSession";
+import type { StaffRole } from "@/features/staff/types/staff";
 import { teamApi } from "@/features/team/api/teamApi";
 import type {
   NearbyTeam,
@@ -13,6 +16,7 @@ const POLL_MS = 2000;
 
 export function useTeamPage() {
   const { t } = useI18n();
+  const { session, refresh } = useSession();
   const [team, setTeam] = useState<Team | null>(null);
   const [pin, setPin] = useState<string | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -20,6 +24,8 @@ export function useTeamPage() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [roleError, setRoleError] = useState<string | null>(null);
+  const [roleBusy, setRoleBusy] = useState(false);
 
   const reload = useCallback(async () => {
     setError(null);
@@ -126,6 +132,26 @@ export function useTeamPage() {
     };
   }, [team]);
 
+  const changeMemberRole = useCallback(
+    async (id: string, role: StaffRole) => {
+      setRoleError(null);
+      setRoleBusy(true);
+      try {
+        await staffApi.changeRole(id, role);
+        await reload();
+        if (session?.staff.id === id) {
+          await refresh();
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message.trim() : "";
+        setRoleError(message || t("team.errors.lastAdminRole"));
+      } finally {
+        setRoleBusy(false);
+      }
+    },
+    [reload, refresh, session?.staff.id, t],
+  );
+
   const inTeam = team !== null;
 
   useEffect(() => {
@@ -165,5 +191,8 @@ export function useTeamPage() {
     setError,
     setPin,
     reload,
+    changeMemberRole,
+    roleError,
+    roleBusy,
   };
 }

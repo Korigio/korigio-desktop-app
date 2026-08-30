@@ -30,7 +30,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(defaultLocale);
   const [preference, setPreferenceState] = useState<LocalePreference>("system");
   const [systemLocale, setSystemLocale] = useState("");
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,11 +60,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         setLocale(resolved);
         setPreferenceState("system");
         setSystemLocale(tag);
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setReady(true);
-        }
       });
     return () => {
       cancelled = true;
@@ -89,10 +83,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     () => ({ locale, preference, systemLocale, setPreference, t }),
     [locale, preference, systemLocale, setPreference, t],
   );
-
-  if (!ready) {
-    return null;
-  }
 
   return (
     <I18nContext.Provider value={value}>{children}</I18nContext.Provider>

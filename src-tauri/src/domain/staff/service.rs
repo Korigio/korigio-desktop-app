@@ -175,6 +175,27 @@ pub fn deactivate_staff(conn: &Connection, id: &str) -> Result<Staff, AppError> 
     Ok(staff)
 }
 
+/// Deactivate the signed-in staff while leaving a team.
+/// Session stays open so `updatedByStaffId` can still be recorded.
+/// No last-admin check — last remaining device may leave even as last admin.
+pub fn deactivate_current_on_leave(conn: &Connection) -> Result<Staff, AppError> {
+    let session = require_session(conn)?;
+    if session.staff.deactivated_at.is_some() {
+        return Ok(session.staff);
+    }
+    let ctx = begin_write(conn)?;
+    let now = now_utc_rfc3339()?;
+    let staff = repository::set_deactivated_at(conn, &session.staff.id, Some(&now), &now, &ctx)?;
+    sync::record_upsert(
+        conn,
+        "staff",
+        &staff.id,
+        staff_sync_payload(conn, &staff)?,
+        &ctx,
+    )?;
+    Ok(staff)
+}
+
 pub fn reactivate_staff(conn: &Connection, id: &str) -> Result<Staff, AppError> {
     let id = parse_entity_id(id)?;
     require_admin(conn)?;

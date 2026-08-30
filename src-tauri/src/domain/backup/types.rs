@@ -48,10 +48,19 @@ pub struct LocalBackupListResult {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
+pub enum AutoBackupSkipReason {
+    Disabled,
+    NoFolder,
+    NotDue,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct AutoBackupResult {
     pub ran: bool,
     pub backup: Option<BackupInfo>,
     pub pruned_count: u32,
+    pub skipped_reason: Option<AutoBackupSkipReason>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

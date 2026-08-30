@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { backupApi } from "@/features/settings/api/backupApi";
 
-/** Fire-and-forget daily auto-backup once per app shell mount. */
+/** Fire-and-forget scheduled auto-backup if due, once per app shell mount. */
 export function AutoBackupOnStartup() {
   const started = useRef(false);
 

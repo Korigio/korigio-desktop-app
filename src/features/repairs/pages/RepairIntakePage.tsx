@@ -1,12 +1,19 @@
 import { useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { RepairIntakeForm } from "@/features/repairs/components/RepairIntakeForm";
 import { useRepairIntake } from "@/features/repairs/hooks/useRepairIntake";
 import { Page, PageHeader } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { parseEntityId } from "@/shared/utils/entityId";
 
 export function RepairIntakePage() {
   const { t } = useI18n();
-  const intake = useRepairIntake();
+  const [params] = useSearchParams();
+  const presetCustomerId =
+    parseEntityId(params.get("customerId") ?? undefined) ?? undefined;
+  const presetDeviceId =
+    parseEntityId(params.get("deviceId") ?? undefined) ?? undefined;
+  const intake = useRepairIntake({ presetCustomerId, presetDeviceId });
   const { step, submitting, continuePrimary } = intake;
 
   useEffect(() => {

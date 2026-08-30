@@ -78,11 +78,11 @@ function NavItem({ to, end, label, icon: Icon, collapsed }: NavItemProps) {
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
         cn(
-          "inline-flex items-center gap-2 whitespace-nowrap rounded-md px-3 py-2 text-sm",
+          "inline-flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm",
           collapsed && "md:justify-center md:px-2",
           isActive
-            ? "bg-primary text-primary-foreground"
-            : "text-foreground hover:bg-background",
+            ? "bg-background font-medium text-foreground"
+            : "text-foreground hover:bg-background/80",
         )
       }
     >
@@ -116,12 +116,12 @@ function AppShellLayout() {
   const ToggleIcon = collapsed ? PanelLeft : PanelLeftClose;
 
   return (
-    <div className="flex min-h-full flex-col bg-background text-foreground md:flex-row">
+    <div className="flex h-full flex-col overflow-hidden bg-background text-foreground md:flex-row">
       <NativeMenuBridge />
       <AutoBackupOnStartup />
       <aside
         className={cn(
-          "shrink-0 border-b border-border bg-surface p-3 transition-[width] duration-200 ease-out md:border-b-0 md:border-r md:p-3",
+          "shrink-0 border-b border-border bg-sidebar p-3 transition-[width] duration-200 ease-out md:min-h-0 md:overflow-y-auto md:border-b-0 md:border-r md:p-3",
           collapsed ? "md:w-14" : "md:w-64 md:p-4",
         )}
       >
@@ -169,8 +169,8 @@ function AppShellLayout() {
         </nav>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
-        <header className="sticky top-0 z-20 border-b border-border bg-surface/95 px-3 py-2 backdrop-blur-sm sm:px-4">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="shrink-0 border-b border-border bg-surface px-3 py-2 sm:px-4">
           <div className="flex flex-wrap items-center justify-end gap-2">
             <LinkButton
               to="/repairs/intake"
@@ -180,7 +180,7 @@ function AppShellLayout() {
             </LinkButton>
           </div>
         </header>
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
           <Outlet />
         </div>
       </div>

@@ -10,9 +10,9 @@
 
   body {
     margin: 0;
-    font-family: var(--font-sans);
-    background: var(--color-background);
-    color: var(--color-foreground);
+    font-family: var(--servioo-font-sans, var(--font-sans));
+    background: var(--servioo-background, #f4f6f8);
+    color: var(--servioo-foreground, #1a2332);
   }
 }
 
@@ -20,6 +20,26 @@
   @page {
     size: A4;
     margin: 12mm;
+  }
+
+  html,
+  html.dark {
+    color-scheme: light !important;
+    --servioo-background: #ffffff;
+    --servioo-foreground: #000000;
+    --servioo-surface: #ffffff;
+    --servioo-sidebar: #ffffff;
+    --servioo-muted: #333333;
+    --servioo-border: #cccccc;
+    --servioo-primary: #0f9d8a;
+    --servioo-primary-foreground: #ffffff;
+    --servioo-status-received: #4f8cff;
+    --servioo-status-diagnosis: #7c6cf5;
+    --servioo-status-waiting-customer: #e5a819;
+    --servioo-status-waiting-part: #e87a2f;
+    --servioo-status-in-repair: #2aa8d4;
+    --servioo-status-ready: #2db36b;
+    --servioo-status-awaiting-pickup: #0f9d8a;
   }
 
   body {

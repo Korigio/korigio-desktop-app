@@ -119,6 +119,110 @@ pub fn today_counts(conn: &Connection, local_day: &str) -> Result<TodayCounts, A
     })
 }
 
+pub fn count_received_by_day(
+    conn: &Connection,
+    from_day: &str,
+    to_day: &str,
+) -> Result<HashMap<String, i64>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT substr(received_at, 1, 10), COUNT(*)
+         FROM repairs
+         WHERE archived_at IS NULL
+           AND substr(received_at, 1, 10) BETWEEN ?1 AND ?2
+         GROUP BY substr(received_at, 1, 10)",
+    )?;
+
+    let rows = stmt.query_map(params![from_day, to_day], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+    })?;
+
+    let mut by_day = HashMap::new();
+    for row in rows {
+        let (day, count) = row?;
+        by_day.insert(day, count);
+    }
+    Ok(by_day)
+}
+
+pub fn count_collected_by_day(
+    conn: &Connection,
+    from_day: &str,
+    to_day: &str,
+) -> Result<HashMap<String, i64>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT substr(collected_at, 1, 10), COUNT(*)
+         FROM repairs
+         WHERE archived_at IS NULL
+           AND collected_at IS NOT NULL
+           AND substr(collected_at, 1, 10) BETWEEN ?1 AND ?2
+         GROUP BY substr(collected_at, 1, 10)",
+    )?;
+
+    let rows = stmt.query_map(params![from_day, to_day], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+    })?;
+
+    let mut by_day = HashMap::new();
+    for row in rows {
+        let (day, count) = row?;
+        by_day.insert(day, count);
+    }
+    Ok(by_day)
+}
+
+pub fn sum_collected_gross_by_day(
+    conn: &Connection,
+    from_day: &str,
+    to_day: &str,
+) -> Result<HashMap<String, i64>, AppError> {
+    let mut stmt = conn.prepare(
+        "SELECT substr(collected_at, 1, 10),
+                SUM(COALESCE(estimate_gross_cents, 0))
+         FROM repairs
+         WHERE archived_at IS NULL
+           AND collected_at IS NOT NULL
+           AND substr(collected_at, 1, 10) BETWEEN ?1 AND ?2
+         GROUP BY substr(collected_at, 1, 10)",
+    )?;
+
+    let rows = stmt.query_map(params![from_day, to_day], |row| {
+        Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
+    })?;
+
+    let mut by_day = HashMap::new();
+    for row in rows {
+        let (day, cents) = row?;
+        by_day.insert(day, cents);
+    }
+    Ok(by_day)
+}
+
+pub fn sum_open_estimate_gross(conn: &Connection) -> Result<i64, AppError> {
+    conn.query_row(
+        "SELECT COALESCE(SUM(COALESCE(estimate_gross_cents, 0)), 0)
+         FROM repairs
+         WHERE archived_at IS NULL
+           AND status NOT IN ('collected', 'cancelled')",
+        [],
+        |row| row.get(0),
+    )
+    .map_err(AppError::from)
+}
+
+pub fn count_stale_repairs(conn: &Connection, updated_before: &str) -> Result<i64, AppError> {
+    conn.query_row(
+        "SELECT COUNT(*)
+         FROM repairs
+         INNER JOIN customers ON customers.id = repairs.customer_id
+         WHERE repairs.archived_at IS NULL
+           AND repairs.status NOT IN ('collected', 'cancelled')
+           AND repairs.updated_at < ?1",
+        params![updated_before],
+        |row| row.get(0),
+    )
+    .map_err(AppError::from)
+}
+
 fn map_raw(row: &rusqlite::Row<'_>) -> rusqlite::Result<DashboardRepairRaw> {
     Ok(DashboardRepairRaw {
         id: row.get(0)?,

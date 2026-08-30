@@ -4,21 +4,48 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
+import type { StaffRole } from "@/features/staff/types/staff";
+import { TeamMemberRoleCell } from "@/features/team/components/TeamMemberRoleCell";
 import type { TeamMember } from "@/features/team/types/team";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { DataTable } from "@/ui";
 
 type Props = {
   members: TeamMember[];
+  canEditRoles: boolean;
+  roleBusy?: boolean;
+  onChangeRole: (id: string, role: StaffRole) => void;
 };
 
-export function TeamMemberTable({ members }: Props) {
+export function TeamMemberTable({
+  members,
+  canEditRoles,
+  roleBusy = false,
+  onChangeRole,
+}: Props) {
   const { t } = useI18n();
+  const adminCount = members.filter((member) => member.role === "admin").length;
 
   const columns: ColumnDef<TeamMember>[] = [
     {
       accessorKey: "name",
       header: t("team.members.name"),
+    },
+    {
+      accessorKey: "role",
+      header: t("team.members.role"),
+      cell: ({ row }) => {
+        const member = row.original;
+        const isLastAdmin = adminCount === 1 && member.role === "admin";
+        return (
+          <TeamMemberRoleCell
+            member={member}
+            canEditRoles={canEditRoles}
+            disabled={roleBusy || isLastAdmin}
+            onChange={(role) => onChangeRole(member.id, role)}
+          />
+        );
+      },
     },
     {
       accessorKey: "online",

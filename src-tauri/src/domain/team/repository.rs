@@ -1,5 +1,6 @@
 use rusqlite::{params, Connection, OptionalExtension};
 
+use crate::domain::staff::StaffRole;
 use crate::domain::sync::WriteContext;
 use crate::domain::team::types::{TeamDevice, TeamInvite};
 use crate::error::AppError;
@@ -351,9 +352,9 @@ pub fn set_team_pin_hash(
 pub fn list_active_staff_gigs(
     conn: &Connection,
     team_id: &str,
-) -> Result<Vec<(String, String, i64)>, AppError> {
+) -> Result<Vec<(String, String, StaffRole, i64)>, AppError> {
     let mut stmt = conn.prepare(
-        "SELECT s.id, s.name,
+        "SELECT s.id, s.name, s.role,
             (SELECT COUNT(*) FROM repairs r
              WHERE r.assigned_to_staff_id = s.id AND r.deleted_at IS NULL)
          FROM staff s
@@ -361,7 +362,13 @@ pub fn list_active_staff_gigs(
     )?;
     let rows = stmt
         .query_map(params![team_id], |row| {
-            Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+            let role_raw: String = row.get(2)?;
+            Ok((
+                row.get(0)?,
+                row.get(1)?,
+                StaffRole::parse(&role_raw).unwrap_or(StaffRole::Staff),
+                row.get(3)?,
+            ))
         })?
         .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)

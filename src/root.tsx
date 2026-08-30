@@ -8,6 +8,7 @@ import {
 } from "react-router";
 import type { Route } from "./+types/root";
 import { I18nProvider } from "@/app/providers/I18nProvider";
+import { ThemeProvider } from "@/app/providers/ThemeProvider";
 import "@/styles/globals.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -20,9 +21,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <I18nProvider>
-          {children}
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            {children}
+          </I18nProvider>
+        </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

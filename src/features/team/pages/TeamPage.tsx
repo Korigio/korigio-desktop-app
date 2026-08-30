@@ -13,7 +13,7 @@ import { useI18n } from "@/shared/hooks/useI18n";
 
 export function TeamPage() {
   const { t } = useI18n();
-  const { applySession } = useSession();
+  const { applySession, session } = useSession();
   const {
     team,
     pin,
@@ -25,7 +25,11 @@ export function TeamPage() {
     setError,
     setPin,
     reload,
+    changeMemberRole,
+    roleError,
+    roleBusy,
   } = useTeamPage();
+  const canEditRoles = session?.staff.role === "admin";
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -77,7 +81,13 @@ export function TeamPage() {
                 </Card>
               ) : null}
             </div>
-            <TeamMembersCard members={members} />
+            <TeamMembersCard
+              members={members}
+              canEditRoles={canEditRoles}
+              roleBusy={roleBusy}
+              roleError={roleError}
+              onChangeRole={changeMemberRole}
+            />
           </div>
         </>
       ) : (

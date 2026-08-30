@@ -61,6 +61,7 @@
       "title": "Members",
       "open": "Open team",
       "name": "Name",
+      "role": "Role",
       "status": "Status",
       "gigs": "Gigs",
       "gigsHint": "Gigs are open jobs assigned to that person. Both computers should show the same people and numbers once they have synced.",
@@ -69,6 +70,10 @@
     "status": {
       "online": "Online",
       "offline": "Offline"
+    },
+    "roles": {
+      "admin": "Admin",
+      "staff": "Staff"
     },
     "sync": {
       "unreachable": "Could not reach the other computer. Allow Servioo on Local Network in System Settings, and keep both PCs on the same Wi-Fi.",
@@ -84,7 +89,8 @@
     "errors": {
       "alreadyInTeam": "This computer is already in a team",
       "noPeer": "No other team computer found on this network",
-      "lastAdminLeave": "Leave is blocked while other computers are still in the team and you are the last administrator."
+      "lastAdminLeave": "Leave is blocked while other computers are still in the team and you are the last administrator.",
+      "lastAdminRole": "Cannot change the last administrator to staff."
     }
   },
   "home": {
@@ -100,7 +106,30 @@
       "readyAt": "Ready {date}",
       "staleTitle": "Stale (no update in {days}+ days)",
       "staleEmpty": "No stale open repairs.",
-      "daysInStatus": "{days}d"
+      "daysInStatus": "{days}d",
+      "kpi": {
+        "receivedToday": "Received today",
+        "collectedToday": "Collected today",
+        "ready": "Ready",
+        "open": "Open",
+        "stale": "Stale",
+        "collectedRevenueToday": "Collected estimates today",
+        "collectedRevenueWeek": "Collected estimates this week",
+        "openEstimate": "Open estimates"
+      },
+      "charts": {
+        "statusTitle": "Open by status",
+        "statusEmpty": "No open repairs to chart.",
+        "intakeTitle": "This week",
+        "intakeEmpty": "No intake this week.",
+        "received": "Received",
+        "collected": "Collected",
+        "ariaStatus": "Open repairs by status",
+        "ariaIntake": "Received versus collected this week",
+        "revenueTitle": "Collected estimates",
+        "revenueEmpty": "No collected estimates this week. These are job estimates, not invoices.",
+        "ariaRevenue": "Collected estimate totals by day this week"
+      }
     }
   },
   "customers": {
@@ -273,8 +302,6 @@
     "subtitle": "Search, create and manage repairs",
     "customerSectionTitle": "Repairs",
     "deviceSectionTitle": "Repairs",
-    "createTitle": "New repair",
-    "createSubtitle": "Register a repair for a customer and device",
     "editTitle": "Edit repair",
     "search": "Search",
     "searchPlaceholder": "Number, customer or device",
@@ -350,7 +377,6 @@
     },
     "actions": {
       "new": "New repair",
-      "create": "Create repair",
       "save": "Save",
       "edit": "Edit",
       "print": "Print",
@@ -708,6 +734,14 @@
       "en": "English",
       "error": "Could not save language preference."
     },
+    "theme": {
+      "label": "Appearance",
+      "hint": "This computer only. Auto follows the computer’s light or dark setting. Appearance is not shared with the team.",
+      "system": "Auto",
+      "light": "Light",
+      "dark": "Dark",
+      "error": "Could not save appearance preference."
+    },
     "syncInterval": {
       "label": "Sync interval",
       "hint": "How often this PC talks to other team PCs on the network. Default 5 seconds.",
@@ -726,6 +760,25 @@
       "actions": {
         "create": "Create backup",
         "restore": "Restore backup"
+      },
+      "scheduled": {
+        "title": "Scheduled copies",
+        "hint": "Automatic copies are off by default. Choose a folder and an interval to turn them on. Copies are saved in that folder.",
+        "intervalLabel": "Interval",
+        "folderLabel": "Folder",
+        "chooseFolder": "Choose folder",
+        "folderUnset": "No folder selected",
+        "intervals": {
+          "never": "Never",
+          "day": "Once a day",
+          "week": "Once a week",
+          "month": "Once a month",
+          "year": "Once a year"
+        },
+        "errors": {
+          "loadFailed": "Could not load scheduled copy settings.",
+          "saveFailed": "Could not save scheduled copy settings. Choose a folder before turning on an interval."
+        }
       },
       "kind": {
         "manual": "Manual",

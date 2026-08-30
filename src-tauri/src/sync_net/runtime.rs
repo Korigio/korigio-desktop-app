@@ -793,11 +793,7 @@ async fn drive_session(
 }
 
 /// Use the join/PIN key only for a real join session — never leftover PIN after this PC is in a team.
-fn use_join_key(
-    join_pin: Option<&str>,
-    pending_join: Option<&str>,
-    team_id: Option<&str>,
-) -> bool {
+fn use_join_key(join_pin: Option<&str>, pending_join: Option<&str>, team_id: Option<&str>) -> bool {
     if join_pin.is_some() {
         return true;
     }

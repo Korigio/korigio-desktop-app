@@ -9,7 +9,10 @@ use zip::ZipArchive;
 
 use crate::db::Db;
 use crate::domain::backup::constants::MANIFEST_NAME;
-use crate::domain::backup::types::{BackupManifest, CreateBackupInput};
+use crate::domain::backup::service::filename_covers_period;
+use crate::domain::backup::types::{
+    AutoBackupSkipReason, BackupKind, BackupManifest, CreateBackupInput,
+};
 use crate::domain::backup::{
     create_backup, list_local_backups, restore_backup, run_auto_backup_if_due, validate_backup,
 };
@@ -19,6 +22,9 @@ use crate::domain::devices::{create_device, DeviceInput};
 use crate::domain::images::types::AttachRepairImagesInput;
 use crate::domain::images::{attach_repair_images, list_repair_images};
 use crate::domain::repairs::{create_repair, RepairInput};
+use crate::domain::settings::{
+    set_auto_backup_settings, AutoBackupInterval, SetAutoBackupSettingsInput,
+};
 
 fn open_temp_db() -> (tempfile::TempDir, Db) {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -245,16 +251,162 @@ fn restore_creates_safety_and_reopens_db() {
         .any(|b| b.path == result.safety_backup_path));
 }
 
+fn enable_daily_auto_backup(db: &Db, folder: &Path) {
+    set_auto_backup_settings(
+        db.conn(),
+        SetAutoBackupSettingsInput {
+            interval: AutoBackupInterval::Day,
+            folder_path: Some(folder.to_string_lossy().into_owned()),
+        },
+    )
+    .expect("set auto backup");
+}
+
+fn scheduled_backup_count(dir: &Path) -> usize {
+    std::fs::read_dir(dir)
+        .map(|entries| {
+            entries
+                .filter_map(|e| e.ok())
+                .filter(|e| {
+                    e.path().is_file() && e.file_name().to_string_lossy().ends_with(".backup")
+                })
+                .count()
+        })
+        .unwrap_or(0)
+}
+
+#[test]
+fn auto_backup_default_never_creates_no_file() {
+    let (_dir, db) = open_temp_db();
+    let _ = seed_repair_with_image(&db);
+
+    let result = run_auto_backup_if_due(&db).expect("run");
+    assert!(!result.ran);
+    assert!(result.backup.is_none());
+    assert_eq!(result.pruned_count, 0);
+    assert_eq!(result.skipped_reason, Some(AutoBackupSkipReason::Disabled));
+    assert_eq!(scheduled_backup_count(&db.paths().backups_auto()), 0);
+}
+
 #[test]
 fn auto_backup_skips_same_day_second_run() {
     let (_dir, db) = open_temp_db();
     let _ = seed_repair_with_image(&db);
+    let dest = tempfile::tempdir().expect("dest");
+    enable_daily_auto_backup(&db, dest.path());
 
     let first = run_auto_backup_if_due(&db).expect("first");
     assert!(first.ran);
-    assert!(first.backup.is_some());
+    assert_eq!(first.pruned_count, 0);
+    assert!(first.skipped_reason.is_none());
+    let backup = first.backup.expect("backup");
+    assert_eq!(backup.kind, BackupKind::Auto);
+    assert!(Path::new(&backup.path).starts_with(dest.path()));
+    assert_eq!(scheduled_backup_count(&db.paths().backups_auto()), 0);
+    assert_eq!(scheduled_backup_count(dest.path()), 1);
 
     let second = run_auto_backup_if_due(&db).expect("second");
     assert!(!second.ran);
     assert!(second.backup.is_none());
+    assert_eq!(second.pruned_count, 0);
+    assert_eq!(second.skipped_reason, Some(AutoBackupSkipReason::NotDue));
+    assert_eq!(scheduled_backup_count(dest.path()), 1);
+}
+
+#[test]
+fn auto_backup_missing_folder_skips_without_error() {
+    let (_dir, db) = open_temp_db();
+    crate::domain::settings::repository::upsert_setting(
+        db.conn(),
+        AutoBackupInterval::STORAGE_KEY,
+        "day",
+    )
+    .expect("interval");
+
+    let result = run_auto_backup_if_due(&db).expect("run");
+    assert!(!result.ran);
+    assert_eq!(result.skipped_reason, Some(AutoBackupSkipReason::NoFolder));
+    assert_eq!(scheduled_backup_count(&db.paths().backups_auto()), 0);
+}
+
+#[test]
+fn filename_covers_period_week_iso_week_date() {
+    let jan_1_2026 = time::Date::from_calendar_date(2026, time::Month::January, 1).expect("date");
+    assert!(filename_covers_period(
+        "Servioo-2025-12-29-1200.backup",
+        AutoBackupInterval::Week,
+        jan_1_2026
+    ));
+    assert!(filename_covers_period(
+        "Servioo-2026-01-01-0900.backup",
+        AutoBackupInterval::Week,
+        jan_1_2026
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-2025-12-28-1200.backup",
+        AutoBackupInterval::Week,
+        jan_1_2026
+    ));
+}
+
+#[test]
+fn filename_covers_period_month_and_year() {
+    let jan_15_2026 = time::Date::from_calendar_date(2026, time::Month::January, 15).expect("date");
+    assert!(filename_covers_period(
+        "Servioo-2026-01-31-2359.backup",
+        AutoBackupInterval::Month,
+        jan_15_2026
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-2026-02-01-0000.backup",
+        AutoBackupInterval::Month,
+        jan_15_2026
+    ));
+
+    let jun_1_2026 = time::Date::from_calendar_date(2026, time::Month::June, 1).expect("date");
+    assert!(filename_covers_period(
+        "Servioo-2026-12-31-2359.backup",
+        AutoBackupInterval::Year,
+        jun_1_2026
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-2027-01-01-0000.backup",
+        AutoBackupInterval::Year,
+        jun_1_2026
+    ));
+}
+
+#[test]
+fn filename_covers_period_ignores_safety_and_unparseable() {
+    let today = time::Date::from_calendar_date(2026, time::Month::January, 15).expect("date");
+    assert!(filename_covers_period(
+        "Servioo-2026-01-15-0000.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-2026-01-16-0000.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-safety-2026-01-15-1200.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-2026-01-15-1200.zip",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-2026-01-15.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
+        "Servioo-2026-01-15-1200.backup",
+        AutoBackupInterval::Never,
+        today
+    ));
 }

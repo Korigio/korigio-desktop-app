@@ -44,6 +44,42 @@ pub struct LocaleSettings {
     pub resolved_locale: String,
 }
 
+/// Stored preference: follow OS theme or force light/dark.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ThemePreference {
+    System,
+    Light,
+    Dark,
+}
+
+impl ThemePreference {
+    pub const STORAGE_KEY: &'static str = "theme_preference";
+
+    pub fn as_storage_value(self) -> &'static str {
+        match self {
+            Self::System => "system",
+            Self::Light => "light",
+            Self::Dark => "dark",
+        }
+    }
+
+    pub fn parse(raw: &str) -> Option<Self> {
+        match raw.trim().to_ascii_lowercase().as_str() {
+            "system" | "" => Some(Self::System),
+            "light" => Some(Self::Light),
+            "dark" => Some(Self::Dark),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ThemeSettings {
+    pub preference: ThemePreference,
+}
+
 pub const TAX_RATE_PERCENT_KEY: &str = "tax_rate_percent";
 pub const CURRENCY_KEY: &str = "currency";
 pub const DEFAULT_TAX_RATE_PERCENT: &str = "19";
@@ -53,6 +89,57 @@ pub const SYNC_INTERVAL_KEY: &str = "sync_interval_secs";
 pub const DEFAULT_SYNC_INTERVAL_SECS: u64 = 5;
 pub const MIN_SYNC_INTERVAL_SECS: u64 = 2;
 pub const MAX_SYNC_INTERVAL_SECS: u64 = 60;
+pub const AUTO_BACKUP_FOLDER_KEY: &str = "auto_backup_folder";
+
+/// How often to write a scheduled security copy. Default `never`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AutoBackupInterval {
+    Never,
+    Day,
+    Week,
+    Month,
+    Year,
+}
+
+impl AutoBackupInterval {
+    pub const STORAGE_KEY: &'static str = "auto_backup_interval";
+
+    pub fn as_storage_value(self) -> &'static str {
+        match self {
+            Self::Never => "never",
+            Self::Day => "day",
+            Self::Week => "week",
+            Self::Month => "month",
+            Self::Year => "year",
+        }
+    }
+
+    pub fn parse(raw: &str) -> Option<Self> {
+        match raw.trim().to_ascii_lowercase().as_str() {
+            "never" => Some(Self::Never),
+            "day" => Some(Self::Day),
+            "week" => Some(Self::Week),
+            "month" => Some(Self::Month),
+            "year" => Some(Self::Year),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct AutoBackupSettings {
+    pub interval: AutoBackupInterval,
+    pub folder_path: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SetAutoBackupSettingsInput {
+    pub interval: AutoBackupInterval,
+    pub folder_path: Option<String>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]

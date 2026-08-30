@@ -4,7 +4,8 @@ use tauri::State;
 
 use crate::db::DbState;
 use crate::domain::settings::{
-    self, LocalePreference, LocaleSettings, ShopSettings, ShopSettingsInput, SyncIntervalSettings,
+    self, AutoBackupSettings, LocalePreference, LocaleSettings, SetAutoBackupSettingsInput,
+    ShopSettings, ShopSettingsInput, SyncIntervalSettings, ThemePreference, ThemeSettings,
 };
 use crate::error::{AppError, CommandError};
 use crate::sync_net::SyncRuntime;
@@ -30,6 +31,38 @@ pub fn set_locale_preference(
 ) -> Result<LocaleSettings, CommandError> {
     let db = lock_db(&state)?;
     Ok(settings::set_locale_preference(db.conn(), preference)?)
+}
+
+#[tauri::command]
+pub fn get_theme_settings(state: State<'_, DbState>) -> Result<ThemeSettings, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(settings::get_theme_settings(db.conn())?)
+}
+
+#[tauri::command]
+pub fn set_theme_preference(
+    state: State<'_, DbState>,
+    preference: ThemePreference,
+) -> Result<ThemeSettings, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(settings::set_theme_preference(db.conn(), preference)?)
+}
+
+#[tauri::command]
+pub fn get_auto_backup_settings(
+    state: State<'_, DbState>,
+) -> Result<AutoBackupSettings, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(settings::get_auto_backup_settings(db.conn())?)
+}
+
+#[tauri::command(rename_all = "camelCase")]
+pub fn set_auto_backup_settings(
+    state: State<'_, DbState>,
+    input: SetAutoBackupSettingsInput,
+) -> Result<AutoBackupSettings, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(settings::set_auto_backup_settings(db.conn(), input)?)
 }
 
 #[tauri::command(rename_all = "camelCase")]

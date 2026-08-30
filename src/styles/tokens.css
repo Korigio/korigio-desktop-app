@@ -1,23 +1,63 @@
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --color-background: #f4f6f8;
-  --color-foreground: #1a2332;
-  --color-primary: #1f6feb;
-  --color-primary-foreground: #ffffff;
-  --color-muted: #5b6b7c;
-  --color-surface: #ffffff;
-  --color-border: #d5dde5;
-  --radius-md: 0.375rem;
-  --font-sans: "Segoe UI", "Helvetica Neue", sans-serif;
+  --servioo-background: #f4f6f8;
+  --servioo-foreground: #1a2332;
+  --servioo-surface: #ffffff;
+  --servioo-sidebar: #e8edf2;
+  --servioo-muted: #5b6b7c;
+  --servioo-border: #d5dde5;
+  --servioo-primary: #0f9d8a;
+  --servioo-primary-foreground: #ffffff;
+  --servioo-status-received: #4f8cff;
+  --servioo-status-diagnosis: #7c6cf5;
+  --servioo-status-waiting-customer: #e5a819;
+  --servioo-status-waiting-part: #e87a2f;
+  --servioo-status-in-repair: #2aa8d4;
+  --servioo-status-ready: #2db36b;
+  --servioo-status-awaiting-pickup: #0f9d8a;
+  --servioo-radius-md: 0.5rem;
+  --servioo-radius-lg: 0.75rem;
+  --servioo-font-sans: "Segoe UI", "Helvetica Neue", sans-serif;
+  color-scheme: light;
+}
+
+html.dark {
+  --servioo-background: #121417;
+  --servioo-foreground: #e8eef4;
+  --servioo-surface: #1c2128;
+  --servioo-sidebar: #0e1013;
+  --servioo-muted: #9aa8b5;
+  --servioo-border: #2a323c;
+  --servioo-primary: #2ee6c5;
+  --servioo-primary-foreground: #0a1614;
+  --servioo-status-received: #7aa6ff;
+  --servioo-status-diagnosis: #a597ff;
+  --servioo-status-waiting-customer: #f5c44d;
+  --servioo-status-waiting-part: #ff8f4d;
+  --servioo-status-in-repair: #5cc8f0;
+  --servioo-status-ready: #4ee090;
+  --servioo-status-awaiting-pickup: #2ee6c5;
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--color-background);
-  --color-foreground: var(--color-foreground);
-  --color-primary: var(--color-primary);
-  --color-primary-foreground: var(--color-primary-foreground);
-  --color-muted: var(--color-muted);
-  --color-surface: var(--color-surface);
-  --color-border: var(--color-border);
-  --radius-md: var(--radius-md);
-  --font-sans: var(--font-sans);
+  --color-background: var(--servioo-background);
+  --color-foreground: var(--servioo-foreground);
+  --color-primary: var(--servioo-primary);
+  --color-primary-foreground: var(--servioo-primary-foreground);
+  --color-muted: var(--servioo-muted);
+  --color-surface: var(--servioo-surface);
+  --color-sidebar: var(--servioo-sidebar);
+  --color-border: var(--servioo-border);
+  --color-status-received: var(--servioo-status-received);
+  --color-status-diagnosis: var(--servioo-status-diagnosis);
+  --color-status-waiting-customer: var(--servioo-status-waiting-customer);
+  --color-status-waiting-part: var(--servioo-status-waiting-part);
+  --color-status-in-repair: var(--servioo-status-in-repair);
+  --color-status-ready: var(--servioo-status-ready);
+  --color-status-awaiting-pickup: var(--servioo-status-awaiting-pickup);
+  --radius-md: var(--servioo-radius-md);
+  --radius-lg: var(--servioo-radius-lg);
+  --font-sans: var(--servioo-font-sans);
 }

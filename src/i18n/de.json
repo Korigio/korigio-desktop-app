@@ -61,6 +61,7 @@
       "title": "Mitglieder",
       "open": "Team öffnen",
       "name": "Name",
+      "role": "Rolle",
       "status": "Status",
       "gigs": "Aufträge",
       "gigsHint": "Aufträge sind offene Arbeiten, die dieser Person zugewiesen sind. Beide Computer sollten dieselben Personen und Zahlen anzeigen, sobald sie synchronisiert sind.",
@@ -69,6 +70,10 @@
     "status": {
       "online": "Online",
       "offline": "Offline"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "staff": "Mitarbeiter"
     },
     "sync": {
       "unreachable": "Der andere Computer war nicht erreichbar. Erlauben Sie Servioo im lokalen Netzwerk in den Systemeinstellungen und lassen Sie beide Computer im selben WLAN.",
@@ -84,7 +89,8 @@
     "errors": {
       "alreadyInTeam": "Dieser Computer ist bereits in einem Team",
       "noPeer": "Kein anderer Team-Computer in diesem Netzwerk gefunden",
-      "lastAdminLeave": "Das Verlassen ist gesperrt, solange noch andere Computer im Team sind und Sie der letzte Administrator sind."
+      "lastAdminLeave": "Das Verlassen ist gesperrt, solange noch andere Computer im Team sind und Sie der letzte Administrator sind.",
+      "lastAdminRole": "Der letzte Administrator kann nicht zum Mitarbeiter geändert werden."
     }
   },
   "home": {
@@ -100,7 +106,30 @@
       "readyAt": "Fertig {date}",
       "staleTitle": "Liegengeblieben (keine Aktualisierung seit {days}+ Tagen)",
       "staleEmpty": "Keine liegengebliebenen offenen Reparaturen.",
-      "daysInStatus": "{days}d"
+      "daysInStatus": "{days}d",
+      "kpi": {
+        "receivedToday": "Heute eingegangen",
+        "collectedToday": "Heute abgeholt",
+        "ready": "Bereit",
+        "open": "Offen",
+        "stale": "Liegengeblieben",
+        "collectedRevenueToday": "Eingenommene Kostenvoranschläge heute",
+        "collectedRevenueWeek": "Eingenommene Kostenvoranschläge diese Woche",
+        "openEstimate": "Offene Kostenvoranschläge"
+      },
+      "charts": {
+        "statusTitle": "Offen nach Status",
+        "statusEmpty": "Keine offenen Reparaturen zum Anzeigen.",
+        "intakeTitle": "Diese Woche",
+        "intakeEmpty": "Kein Eingang diese Woche.",
+        "received": "Eingegangen",
+        "collected": "Abgeholt",
+        "ariaStatus": "Offene Reparaturen nach Status",
+        "ariaIntake": "Eingegangen und abgeholt diese Woche",
+        "revenueTitle": "Eingenommene Kostenvoranschläge",
+        "revenueEmpty": "Diese Woche keine eingenommenen Kostenvoranschläge. Das sind Reparaturangebote, keine Rechnungen.",
+        "ariaRevenue": "Eingenommene Kostenvoranschläge nach Tag in dieser Woche"
+      }
     }
   },
   "customers": {
@@ -273,8 +302,6 @@
     "subtitle": "Reparaturen suchen, anlegen und verwalten",
     "customerSectionTitle": "Reparaturen",
     "deviceSectionTitle": "Reparaturen",
-    "createTitle": "Neue Reparatur",
-    "createSubtitle": "Reparatur für Kunde und Gerät erfassen",
     "editTitle": "Reparatur bearbeiten",
     "search": "Suche",
     "searchPlaceholder": "Nummer, Kunde oder Gerät",
@@ -350,7 +377,6 @@
     },
     "actions": {
       "new": "Neue Reparatur",
-      "create": "Reparatur anlegen",
       "save": "Speichern",
       "edit": "Bearbeiten",
       "print": "Drucken",
@@ -708,6 +734,14 @@
       "en": "Englisch",
       "error": "Spracheinstellung konnte nicht gespeichert werden."
     },
+    "theme": {
+      "label": "Erscheinungsbild",
+      "hint": "Nur auf diesem Computer. „Automatisch“ folgt der Hell-/Dunkel-Einstellung des Computers. Wird nicht mit dem Team geteilt.",
+      "system": "Automatisch",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "error": "Erscheinungsbild konnte nicht gespeichert werden."
+    },
     "syncInterval": {
       "label": "Sync-Intervall",
       "hint": "Wie oft sich dieser Computer im Netzwerk mit anderen Team-Computern abstimmt. Standard: 5 Sekunden.",
@@ -726,6 +760,25 @@
       "actions": {
         "create": "Sicherung erstellen",
         "restore": "Sicherung wiederherstellen"
+      },
+      "scheduled": {
+        "title": "Geplante Sicherungen",
+        "hint": "Automatische Sicherungen sind standardmäßig aus. Wählen Sie einen Ordner und ein Intervall, um sie zu aktivieren. Die Sicherungen werden in diesem Ordner gespeichert.",
+        "intervalLabel": "Intervall",
+        "folderLabel": "Ordner",
+        "chooseFolder": "Ordner wählen",
+        "folderUnset": "Kein Ordner",
+        "intervals": {
+          "never": "Nie",
+          "day": "Einmal täglich",
+          "week": "Einmal wöchentlich",
+          "month": "Einmal monatlich",
+          "year": "Einmal jährlich"
+        },
+        "errors": {
+          "loadFailed": "Geplante Sicherungseinstellungen konnten nicht geladen werden.",
+          "saveFailed": "Geplante Sicherungseinstellungen konnten nicht gespeichert werden. Wählen Sie einen Ordner, bevor Sie ein Intervall aktivieren."
+        }
       },
       "kind": {
         "manual": "Manuell",

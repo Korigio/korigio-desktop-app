@@ -1,5 +1,6 @@
 import { LanguagePreferenceField } from "@/features/settings/components/LanguagePreferenceField";
 import { SyncIntervalField } from "@/features/settings/components/SyncIntervalField";
+import { ThemePreferenceField } from "@/features/settings/components/ThemePreferenceField";
 import { Card } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -12,6 +13,12 @@ export function GeneralSettingsPage() {
         <div className="flex flex-col gap-3">
           <p className="text-sm text-muted">{t("settings.language.hint")}</p>
           <LanguagePreferenceField />
+        </div>
+      </Card>
+      <Card title={t("settings.theme.label")}>
+        <div className="flex flex-col gap-3">
+          <p className="text-sm text-muted">{t("settings.theme.hint")}</p>
+          <ThemePreferenceField />
         </div>
       </Card>
       <Card title={t("settings.syncInterval.label")}>

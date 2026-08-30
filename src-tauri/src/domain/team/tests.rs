@@ -2,13 +2,13 @@
 
 use crate::db::Db;
 use crate::domain::ids::new_entity_id;
-use crate::domain::staff::StaffRole;
+use crate::domain::staff::{create_staff, deactivate_staff, sign_in_staff, StaffInput, StaffRole};
 use crate::domain::sync::apply_snapshot_row;
 use crate::domain::sync::snapshot::dump_snapshot;
 use crate::domain::team::pin::hash_team_pin;
 use crate::domain::team::{
     apply_join_grant, create_team, get_team_pin, leave_team, list_nearby_teams, list_team_members,
-    prepare_join, CreateTeamInput, JoinGrant, JoinTeamInput, NearbyTeam,
+    prepare_join, write_leave_tombstones, CreateTeamInput, JoinGrant, JoinTeamInput, NearbyTeam,
 };
 use crate::error::AppError;
 use std::collections::HashSet;
@@ -134,13 +134,11 @@ fn list_team_members_gig_count() {
     assert_eq!(members.items.len(), 1);
     assert_eq!(members.items[0].id, staff_id);
     assert_eq!(members.items[0].gig_count, 1);
+    assert_eq!(members.items[0].role, StaffRole::Admin);
     assert!(members.items[0].online);
 }
 
-#[test]
-fn last_admin_leave_blocked_with_other_devices() {
-    let db = Db::open_in_memory().expect("db");
-    shop_team(&db);
+fn insert_other_device(db: &Db) {
     let now = "2026-01-01T00:00:00Z";
     let team_id: String = db
         .conn()
@@ -163,12 +161,118 @@ fn last_admin_leave_blocked_with_other_devices() {
             rusqlite::params![team_id, now],
         )
         .expect("other device");
+}
+
+fn staff_deactivated_at(db: &Db, id: &str) -> Option<String> {
+    db.conn()
+        .query_row(
+            "SELECT deactivated_at FROM staff WHERE id = ?1",
+            [id],
+            |row| row.get(0),
+        )
+        .expect("deactivated_at")
+}
+
+#[test]
+fn last_admin_leave_blocked_with_other_devices() {
+    let db = Db::open_in_memory().expect("db");
+    let created = shop_team(&db);
+    let admin_id = created.session.staff.id.clone();
+    insert_other_device(&db);
     let err = leave_team(db.conn()).expect_err("blocked");
     assert!(matches!(err, AppError::Forbidden { .. }));
     assert_eq!(
         err.user_message(),
         "Leave is blocked while other computers are still in the team and you are the last administrator."
     );
+    assert!(
+        staff_deactivated_at(&db, &admin_id).is_none(),
+        "blocked leave must not deactivate the last admin"
+    );
+}
+
+#[test]
+fn last_device_last_admin_can_leave() {
+    let db = Db::open_in_memory().expect("db");
+    let created = shop_team(&db);
+    let admin_id = created.session.staff.id.clone();
+    leave_team(db.conn()).expect("leave");
+    let team_id: Option<String> = db
+        .conn()
+        .query_row(
+            "SELECT team_id FROM local_identity WHERE id = 1",
+            [],
+            |row| row.get(0),
+        )
+        .expect("team");
+    assert!(team_id.is_none());
+    assert!(staff_deactivated_at(&db, &admin_id).is_some());
+}
+
+#[test]
+fn leave_with_other_device_deactivates_leaver() {
+    let db = Db::open_in_memory().expect("db");
+    let created = shop_team(&db);
+    let admin_id = created.session.staff.id.clone();
+    create_staff(
+        db.conn(),
+        StaffInput {
+            name: "Bea".into(),
+            pin: "5678".into(),
+            role: Some(StaffRole::Admin),
+        },
+    )
+    .expect("second admin");
+    insert_other_device(&db);
+    write_leave_tombstones(db.conn()).expect("tombstones");
+
+    assert!(staff_deactivated_at(&db, &admin_id).is_some());
+    let members = list_team_members(db.conn(), &HashSet::new()).expect("members");
+    assert!(
+        members.items.iter().all(|member| member.id != admin_id),
+        "deactivated leaver must disappear from list_team_members"
+    );
+    assert!(members.items.iter().any(|member| member.name == "Bea"));
+
+    let payload_json: String = db
+        .conn()
+        .query_row(
+            "SELECT payload_json FROM sync_changes
+             WHERE entity_table = 'staff' AND entity_id = ?1
+             ORDER BY hlc_wall_ms DESC, hlc_counter DESC LIMIT 1",
+            [&admin_id],
+            |row| row.get(0),
+        )
+        .expect("staff upsert");
+    let payload: serde_json::Value = serde_json::from_str(&payload_json).expect("json");
+    assert!(
+        payload
+            .get("deactivatedAt")
+            .and_then(|value| value.as_str())
+            .is_some(),
+        "staff upsert must include deactivatedAt"
+    );
+}
+
+#[test]
+fn non_admin_staff_can_leave() {
+    let db = Db::open_in_memory().expect("db");
+    let created = shop_team(&db);
+    let admin_id = created.session.staff.id.clone();
+    let other = create_staff(
+        db.conn(),
+        StaffInput {
+            name: "Bob".into(),
+            pin: "5678".into(),
+            role: Some(StaffRole::Staff),
+        },
+    )
+    .expect("staff");
+    sign_in_staff(db.conn(), &other.id, "5678").expect("sign in");
+    let err = deactivate_staff(db.conn(), &admin_id).expect_err("staff cannot deactivate");
+    assert!(matches!(err, AppError::Forbidden { .. }));
+    leave_team(db.conn()).expect("leave");
+    assert!(staff_deactivated_at(&db, &other.id).is_some());
 }
 
 #[test]

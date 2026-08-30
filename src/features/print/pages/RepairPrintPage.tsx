@@ -12,7 +12,7 @@ export function RepairPrintPage({ repairId }: Props) {
   const { report, loading, error } = useRepairPrintReport(repairId);
 
   return (
-    <div className="min-h-full bg-neutral-100 text-foreground">
+    <div className="min-h-full bg-neutral-100 text-neutral-900">
       <div className="print:hidden flex flex-wrap items-center gap-2 border-b border-border bg-surface px-4 py-3">
         <Button type="button" onClick={() => window.print()}>
           {t("print.actions.print")}

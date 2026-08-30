@@ -6,12 +6,14 @@ import {
   companyLabel,
   type Company,
 } from "@/features/companies/types/company";
+import { customersApi } from "@/features/customers/api/customersApi";
 import {
   customerLabel,
   useCustomerSearchCombobox,
 } from "@/features/customers/hooks/useCustomerSearchCombobox";
 import { useCustomerForm } from "@/features/customers/hooks/useCustomerForm";
 import type { Customer } from "@/features/customers/types/customer";
+import { devicesApi } from "@/features/devices/api/devicesApi";
 import { useDeviceSearchCombobox } from "@/features/devices/hooks/useDeviceSearchCombobox";
 import { useDeviceForm } from "@/features/devices/hooks/useDeviceForm";
 import {
@@ -44,10 +46,31 @@ export const INTAKE_STEPS = BASE_INTAKE_STEPS;
 
 export type IntakeGate = "loading" | "no-company" | "ready";
 
-export function useRepairIntake() {
+export type RepairIntakePresets = {
+  presetCustomerId?: string;
+  presetDeviceId?: string;
+};
+
+function stepAfterKnownEntities(
+  customer: Customer | null,
+  device: Device | null,
+): Extract<IntakeStep, "customer" | "device" | "details"> {
+  if (customer && device) {
+    return "details";
+  }
+  if (customer) {
+    return "device";
+  }
+  return "customer";
+}
+
+export function useRepairIntake(presets: RepairIntakePresets = {}) {
   const { t } = useI18n();
+  const { presetCustomerId, presetDeviceId } = presets;
 
   const [gate, setGate] = useState<IntakeGate>("loading");
+  const [presetsReady, setPresetsReady] = useState(() => !presetCustomerId);
+  const appliedPresetsRef = useRef(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [company, setCompany] = useState<Company | null>(null);
   const [companiesError, setCompaniesError] = useState<string | null>(null);
@@ -114,6 +137,15 @@ export function useRepairIntake() {
   });
 
   const { goTo, next, back, reset: resetWizardSteps, stepId } = wizard;
+
+  const goToRef = useRef(goTo);
+  goToRef.current = goTo;
+  const includeCompanyStepRef = useRef(includeCompanyStep);
+  includeCompanyStepRef.current = includeCompanyStep;
+  const customerSearchSelectRef = useRef(customerSearch.select);
+  customerSearchSelectRef.current = customerSearch.select;
+  const deviceSearchSelectRef = useRef(deviceSearch.select);
+  deviceSearchSelectRef.current = deviceSearch.select;
 
   const customerForm = useCustomerForm({
     mode: "create",
@@ -229,7 +261,68 @@ export function useRepairIntake() {
     clearError();
   }, [clearError]);
 
+  const applyPresetsAndSkip = useCallback(async () => {
+    let appliedCustomer: Customer | null = null;
+    let appliedDevice: Device | null = null;
+
+    if (presetCustomerId) {
+      try {
+        const fetched = await customersApi.get(presetCustomerId);
+        appliedCustomer = fetched;
+        setCustomer(fetched);
+        setCreatedCustomerId(null);
+        customerSearchSelectRef.current(fetched);
+      } catch {
+        appliedCustomer = null;
+      }
+
+      if (appliedCustomer && presetDeviceId) {
+        try {
+          const fetched = await devicesApi.get(presetDeviceId);
+          if (fetched.customerId === appliedCustomer.id) {
+            appliedDevice = fetched;
+            setDevice(fetched);
+            deviceSearchSelectRef.current(fetched);
+          }
+        } catch {
+          // Ignore invalid / mismatched device presets.
+        }
+      }
+    }
+
+    if (includeCompanyStepRef.current) {
+      goToRef.current("company");
+    } else {
+      goToRef.current(stepAfterKnownEntities(appliedCustomer, appliedDevice));
+    }
+  }, [presetCustomerId, presetDeviceId]);
+
+  useEffect(() => {
+    if (gate !== "ready" || appliedPresetsRef.current) {
+      return;
+    }
+    if (!presetCustomerId) {
+      appliedPresetsRef.current = true;
+      setPresetsReady(true);
+      return;
+    }
+
+    appliedPresetsRef.current = true;
+    let cancelled = false;
+    void applyPresetsAndSkip().finally(() => {
+      if (!cancelled) {
+        setPresetsReady(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [applyPresetsAndSkip, gate, presetCustomerId]);
+
   const resetWizard = useCallback(() => {
+    if (presetCustomerId) {
+      setPresetsReady(false);
+    }
     setCustomerCreateOpen(false);
     setDeviceCreateOpen(false);
     setCustomer(null);
@@ -251,12 +344,20 @@ export function useRepairIntake() {
       setCompany(preferred);
     }
     resetWizardSteps();
+    if (!presetCustomerId) {
+      return;
+    }
+    void applyPresetsAndSkip().finally(() => {
+      setPresetsReady(true);
+    });
   }, [
+    applyPresetsAndSkip,
     companies,
     customerFormReset,
     customerSearchReset,
     deviceFormReset,
     deviceSearchReset,
+    presetCustomerId,
     repairFormReset,
     resetWizardSteps,
   ]);
@@ -331,8 +432,8 @@ export function useRepairIntake() {
       return;
     }
     repairForm.setFieldValue("companyId", String(company.id));
-    goTo("customer");
-  }, [clearError, company, goTo, repairForm, t]);
+    goTo(stepAfterKnownEntities(customer, device));
+  }, [clearError, company, customer, device, goTo, repairForm, t]);
 
   const continueFromCustomer = useCallback(async () => {
     clearError();
@@ -531,8 +632,11 @@ export function useRepairIntake() {
     },
   ];
 
+  const formGate: IntakeGate =
+    gate === "ready" && !presetsReady ? "loading" : gate;
+
   return {
-    gate,
+    gate: formGate,
     companies,
     companiesError,
     company,

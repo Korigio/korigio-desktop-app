@@ -1,4 +1,5 @@
 import { invoke } from "@/shared/api/invoke";
+import type { AutoBackupSettings } from "@/features/settings/types/autoBackup";
 import type {
   ShopSettings,
   ShopSettingsInput,
@@ -13,7 +14,19 @@ export type LocaleSettingsDto = {
   resolvedLocale: string;
 };
 
+export type ThemePreference = "system" | "light" | "dark";
+
+export type ThemeSettings = {
+  preference: ThemePreference;
+};
+
 export const settingsApi = {
+  getThemeSettings(): Promise<ThemeSettings> {
+    return invoke<ThemeSettings>("get_theme_settings");
+  },
+  setThemePreference(preference: ThemePreference): Promise<ThemeSettings> {
+    return invoke<ThemeSettings>("set_theme_preference", { preference });
+  },
   getLocaleSettings(): Promise<LocaleSettingsDto> {
     return invoke<LocaleSettingsDto>("get_locale_settings");
   },
@@ -35,5 +48,11 @@ export const settingsApi = {
     return invoke<SyncIntervalSettings>("set_sync_interval", {
       intervalSeconds,
     });
+  },
+  getAutoBackupSettings(): Promise<AutoBackupSettings> {
+    return invoke<AutoBackupSettings>("get_auto_backup_settings");
+  },
+  setAutoBackupSettings(input: AutoBackupSettings): Promise<AutoBackupSettings> {
+    return invoke<AutoBackupSettings>("set_auto_backup_settings", { input });
   },
 };

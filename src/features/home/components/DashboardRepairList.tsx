@@ -3,7 +3,7 @@ import type { DashboardRepairRow } from "@/features/home/types/dashboard";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
-  title: string;
+  title?: string;
   empty: string;
   rows: DashboardRepairRow[];
   showReadyAt?: boolean;
@@ -18,8 +18,8 @@ export function DashboardRepairList({
   const { t } = useI18n();
 
   return (
-    <section className="min-w-0 flex flex-col gap-2">
-      <h2 className="text-sm font-semibold">{title}</h2>
+    <section className="flex min-w-0 flex-col gap-2">
+      {title ? <h2 className="text-sm font-semibold">{title}</h2> : null}
       {rows.length === 0 ? (
         <p className="text-sm text-muted">{empty}</p>
       ) : (

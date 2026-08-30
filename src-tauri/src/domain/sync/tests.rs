@@ -271,3 +271,120 @@ fn received_blob_uses_metadata_kind_and_writes_display_path() {
     let display = db.paths().root.join("images/companies/c1/logo.bin");
     assert!(display.exists(), "display path");
 }
+
+fn staff_change(
+    change_id: &str,
+    staff_id: &str,
+    name: &str,
+    role: &str,
+    deactivated_at: Option<&str>,
+    actor_id: &str,
+    hlc: Hlc,
+) -> SyncChange {
+    let payload = serde_json::json!({
+        "id": staff_id,
+        "name": name,
+        "role": role,
+        "deactivatedAt": deactivated_at,
+        "updatedByStaffId": actor_id,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+    });
+    SyncChange {
+        id: change_id.to_string(),
+        entity_table: "staff".into(),
+        entity_id: staff_id.into(),
+        op: "upsert".into(),
+        payload_json: payload.to_string(),
+        hlc,
+        created_at: "2026-01-01T00:00:00Z".into(),
+    }
+}
+
+fn staff_row_hlc(db: &Db, id: &str) -> Hlc {
+    db.conn()
+        .query_row(
+            "SELECT hlc_wall_ms, hlc_counter, origin_device_id FROM staff WHERE id = ?1",
+            [id],
+            |row| Ok(Hlc::new(row.get(0)?, row.get(1)?, row.get::<_, String>(2)?)),
+        )
+        .expect("staff hlc")
+}
+
+fn team_with_staff(db: &Db) -> (String, String) {
+    let created = crate::domain::team::create_team(
+        db.conn(),
+        crate::domain::team::CreateTeamInput {
+            name: "Shop".into(),
+            member_name: "Ada".into(),
+        },
+    )
+    .expect("team");
+    let admin_id = created.session.staff.id.clone();
+    let staff = crate::domain::staff::create_staff(
+        db.conn(),
+        crate::domain::staff::StaffInput {
+            name: "Bob".into(),
+            pin: "5678".into(),
+            role: Some(crate::domain::staff::StaffRole::Staff),
+        },
+    )
+    .expect("staff");
+    (admin_id, staff.id)
+}
+
+#[test]
+fn staff_actor_same_role_deactivated_at_applies() {
+    let db = Db::open_in_memory().expect("db");
+    let (admin_id, staff_id) = team_with_staff(&db);
+    let local = staff_row_hlc(&db, &admin_id);
+    let newer = Hlc::new(local.wall + 1, 0, "peer-device");
+    let change = staff_change(
+        &new_entity_id(),
+        &admin_id,
+        "Ada",
+        "admin",
+        Some("2026-06-01T00:00:00Z"),
+        &staff_id,
+        newer,
+    );
+    assert_eq!(
+        apply_remote_change(db.conn(), &change).expect("apply"),
+        ApplyOutcome::Applied
+    );
+    let deactivated: Option<String> = db
+        .conn()
+        .query_row(
+            "SELECT deactivated_at FROM staff WHERE id = ?1",
+            [&admin_id],
+            |row| row.get(0),
+        )
+        .expect("deactivated");
+    assert_eq!(deactivated.as_deref(), Some("2026-06-01T00:00:00Z"));
+}
+
+#[test]
+fn staff_actor_role_change_is_rejected() {
+    let db = Db::open_in_memory().expect("db");
+    let (admin_id, staff_id) = team_with_staff(&db);
+    let local = staff_row_hlc(&db, &admin_id);
+    let newer = Hlc::new(local.wall + 1, 0, "peer-device");
+    let change = staff_change(
+        &new_entity_id(),
+        &admin_id,
+        "Ada",
+        "staff",
+        None,
+        &staff_id,
+        newer,
+    );
+    let err = apply_remote_change(db.conn(), &change).expect_err("rejected");
+    assert!(matches!(err, crate::error::AppError::Forbidden { .. }));
+    let role: String = db
+        .conn()
+        .query_row("SELECT role FROM staff WHERE id = ?1", [&admin_id], |row| {
+            row.get(0)
+        })
+        .expect("role");
+    assert_eq!(role, "admin");
+}

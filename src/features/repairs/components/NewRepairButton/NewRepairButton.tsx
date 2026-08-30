@@ -16,6 +16,6 @@ export function NewRepairButton({
   if (deviceId) {
     params.set("deviceId", String(deviceId));
   }
-  const to = params.toString() ? `/repairs/new?${params}` : "/repairs/new";
+  const to = params.toString() ? `/repairs/intake?${params}` : "/repairs/intake";
   return <LinkButton to={to}>{t("repairs.actions.new")}</LinkButton>;
 }

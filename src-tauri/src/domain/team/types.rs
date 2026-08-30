@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::staff::Session;
+use crate::domain::staff::{Session, StaffRole};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -103,6 +103,7 @@ pub struct NearbyTeamsResult {
 pub struct TeamMember {
     pub id: String,
     pub name: String,
+    pub role: StaffRole,
     pub online: bool,
     pub gig_count: i64,
 }

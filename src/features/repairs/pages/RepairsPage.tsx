@@ -1,6 +1,5 @@
 import { RepairListFilters } from "@/features/repairs/components/RepairListFilters";
 import { RepairTable } from "@/features/repairs/components/RepairTable";
-import { NewRepairButton } from "@/features/repairs/components/NewRepairButton";
 import { useRepairList } from "@/features/repairs/hooks/useRepairList";
 import type { RepairStatus } from "@/features/repairs/types/repair";
 import { REPAIR_STATUSES } from "@/features/repairs/types/repair";
@@ -31,7 +30,6 @@ export function RepairsPage() {
       <PageHeader
         title={t("repairs.title")}
         description={t("repairs.subtitle")}
-        actions={<NewRepairButton />}
       />
 
       <RepairListFilters

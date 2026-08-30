@@ -35,9 +35,24 @@ pub fn create_team(
 }
 
 #[tauri::command]
-pub fn leave_team(state: State<'_, DbState>) -> Result<(), CommandError> {
-    let db = lock_db(&state)?;
-    Ok(team::leave_team(db.conn())?)
+pub fn leave_team(
+    state: State<'_, DbState>,
+    runtime: State<'_, SyncRuntime>,
+) -> Result<(), CommandError> {
+    let in_team = {
+        let db = lock_db(&state)?;
+        team::write_leave_tombstones(db.conn())?
+    };
+    if in_team && !runtime.online_device_ids().is_empty() {
+        runtime.nudge();
+        std::thread::sleep(std::time::Duration::from_secs(2));
+    }
+    if in_team {
+        let db = lock_db(&state)?;
+        team::finish_leave(db.conn())?;
+    }
+    runtime.nudge();
+    Ok(())
 }
 
 #[tauri::command]

@@ -19,10 +19,32 @@ export type TodayCounts = {
   collected: number;
 };
 
+export type IntakeDayCounts = {
+  date: string;
+  received: number;
+  collected: number;
+};
+
+export type RevenueTotals = {
+  collectedGrossCentsToday: number;
+  collectedGrossCentsWeek: number;
+  openEstimateGrossCents: number;
+};
+
+export type RevenueDayTotals = {
+  date: string;
+  collectedGrossCents: number;
+};
+
 export type HomeDashboard = {
   statusCounts: StatusCount[];
   readyForPickup: DashboardRepairRow[];
   staleRepairs: DashboardRepairRow[];
   today: TodayCounts;
+  intakeByDay: IntakeDayCounts[];
+  staleCount: number;
   staleAfterDays: number;
+  currency: string;
+  revenue: RevenueTotals | null;
+  revenueByDay: RevenueDayTotals[] | null;
 };

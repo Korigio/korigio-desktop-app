@@ -63,7 +63,7 @@ Domain entity PKs are UUID v7 `TEXT`. See [ADR 008](decisions/008-uuid-v7-primar
 | `team_invites` | Invite code hashes |
 | `content_blobs` | Content-addressed file metadata |
 | `sync_changes` | Gossip log |
-| `settings` | Local key/value (not replicated except shop tax/currency via sync). Includes `locale_preference` and `sync_interval_secs`. |
+| `settings` | Local key/value (not replicated except shop tax/currency via sync). Includes `locale_preference`, `sync_interval_secs`, `theme_preference`, `auto_backup_interval`, and `auto_backup_folder` (local, not replicated). |
 | `local_identity` | This PC only (device id, PSK, session) |
 | `presence` | Last-seen peers (local) |
 | `repair_number_sequences` | `(year, device_code)` allocator |

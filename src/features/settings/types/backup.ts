@@ -28,8 +28,11 @@ export type LocalBackupListResult = {
   items: BackupInfo[];
 };
 
+export type AutoBackupSkipReason = "disabled" | "noFolder" | "notDue";
+
 export type AutoBackupResult = {
   ran: boolean;
   backup: BackupInfo | null;
   prunedCount: number;
+  skippedReason: AutoBackupSkipReason | null;
 };
