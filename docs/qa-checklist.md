@@ -32,8 +32,7 @@ Use this before handing Servioo to a customer. Check each item on a **Windows 10
 
 ## Performance spot-check (optional load)
 
-- [ ] Settings (debug build only): seed sample or full set
-- [ ] `/search` remains responsive on seeded data (≪ 500 ms feel)
+- [ ] `/search` remains responsive with a large local dataset (≪ 500 ms feel)
 - [ ] Idle CPU near 0%; gallery does not freeze UI when attaching several photos
 
 ## Regression / packaging

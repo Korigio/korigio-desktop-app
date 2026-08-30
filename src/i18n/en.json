@@ -15,6 +15,7 @@
     "diagnosisTemplates": "Diagnosis templates",
     "intake": "Intake",
     "settings": "Settings",
+    "team": "Team",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar"
   },
@@ -692,6 +693,12 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Application preferences for this computer",
+    "nav": {
+      "label": "Settings categories",
+      "general": "General",
+      "shop": "Shop",
+      "backup": "Backup"
+    },
     "language": {
       "label": "Language",
       "hint": "“System” follows the language of this computer. Unsupported languages fall back to Spanish.",
@@ -730,17 +737,6 @@
         "createFailed": "Could not create backup.",
         "restoreFailed": "Could not restore backup.",
         "invalidPackage": "This backup package is not valid."
-      }
-    },
-    "devSeed": {
-      "title": "Developer seed data",
-      "subtitle": "Insert synthetic customers, devices and repairs for performance checks. Debug builds only.",
-      "success": "Seeded {customers} customers, {devices} devices, {repairs} repairs in {ms} ms.",
-      "error": "Seed failed.",
-      "fullConfirm": "Insert ~10k customers, 20k devices and 50k repairs? This can take a while and grow the database.",
-      "actions": {
-        "small": "Seed sample (100 / 200 / 500)",
-        "full": "Seed full measure set (10k / 20k / 50k)"
       }
     },
     "shop": {

@@ -11,7 +11,7 @@ export function SyncIntervalField() {
   }
 
   return (
-    <div className="flex max-w-md flex-col gap-2">
+    <div className="flex flex-col gap-2">
       <FormField
         label={t("settings.syncInterval.label")}
         htmlFor="settings-sync-interval"
@@ -40,10 +40,6 @@ export function SyncIntervalField() {
           </span>
         </div>
       </FormField>
-      <p className="text-sm text-muted">{t("settings.syncInterval.hint")}</p>
-      <p className="text-sm text-muted">
-        {t("settings.syncInterval.rangeHint")}
-      </p>
       {interval.error ? (
         <StatusMessage tone="danger">{interval.error}</StatusMessage>
       ) : null}

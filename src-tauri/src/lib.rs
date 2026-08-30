@@ -115,7 +115,6 @@ pub fn run() {
             commands::get_repair_print_report,
             commands::get_repair_diagnosis_print_report,
             commands::get_repair_summary_print_report,
-            commands::seed_synthetic_data,
             commands::list_staff,
             commands::get_staff,
             commands::create_staff,

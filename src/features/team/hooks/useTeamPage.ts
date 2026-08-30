@@ -11,7 +11,7 @@ import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 const POLL_MS = 2000;
 
-export function useTeamSidebar() {
+export function useTeamPage() {
   const { t } = useI18n();
   const [team, setTeam] = useState<Team | null>(null);
   const [pin, setPin] = useState<string | null>(null);
@@ -22,7 +22,6 @@ export function useTeamSidebar() {
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    setLoading(true);
     setError(null);
     try {
       const next = await teamApi.get();

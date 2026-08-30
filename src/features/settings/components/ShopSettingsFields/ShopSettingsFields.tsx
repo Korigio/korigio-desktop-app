@@ -12,8 +12,6 @@ export function ShopSettingsFields() {
 
   return (
     <div className="flex max-w-md flex-col gap-3">
-      <h2 className="text-sm font-medium">{t("settings.shop.title")}</h2>
-      <p className="text-sm text-muted">{t("settings.shop.subtitle")}</p>
       <FormField
         label={t("settings.shop.fields.taxRatePercent")}
         htmlFor="settings-tax-rate"

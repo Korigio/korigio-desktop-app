@@ -10,12 +10,12 @@ import {
   PanelLeftClose,
   Settings,
   Users,
+  UsersRound,
   Wrench,
 } from "lucide-react";
 import { NativeMenuBridge } from "@/app/NativeMenuBridge";
 import { AutoBackupOnStartup } from "@/features/settings/components/AutoBackupOnStartup";
 import { SessionProvider } from "@/features/staff/hooks/useSession";
-import { TeamSidebar } from "@/features/team/components/TeamSidebar";
 import { Button } from "@/ui/atoms/Button";
 import { LinkButton } from "@/ui/molecules/LinkButton";
 import { useI18n } from "@/shared/hooks/useI18n";
@@ -41,6 +41,7 @@ const NAV_ITEMS: NavItemConfig[] = [
     labelKey: "nav.diagnosisTemplates",
     icon: ClipboardList,
   },
+  { to: "/team", labelKey: "nav.team", icon: UsersRound },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
@@ -166,7 +167,6 @@ function AppShellLayout() {
             />
           ))}
         </nav>
-        <TeamSidebar collapsed={collapsed} />
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">

@@ -41,6 +41,12 @@ export default [
       "diagnosis-templates/:id/edit",
       "./routes/diagnosis-templates/edit.tsx",
     ),
-    route("settings", "./routes/settings.tsx"),
+    route("team", "./routes/team.tsx"),
+    route("settings", "./routes/settings/layout.tsx", [
+      index("./routes/settings/index.tsx"),
+      route("general", "./routes/settings/general.tsx"),
+      route("shop", "./routes/settings/shop.tsx"),
+      route("backup", "./routes/settings/backup.tsx"),
+    ]),
   ]),
 ] satisfies RouteConfig;

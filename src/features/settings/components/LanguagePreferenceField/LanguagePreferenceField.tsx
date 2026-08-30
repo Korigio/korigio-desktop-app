@@ -9,7 +9,7 @@ export function LanguagePreferenceField() {
   const [saving, setSaving] = useState(false);
 
   return (
-    <div className="flex max-w-md flex-col gap-2">
+    <div className="flex flex-col gap-2">
       <FormField label={t("settings.language.label")} htmlFor="settings-language">
         <SelectField
           id="settings-language"
@@ -39,7 +39,6 @@ export function LanguagePreferenceField() {
           <option value="en">{t("settings.language.en")}</option>
         </SelectField>
       </FormField>
-      <p className="text-sm text-muted">{t("settings.language.hint")}</p>
       {error ? <StatusMessage tone="danger">{error}</StatusMessage> : null}
     </div>
   );

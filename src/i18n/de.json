@@ -15,6 +15,7 @@
     "diagnosisTemplates": "Diagnosevorlagen",
     "intake": "Annahme",
     "settings": "Einstellungen",
+    "team": "Team",
     "collapse": "Seitenleiste einklappen",
     "expand": "Seitenleiste ausklappen"
   },
@@ -692,6 +693,12 @@
   "settings": {
     "title": "Einstellungen",
     "subtitle": "Anwendungseinstellungen für diesen Computer",
+    "nav": {
+      "label": "Einstellungskategorien",
+      "general": "Allgemein",
+      "shop": "Werkstatt",
+      "backup": "Sicherung"
+    },
     "language": {
       "label": "Sprache",
       "hint": "„System“ folgt der Computersprache. Nicht unterstützte Sprachen fallen auf Spanisch zurück.",
@@ -730,17 +737,6 @@
         "createFailed": "Sicherung konnte nicht erstellt werden.",
         "restoreFailed": "Sicherung konnte nicht wiederhergestellt werden.",
         "invalidPackage": "Dieses Sicherungspaket ist ungültig."
-      }
-    },
-    "devSeed": {
-      "title": "Entwickler-Testdaten",
-      "subtitle": "Synthetische Kunden, Geräte und Reparaturen für Leistungstests. Nur in Debug-Builds.",
-      "success": "{customers} Kunden, {devices} Geräte, {repairs} Reparaturen in {ms} ms eingefügt.",
-      "error": "Seeding fehlgeschlagen.",
-      "fullConfirm": "Ca. 10k Kunden, 20k Geräte und 50k Reparaturen einfügen? Das kann dauern und die Datenbank vergrößern.",
-      "actions": {
-        "small": "Stichprobe (100 / 200 / 500)",
-        "full": "Vollständiger Satz (10k / 20k / 50k)"
       }
     },
     "shop": {

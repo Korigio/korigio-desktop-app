@@ -15,6 +15,7 @@
     "diagnosisTemplates": "Plantillas de diagnóstico",
     "intake": "Recepción",
     "settings": "Ajustes",
+    "team": "Equipo",
     "collapse": "Contraer barra lateral",
     "expand": "Expandir barra lateral"
   },
@@ -692,6 +693,12 @@
   "settings": {
     "title": "Ajustes",
     "subtitle": "Preferencias de la aplicación en este equipo",
+    "nav": {
+      "label": "Categorías de ajustes",
+      "general": "General",
+      "shop": "Taller",
+      "backup": "Copias"
+    },
     "language": {
       "label": "Idioma",
       "hint": "“Sistema” usa el idioma del equipo. Los idiomas no admitidos usan español.",
@@ -730,17 +737,6 @@
         "createFailed": "No se pudo crear la copia.",
         "restoreFailed": "No se pudo restaurar la copia.",
         "invalidPackage": "Este paquete de copia no es válido."
-      }
-    },
-    "devSeed": {
-      "title": "Datos de prueba (desarrollo)",
-      "subtitle": "Inserta clientes, dispositivos y reparaciones sintéticos para pruebas de rendimiento. Solo en builds de depuración.",
-      "success": "Insertados {customers} clientes, {devices} dispositivos, {repairs} reparaciones en {ms} ms.",
-      "error": "Error al insertar datos.",
-      "fullConfirm": "¿Insertar ~10k clientes, 20k dispositivos y 50k reparaciones? Puede tardar y aumentar la base de datos.",
-      "actions": {
-        "small": "Muestra (100 / 200 / 500)",
-        "full": "Conjunto completo (10k / 20k / 50k)"
       }
     },
     "shop": {

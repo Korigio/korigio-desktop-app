@@ -9,7 +9,7 @@ Targets from [performance.md](performance.md): typical search ≪ **500 ms**; op
 | Scale | Customers | Devices | Repairs | Seed wall time |
 | --- | --- | --- | --- | --- |
 | Medium (CI regression) | 1 000 | 2 000 | 5 000 | **~71 ms** (`search_timing_on_medium_seed`) |
-| Full measure (manual / Settings debug) | 10 000 | 20 000 | 50 000 | Use Settings → Developer seed (debug builds) |
+| Full measure (manual) | 10 000 | 20 000 | 50 000 | `cargo test` seed helpers only — not exposed in Settings |
 
 ## Search
 
@@ -38,4 +38,4 @@ Regression guard: `domain::seed::tests::search_timing_on_medium_seed` fails if s
 cd src-tauri && cargo test --lib search_timing_on_medium_seed -- --nocapture
 ```
 
-Or in `tauri:dev` Settings (debug): seed sample / full measure set, then exercise `/search`.
+Then exercise `/search` on a large local database if you have one.
