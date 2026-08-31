@@ -796,6 +796,13 @@
   "print": {
     "title": "Informe de reparación",
     "emptyValue": "—",
+    "meta": {
+      "date": "Fecha"
+    },
+    "page": "Página",
+    "running": {
+      "continued": "continuación"
+    },
     "yes": "Sí",
     "no": "No",
     "noDiagnosis": "No hay lista de diagnóstico en esta reparación.",

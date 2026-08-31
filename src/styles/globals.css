@@ -19,14 +19,17 @@
 @media print {
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 16mm;
+    @bottom-right {
+      content: var(--print-page-label, "") " " counter(page);
+    }
   }
 
   html,
   html.dark {
     color-scheme: light !important;
     --servioo-background: #ffffff;
-    --servioo-foreground: #000000;
+    --servioo-foreground: #1a1a1a;
     --servioo-surface: #ffffff;
     --servioo-sidebar: #ffffff;
     --servioo-muted: #333333;
@@ -44,7 +47,7 @@
 
   body {
     background: white !important;
-    color: black !important;
+    color: #1a1a1a !important;
   }
 
   .print\:hidden {
@@ -54,5 +57,29 @@
   .print-sheet {
     max-width: none !important;
     box-shadow: none !important;
+    padding: 0 !important;
+    color: #1a1a1a;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
+}
+
+.print-document {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.print-document thead {
+  display: table-header-group;
+}
+
+.print-document tfoot {
+  display: table-footer-group;
+}
+
+.print-document thead td,
+.print-document tfoot td,
+.print-document tbody td {
+  padding: 0;
+  vertical-align: top;
 }

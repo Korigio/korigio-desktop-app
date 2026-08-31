@@ -2,13 +2,22 @@ import type { DiagnosisPrintReport } from "@/features/print/types/printReport";
 import {
   PrintAcknowledgment,
   PrintCompanyHeader,
+  PrintDocumentFrame,
   PrintDocumentHeading,
   PrintFieldGrid,
+  PrintLongText,
+  PrintRecipientBand,
   PrintSection,
   PrintSheet,
   PrintSignatures,
+  PrintTotals,
 } from "@/features/print/components/shared";
-import { printFieldValue } from "@/features/print/utils/printFormat";
+import {
+  companyDisplayName,
+  formatPrintDate,
+  printFieldValue,
+  printFooterLine,
+} from "@/features/print/utils/printFormat";
 import {
   formatMoneyCents,
   formatTaxRateBps,
@@ -20,127 +29,104 @@ type Props = {
 };
 
 export function DiagnosisPrintDocument({ report }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const empty = t("print.emptyValue");
   const { repair, customer, device, company, companyLogoAbsolutePath, currency } =
     report;
   const fields = (key: string) => t(`print.diagnosis.fields.${key}`);
+  const title = t("print.diagnosis.title");
+  const appName = t("app.name");
+  const runningCompanyName = company ? companyDisplayName(company) : appName;
+
+  const net =
+    repair.estimateBaseCents != null
+      ? formatMoneyCents(repair.estimateBaseCents, currency, locale)
+      : empty;
+  const tax =
+    repair.estimateTaxCents != null
+      ? formatMoneyCents(repair.estimateTaxCents, currency, locale)
+      : empty;
+  const total =
+    repair.estimateGrossCents != null
+      ? formatMoneyCents(repair.estimateGrossCents, currency, locale)
+      : empty;
+  const taxRateLabel =
+    repair.estimateTaxRateBps != null
+      ? `${fields("tax")} ${formatTaxRateBps(repair.estimateTaxRateBps)}%`
+      : fields("tax");
 
   return (
-    <PrintSheet>
-      <PrintCompanyHeader
-        company={company}
-        companyLogoAbsolutePath={companyLogoAbsolutePath}
-        logoAlt={t("print.diagnosis.logoAlt")}
-        appNameFallback={t("app.name")}
-        fieldLabels={{
-          taxId: fields("taxId"),
-          address: fields("address"),
-          phone: fields("phone"),
-          email: fields("email"),
-          website: fields("website"),
-        }}
-      />
-
-      <PrintDocumentHeading
-        title={t("print.diagnosis.title")}
-        repairNumberLabel={fields("repairNumber")}
-        repairNumber={repair.repairNumber}
-      />
-
-      <PrintSection title={t("print.diagnosis.sections.customer")}>
-        <PrintFieldGrid
-          fields={[
-            { label: fields("name"), value: customer.name },
-            {
-              label: fields("phone"),
-              value: printFieldValue(customer.phone, empty),
-            },
-            {
-              label: fields("email"),
-              value: printFieldValue(customer.email, empty),
-            },
-            {
-              label: fields("address"),
-              value: printFieldValue(customer.address, empty),
-            },
-          ]}
+    <PrintSheet pageLabel={t("print.page")}>
+      <PrintDocumentFrame
+        runningCompanyName={runningCompanyName}
+        runningTitle={title}
+        runningRepairNumber={repair.repairNumber}
+        footerLine={printFooterLine(company) || appName}
+      >
+        <PrintCompanyHeader
+          company={company}
+          companyLogoAbsolutePath={companyLogoAbsolutePath}
+          logoAlt={t("print.diagnosis.logoAlt")}
+          appNameFallback={appName}
+          fieldLabels={{
+            taxId: fields("taxId"),
+            address: fields("address"),
+            phone: fields("phone"),
+            email: fields("email"),
+            website: fields("website"),
+          }}
         />
-      </PrintSection>
 
-      <PrintSection title={t("print.diagnosis.sections.device")}>
-        <PrintFieldGrid
-          fields={[
-            { label: fields("deviceType"), value: device.deviceType },
-            {
-              label: fields("manufacturer"),
-              value: printFieldValue(device.manufacturer, empty),
-            },
-            {
-              label: fields("model"),
-              value: printFieldValue(device.model, empty),
-            },
-            {
-              label: fields("serialNumber"),
-              value: printFieldValue(device.serialNumber, empty),
-            },
-          ]}
+        <PrintDocumentHeading
+          title={title}
+          dateLabel={t("print.meta.date")}
+          formattedDate={formatPrintDate(new Date().toISOString(), locale, empty)}
+          repairNumberLabel={fields("repairNumber")}
+          repairNumber={repair.repairNumber}
         />
-      </PrintSection>
 
-      <PrintSection title={t("print.diagnosis.sections.findings")}>
-        <p className="mt-2 whitespace-pre-wrap text-sm">
-          {printFieldValue(repair.diagnosisNotes, empty)}
-        </p>
-      </PrintSection>
-
-      <PrintSection title={t("print.diagnosis.sections.estimate")}>
-        <PrintFieldGrid
-          fields={[
-            {
-              label: fields("estimateBase"),
-              value:
-                repair.estimateBaseCents != null
-                  ? formatMoneyCents(repair.estimateBaseCents, currency)
-                  : empty,
-            },
-            {
-              label: fields("taxRate"),
-              value:
-                repair.estimateTaxRateBps != null
-                  ? `${formatTaxRateBps(repair.estimateTaxRateBps)}%`
-                  : empty,
-            },
-            {
-              label: fields("tax"),
-              value:
-                repair.estimateTaxCents != null
-                  ? formatMoneyCents(repair.estimateTaxCents, currency)
-                  : empty,
-            },
-            {
-              label: fields("gross"),
-              value:
-                repair.estimateGrossCents != null
-                  ? formatMoneyCents(repair.estimateGrossCents, currency)
-                  : empty,
-            },
-            { label: fields("currency"), value: currency },
-            {
-              label: fields("expectedPickup"),
-              value: printFieldValue(repair.expectedPickupAt, empty),
-            },
-          ]}
+        <PrintRecipientBand
+          customerTitle={t("print.diagnosis.sections.customer")}
+          deviceTitle={t("print.diagnosis.sections.device")}
+          customer={customer}
+          device={device}
+          empty={empty}
         />
-      </PrintSection>
 
-      <PrintAcknowledgment text={t("print.diagnosis.acknowledgment")} />
+        <PrintSection title={t("print.diagnosis.sections.findings")}>
+          <PrintLongText>
+            {printFieldValue(repair.diagnosisNotes, empty)}
+          </PrintLongText>
+        </PrintSection>
 
-      <PrintSignatures
-        clientLabel={t("print.diagnosis.signatures.client")}
-        shopLabel={t("print.diagnosis.signatures.shop")}
-        nameDateLabel={t("print.diagnosis.signatures.nameDate")}
-      />
+        <PrintSection title={t("print.diagnosis.sections.estimate")}>
+          <PrintFieldGrid
+            fields={[
+              {
+                label: fields("expectedPickup"),
+                value: formatPrintDate(repair.expectedPickupAt, locale, empty),
+              },
+            ]}
+          />
+        </PrintSection>
+
+        <PrintTotals
+          netLabel={fields("estimateBase")}
+          net={net}
+          taxRateLabel={taxRateLabel}
+          tax={tax}
+          totalLabel={fields("gross")}
+          total={total}
+        />
+
+        <PrintAcknowledgment text={t("print.diagnosis.acknowledgment")} />
+
+        <PrintSignatures
+          clientLabel={t("print.diagnosis.signatures.client")}
+          shopLabel={t("print.diagnosis.signatures.shop")}
+          nameDateLabel={t("print.diagnosis.signatures.nameDate")}
+        />
+      </PrintDocumentFrame>
     </PrintSheet>
   );
 }
