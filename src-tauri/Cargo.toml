@@ -1,9 +1,11 @@
 [package]
 name = "repair-manager"
-version = "0.1.0"
-description = "Servioo desktop application"
-authors = ["Servioo"]
+version = "1.0.0"
+description = "Servioo — offline workshop repair manager"
+authors = ["Moritz Alexander Wright"]
 edition = "2021"
+repository = "https://github.com/M-WRI/cp-reparaciones"
+homepage = "https://m-wri.github.io/servioo/"
 
 [lib]
 name = "repair_manager_lib"

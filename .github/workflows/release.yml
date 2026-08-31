@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  quality:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: npm ci
+
+      - name: Check version files
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            npm run version:check -- "${GITHUB_REF_NAME}"
+          else
+            npm run version:check
+          fi
+
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: cargo test --lib
+        working-directory: src-tauri
+
+  build:
+    needs: quality
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            artifact: servioo-windows-nsis
+            bundle: nsis
+            path: src-tauri/target/release/bundle/nsis/*.exe
+          - platform: macos-latest
+            artifact: servioo-macos-dmg
+            bundle: dmg
+            path: src-tauri/target/release/bundle/dmg/*.dmg
+          - platform: ubuntu-22.04
+            artifact: servioo-linux-appimage
+            bundle: appimage
+            path: src-tauri/target/release/bundle/appimage/*.AppImage
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install Linux WebKit
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - run: npm ci
+
+      - name: Build installer
+        run: npm run tauri build -- --bundles ${{ matrix.bundle }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.path }}
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish private GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          shopt -s nullglob
+          files=(dist/*)
+          gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
+            --title "Servioo ${GITHUB_REF_NAME}" \
+            --notes "Installers for Servioo ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build. macOS and Linux are unsigned convenience builds."
+
+      - name: Publish public download repo
+        env:
+          GH_TOKEN: ${{ secrets.SERVIOO_RELEASES_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "Skipping public publish (add repo secret SERVIOO_RELEASES_TOKEN with write access to M-WRI/servioo)."
+            exit 0
+          fi
+          shopt -s nullglob
+          files=(dist/*)
+          gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
+            --repo M-WRI/servioo \
+            --title "Servioo ${GITHUB_REF_NAME}" \
+            --notes "Public download for Servioo ${GITHUB_REF_NAME}." \
+            || gh release upload "${GITHUB_REF_NAME}" "${files[@]}" --repo M-WRI/servioo --clobber
+          git clone --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/M-WRI/servioo.git" public-site
+          cp website/index.html public-site/index.html
+          cd public-site
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add index.html
+          git diff --staged --quiet || git commit -m "docs: refresh download page for ${GITHUB_REF_NAME}"
+          git push origin HEAD:main

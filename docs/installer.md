@@ -58,5 +58,6 @@ Not configured in v1 (no certificate in repo). Shops that need SmartScreen reput
 ## Related
 
 - Architecture OS target: [architecture.md](architecture.md)
-- CI release: [`.github/workflows/windows-release.yml`](../.github/workflows/windows-release.yml)
+- CI release: [`.github/workflows/release.yml`](../.github/workflows/release.yml)
+- Version tags and public downloads: [releases.md](releases.md)
 - Backup AppData layout: [backup.md](backup.md) / [database.md](database.md)

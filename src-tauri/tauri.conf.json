@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Servioo",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.servioo.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -23,13 +23,27 @@
       "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost https://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'",
       "assetProtocol": {
         "enable": true,
-        "scope": ["$APPDATA/images/**", "$APPDATA/thumbs/**"]
+        "scope": [
+          "$APPDATA/images/**",
+          "$APPDATA/thumbs/**"
+        ]
       }
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg", "nsis"],
+    "targets": [
+      "app",
+      "dmg",
+      "nsis",
+      "appimage"
+    ],
+    "publisher": "Moritz Alexander Wright",
+    "copyright": "Copyright © 2026 Moritz Alexander Wright",
+    "category": "Business",
+    "shortDescription": "Offline workshop repair manager",
+    "longDescription": "Servioo is an offline-first desktop app for repair shops: customers, devices, repairs, diagnosis, print, and local Wi-Fi team sync. No cloud required.",
+    "homepage": "https://m-wri.github.io/servioo/",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

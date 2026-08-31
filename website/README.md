@@ -1,0 +1,1 @@
+Source for the public download page at [m-wri.github.io/servioo](https://m-wri.github.io/servioo/). The live site lives in the public repo [M-WRI/servioo](https://github.com/M-WRI/servioo); CI copies `index.html` there on each `v*` tag when `SERVIOO_RELEASES_TOKEN` is set.

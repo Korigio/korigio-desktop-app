@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Servioo — Download</title>
+    <meta
+      name="description"
+      content="Download Servioo, the offline workshop repair manager by Moritz Alexander Wright."
+    />
+    <meta name="author" content="Moritz Alexander Wright" />
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --fg: #1a2332;
+        --muted: #5b6b7c;
+        --surface: #ffffff;
+        --border: #d5dde5;
+        --primary: #0f9d8a;
+        --primary-fg: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        line-height: 1.5;
+      }
+      main {
+        max-width: 44rem;
+        margin: 0 auto;
+        padding: 3rem 1.25rem 4rem;
+      }
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: 2rem;
+      }
+      .tagline {
+        margin: 0 0 2rem;
+        color: var(--muted);
+      }
+      .version {
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        padding: 0.2rem 0.6rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        gap: 0.75rem;
+      }
+      @media (min-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr 1fr 1fr;
+        }
+      }
+      a.card {
+        display: block;
+        padding: 1rem 1.1rem;
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        background: var(--surface);
+        color: inherit;
+        text-decoration: none;
+      }
+      a.card:hover {
+        border-color: var(--primary);
+      }
+      a.card.disabled {
+        opacity: 0.55;
+        pointer-events: none;
+      }
+      .os {
+        font-weight: 600;
+      }
+      .file {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 0.75rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 0.5rem;
+        background: var(--primary);
+        color: var(--primary-fg);
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      .note,
+      footer {
+        margin-top: 2rem;
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+      footer {
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Servioo</h1>
+      <p class="tagline">Offline workshop repair manager.</p>
+      <p id="version-pill" class="version">Version 1.0.0</p>
+      <div class="grid">
+        <a class="card disabled" id="dl-windows" href="#">
+          <span class="os">Windows</span>
+          <span class="file" id="file-windows">10 / 11 · x64 installer</span>
+          <span class="btn">Download</span>
+        </a>
+        <a class="card disabled" id="dl-macos" href="#">
+          <span class="os">macOS</span>
+          <span class="file" id="file-macos">Disk image (.dmg)</span>
+          <span class="btn">Download</span>
+        </a>
+        <a class="card disabled" id="dl-linux" href="#">
+          <span class="os">Linux</span>
+          <span class="file" id="file-linux">AppImage</span>
+          <span class="btn">Download</span>
+        </a>
+      </div>
+      <p class="note" id="status">
+        Installers appear here after the first public <code>v1.0.0</code> GitHub
+        Release. Windows is the supported shop target. macOS and Linux builds are
+        unsigned convenience downloads.
+      </p>
+      <footer>
+        Author: Moritz Alexander Wright · Copyright © 2026 · All rights reserved
+      </footer>
+    </main>
+    <script>
+      const RELEASES =
+        "https://api.github.com/repos/M-WRI/servioo/releases/latest";
+
+      function pickAsset(assets, test) {
+        return assets.find((asset) => test(asset.name.toLowerCase()));
+      }
+
+      fetch(RELEASES)
+        .then((response) => (response.ok ? response.json() : null))
+        .then((release) => {
+          if (!release || !Array.isArray(release.assets)) {
+            return;
+          }
+          const version = String(release.tag_name || "").replace(/^v/, "");
+          if (version) {
+            document.getElementById("version-pill").textContent =
+              "Version " + version;
+          }
+          const assets = release.assets;
+          const windows = pickAsset(
+            assets,
+            (name) => name.endsWith(".exe") || name.includes("setup"),
+          );
+          const macos = pickAsset(assets, (name) => name.endsWith(".dmg"));
+          const linux = pickAsset(
+            assets,
+            (name) => name.endsWith(".appimage") || name.endsWith(".AppImage"),
+          );
+          function bind(id, fileId, asset) {
+            if (!asset) {
+              return;
+            }
+            const link = document.getElementById(id);
+            link.href = asset.browser_download_url;
+            link.classList.remove("disabled");
+            document.getElementById(fileId).textContent = asset.name;
+          }
+          bind("dl-windows", "file-windows", windows);
+          bind("dl-macos", "file-macos", macos);
+          bind("dl-linux", "file-linux", linux);
+          const found = [windows, macos, linux].filter(Boolean).length;
+          document.getElementById("status").textContent =
+            found > 0
+              ? "Latest release " +
+                (release.tag_name || "") +
+                ". Choose your operating system."
+              : document.getElementById("status").textContent;
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>
