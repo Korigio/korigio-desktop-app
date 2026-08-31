@@ -18,7 +18,7 @@ pub fn app_status(state: State<'_, DbState>) -> Result<String, CommandError> {
     let db = lock_db(&state)?;
     let health = db.health_check()?;
     Ok(format!(
-        "Servioo backend ready (migrations={})",
+        "Korigio backend ready (migrations={})",
         health.migrations_applied
     ))
 }

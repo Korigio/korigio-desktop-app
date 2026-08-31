@@ -1,6 +1,6 @@
 # Releases and public downloads
 
-Servioo **source stays private** (`M-WRI/cp-reparaciones`). Visitors download installers from a **public** GitHub repo and Pages site so they never need access to this repository.
+Korigio **source stays private** (`M-WRI/cp-reparaciones`). Visitors download installers from a **public** GitHub repo and Pages site so they never need access to this repository.
 
 | Piece | Where |
 | --- | --- |

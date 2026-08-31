@@ -1,6 +1,6 @@
 # Windows installer (Phase 14)
 
-Servioo ships as a **Windows 10/11 x64** NSIS setup executable with an **embedded offline WebView2 installer** so corporate PCs without internet can install.
+Korigio ships as a **Windows 10/11 x64** NSIS setup executable with an **embedded offline WebView2 installer** so corporate PCs without internet can install.
 
 ## Configuration
 
@@ -25,16 +25,16 @@ npm run tauri build
 macOS app bundle:
 
 ```text
-src-tauri/target/release/bundle/macos/Servioo.app
+src-tauri/target/release/bundle/macos/Korigio.app
 ```
 
 macOS disk image (opens the familiar drag-to-Applications window):
 
 ```text
-src-tauri/target/release/bundle/dmg/Servioo_*.dmg
+src-tauri/target/release/bundle/dmg/Korigio_*.dmg
 ```
 
-Double-click the `.dmg`, then drag **Servioo** into Applications. Customer delivery remains Windows NSIS only.
+Double-click the `.dmg`, then drag **Korigio** into Applications. Customer delivery remains Windows NSIS only.
 
 ## Local / CI build on Windows
 
@@ -46,7 +46,7 @@ npm run tauri build
 Artifact path (x64):
 
 ```text
-src-tauri/target/release/bundle/nsis/Servioo_*_x64-setup.exe
+src-tauri/target/release/bundle/nsis/Korigio_*_x64-setup.exe
 ```
 
 (Exact filename includes version from `tauri.conf.json`. Cross-compiled paths may use `x86_64-pc-windows-msvc`.)

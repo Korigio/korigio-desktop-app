@@ -15,7 +15,7 @@ Phase 10 wrote a daily package under AppData `backups/auto/` on every startup (`
 - Persist both keys in the local SQLite `settings` table. Do **not** replicate via LAN sync (`sync_changes` / shop snapshot).
 - Do **not** prune the user folder. `prunedCount` on `run_auto_backup_if_due` is always 0.
 - Packages stay unencrypted (same as manual backups; [ADR 004](004-encryption-deferred.md)).
-- Due is the filename calendar period only (`Servioo-YYYY-MM-DD-HHmm.backup`): same local day, ISO 8601 week-date `(iso_year, iso_week)`, calendar month, or calendar year. No time-of-day.
+- Due is the filename calendar period only (`Korigio-YYYY-MM-DD-HHmm.backup`; legacy `Servioo-YYYY-MM-DD-HHmm.backup` still counts): same local day, ISO 8601 week-date `(iso_year, iso_week)`, calendar month, or calendar year. No time-of-day.
 - Startup still calls `run_auto_backup_if_due`. The command name is unchanged; skip reasons are `disabled`, `noFolder`, and `notDue`.
 
 ## Consequences

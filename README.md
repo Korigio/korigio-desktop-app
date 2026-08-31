@@ -1,6 +1,6 @@
-# Servioo
+# Korigio
 
-Offline Windows desktop app for small repair workshops (Tauri 2 + React + Rust + SQLite). Product name: **Servioo**.
+Offline Windows desktop app for small repair workshops (Tauri 2 + React + Rust + SQLite). Product name: **Korigio**.
 
 ## Docs
 

@@ -116,8 +116,8 @@ jobs:
           shopt -s nullglob
           files=(dist/*)
           gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
-            --title "Servioo ${GITHUB_REF_NAME}" \
-            --notes "Installers for Servioo ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build. macOS and Linux are unsigned convenience builds."
+            --title "Korigio ${GITHUB_REF_NAME}" \
+            --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build. macOS and Linux are unsigned convenience builds."
 
       - name: Publish public download repo
         env:
@@ -131,8 +131,8 @@ jobs:
           files=(dist/*)
           gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
             --repo M-WRI/servioo \
-            --title "Servioo ${GITHUB_REF_NAME}" \
-            --notes "Public download for Servioo ${GITHUB_REF_NAME}." \
+            --title "Korigio ${GITHUB_REF_NAME}" \
+            --notes "Public download for Korigio ${GITHUB_REF_NAME}." \
             || gh release upload "${GITHUB_REF_NAME}" "${files[@]}" --repo M-WRI/servioo --clobber
           git clone --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/M-WRI/servioo.git" public-site
           cp website/index.html public-site/index.html

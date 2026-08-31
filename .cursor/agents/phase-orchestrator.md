@@ -8,7 +8,7 @@ model: inherit
 readonly: true
 ---
 
-You are the **phase orchestrator** for Servioo.
+You are the **phase orchestrator** for Korigio.
 
 ## Mission
 

@@ -1,6 +1,6 @@
-# Architecture — Servioo
+# Architecture — Korigio
 
-Product name: **Servioo** (npm package `servioo`; Tauri identifier `com.servioo.desktop`).
+Product name: **Korigio** (npm package `servioo`; Tauri identifier `com.servioo.desktop`).
 
 ## Stack
 

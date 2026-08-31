@@ -1,9 +1,9 @@
 ---
-description: Servioo project-wide stack, phases, and hard constraints
+description: Korigio project-wide stack, phases, and hard constraints
 alwaysApply: true
 ---
 
-# Servioo — project rules
+# Korigio — project rules
 
 ## Stack (locked)
 

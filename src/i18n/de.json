@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Servioo",
+    "name": "Korigio",
     "running": "Anwendung läuft",
     "backendOk": "Backend verbunden",
     "backendChecking": "Backend wird geprüft…",
@@ -77,7 +77,7 @@
       "staff": "Mitarbeiter"
     },
     "sync": {
-      "unreachable": "Der andere Computer war nicht erreichbar. Erlauben Sie Servioo im lokalen Netzwerk in den Systemeinstellungen und lassen Sie beide Computer im selben WLAN.",
+      "unreachable": "Der andere Computer war nicht erreichbar. Erlauben Sie Korigio im lokalen Netzwerk in den Systemeinstellungen und lassen Sie beide Computer im selben WLAN.",
       "waiting": "Warten auf einen anderen Team-Computer in diesem Netzwerk…",
       "connected": "Mit {count} anderen Computer(n) verbunden."
     },
@@ -940,7 +940,7 @@
   },
   "backup": {
     "restore": {
-      "unsupportedSchema": "Diese Sicherung stammt von einer älteren Servioo-Version und kann nicht wiederhergestellt werden."
+      "unsupportedSchema": "Diese Sicherung stammt von einer älteren Korigio-Version und kann nicht wiederhergestellt werden."
     }
   }
 }

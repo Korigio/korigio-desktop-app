@@ -8,7 +8,7 @@ model: inherit
 readonly: true
 ---
 
-You are the **verifier** for Servioo.
+You are the **verifier** for Korigio.
 
 ## Mission
 
