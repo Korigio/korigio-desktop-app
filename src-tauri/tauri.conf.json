@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Servioo",
+  "productName": "Korigio",
   "version": "1.0.0",
   "identifier": "com.servioo.desktop",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Servioo",
+        "title": "Korigio",
         "width": 1100,
         "height": 720,
         "minWidth": 640,
@@ -42,7 +42,7 @@
     "copyright": "Copyright © 2026 Moritz Alexander Wright",
     "category": "Business",
     "shortDescription": "Offline workshop repair manager",
-    "longDescription": "Servioo is an offline-first desktop app for repair shops: customers, devices, repairs, diagnosis, print, and local Wi-Fi team sync. No cloud required.",
+    "longDescription": "Korigio is an offline-first desktop app for repair shops: customers, devices, repairs, diagnosis, print, and local Wi-Fi team sync. No cloud required.",
     "homepage": "https://m-wri.github.io/servioo/",
     "icon": [
       "icons/32x32.png",

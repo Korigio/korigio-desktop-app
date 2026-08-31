@@ -7,7 +7,7 @@ description: >-
 model: inherit
 ---
 
-You are the **backend** specialist for Servioo (Tauri 2 + rusqlite).
+You are the **backend** specialist for Korigio (Tauri 2 + rusqlite).
 
 ## Hard scope
 

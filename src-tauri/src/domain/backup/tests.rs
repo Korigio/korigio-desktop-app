@@ -125,7 +125,7 @@ fn create_backup_contains_manifest_and_db() {
     .expect("backup");
 
     assert!(Path::new(&info.path).is_file());
-    assert!(info.file_name.starts_with("Servioo-"));
+    assert!(info.file_name.starts_with("Korigio-"));
     assert!(info.file_name.ends_with(".backup"));
 
     let file = File::open(&info.path).expect("open");
@@ -338,12 +338,27 @@ fn filename_covers_period_week_iso_week_date() {
         jan_1_2026
     ));
     assert!(filename_covers_period(
+        "Korigio-2025-12-29-1200.backup",
+        AutoBackupInterval::Week,
+        jan_1_2026
+    ));
+    assert!(filename_covers_period(
         "Servioo-2026-01-01-0900.backup",
+        AutoBackupInterval::Week,
+        jan_1_2026
+    ));
+    assert!(filename_covers_period(
+        "Korigio-2026-01-01-0900.backup",
         AutoBackupInterval::Week,
         jan_1_2026
     ));
     assert!(!filename_covers_period(
         "Servioo-2025-12-28-1200.backup",
+        AutoBackupInterval::Week,
+        jan_1_2026
+    ));
+    assert!(!filename_covers_period(
+        "Korigio-2025-12-28-1200.backup",
         AutoBackupInterval::Week,
         jan_1_2026
     ));
@@ -357,8 +372,18 @@ fn filename_covers_period_month_and_year() {
         AutoBackupInterval::Month,
         jan_15_2026
     ));
+    assert!(filename_covers_period(
+        "Korigio-2026-01-31-2359.backup",
+        AutoBackupInterval::Month,
+        jan_15_2026
+    ));
     assert!(!filename_covers_period(
         "Servioo-2026-02-01-0000.backup",
+        AutoBackupInterval::Month,
+        jan_15_2026
+    ));
+    assert!(!filename_covers_period(
+        "Korigio-2026-02-01-0000.backup",
         AutoBackupInterval::Month,
         jan_15_2026
     ));
@@ -369,8 +394,18 @@ fn filename_covers_period_month_and_year() {
         AutoBackupInterval::Year,
         jun_1_2026
     ));
+    assert!(filename_covers_period(
+        "Korigio-2026-12-31-2359.backup",
+        AutoBackupInterval::Year,
+        jun_1_2026
+    ));
     assert!(!filename_covers_period(
         "Servioo-2027-01-01-0000.backup",
+        AutoBackupInterval::Year,
+        jun_1_2026
+    ));
+    assert!(!filename_covers_period(
+        "Korigio-2027-01-01-0000.backup",
         AutoBackupInterval::Year,
         jun_1_2026
     ));
@@ -384,8 +419,18 @@ fn filename_covers_period_ignores_safety_and_unparseable() {
         AutoBackupInterval::Day,
         today
     ));
+    assert!(filename_covers_period(
+        "Korigio-2026-01-15-0000.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
     assert!(!filename_covers_period(
         "Servioo-2026-01-16-0000.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
+        "Korigio-2026-01-16-0000.backup",
         AutoBackupInterval::Day,
         today
     ));
@@ -395,7 +440,17 @@ fn filename_covers_period_ignores_safety_and_unparseable() {
         today
     ));
     assert!(!filename_covers_period(
+        "Korigio-safety-2026-01-15-1200.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
         "Servioo-2026-01-15-1200.zip",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
+        "Korigio-2026-01-15-1200.zip",
         AutoBackupInterval::Day,
         today
     ));
@@ -405,8 +460,43 @@ fn filename_covers_period_ignores_safety_and_unparseable() {
         today
     ));
     assert!(!filename_covers_period(
+        "Korigio-2026-01-15.backup",
+        AutoBackupInterval::Day,
+        today
+    ));
+    assert!(!filename_covers_period(
         "Servioo-2026-01-15-1200.backup",
         AutoBackupInterval::Never,
         today
     ));
+    assert!(!filename_covers_period(
+        "Korigio-2026-01-15-1200.backup",
+        AutoBackupInterval::Never,
+        today
+    ));
+}
+
+#[test]
+fn auto_backup_not_due_when_legacy_servioo_file_covers_today() {
+    let (_dir, db) = open_temp_db();
+    let _ = seed_repair_with_image(&db);
+    let dest = tempfile::tempdir().expect("dest");
+    enable_daily_auto_backup(&db, dest.path());
+
+    let today = time::OffsetDateTime::now_local()
+        .unwrap_or_else(|_| time::OffsetDateTime::now_utc())
+        .date();
+    let legacy_name = format!(
+        "Servioo-{:04}-{:02}-{:02}-1200.backup",
+        today.year(),
+        u8::from(today.month()),
+        today.day()
+    );
+    std::fs::write(dest.path().join(&legacy_name), b"placeholder").expect("write");
+
+    let result = run_auto_backup_if_due(&db).expect("run");
+    assert!(!result.ran);
+    assert!(result.backup.is_none());
+    assert_eq!(result.skipped_reason, Some(AutoBackupSkipReason::NotDue));
+    assert_eq!(scheduled_backup_count(dest.path()), 1);
 }

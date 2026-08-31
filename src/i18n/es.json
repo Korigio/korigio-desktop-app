@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Servioo",
+    "name": "Korigio",
     "running": "Aplicación en ejecución",
     "backendOk": "Backend conectado",
     "backendChecking": "Comprobando backend…",
@@ -77,7 +77,7 @@
       "staff": "Personal"
     },
     "sync": {
-      "unreachable": "No se pudo contactar con el otro ordenador. Permita Servioo en la red local en Ajustes del sistema y mantenga ambos ordenadores en el mismo Wi-Fi.",
+      "unreachable": "No se pudo contactar con el otro ordenador. Permita Korigio en la red local en Ajustes del sistema y mantenga ambos ordenadores en el mismo Wi-Fi.",
       "waiting": "Esperando a otro ordenador del equipo en esta red…",
       "connected": "Conectado a {count} otro(s) ordenador(es)."
     },
@@ -940,7 +940,7 @@
   },
   "backup": {
     "restore": {
-      "unsupportedSchema": "Esta copia de seguridad es de una versión anterior de Servioo y no se puede restaurar."
+      "unsupportedSchema": "Esta copia de seguridad es de una versión anterior de Korigio y no se puede restaurar."
     }
   }
 }

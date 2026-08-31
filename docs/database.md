@@ -27,10 +27,12 @@ Resolved through Tauri `app.path().app_data_dir()` (OS AppData / Application Sup
       {hash}
   backups/
     auto/
-    Servioo-*.backup
-    Servioo-safety-*.backup
+    Korigio-*.backup
+    Korigio-safety-*.backup
   logs/
 ```
+
+Legacy `Servioo-*.backup` and `Servioo-safety-*.backup` files still count for due-date checks and restore.
 
 Image binaries live on disk; `repair_images` stores **relative** display paths under the AppData root plus `content_hash`. Thumbs are ~320px JPEG. Caps: JPEG/PNG, 10 MB/file, 30 images/repair. Sync copies missing blobs by hash ([ADR 013](decisions/013-team-psk-and-blobs.md)).
 

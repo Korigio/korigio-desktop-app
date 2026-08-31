@@ -147,5 +147,5 @@ pub fn run() {
             commands::get_sync_status,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Servioo");
+        .expect("error while running Korigio");
 }

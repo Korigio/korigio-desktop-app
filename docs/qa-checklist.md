@@ -1,11 +1,11 @@
 # Production QA checklist (Phase 16)
 
-Use this before handing Servioo to a customer. Check each item on a **Windows 10/11 x64** machine (preferably ≤ 4 GB RAM class hardware).
+Use this before handing Korigio to a customer. Check each item on a **Windows 10/11 x64** machine (preferably ≤ 4 GB RAM class hardware).
 
 ## Install & first run
 
-- [ ] Install from NSIS `Servioo_*_x64-setup.exe` **with network disconnected** (offline WebView2)
-- [ ] App starts; window title **Servioo**; no crash on cold start
+- [ ] Install from NSIS `Korigio_*_x64-setup.exe` **with network disconnected** (offline WebView2)
+- [ ] App starts; window title **Korigio**; no crash on cold start
 - [ ] Cold start feels acceptable (target ≤ ~3 s on mid-range PC)
 - [ ] Language follows OS / Settings preference (`es` / `de` / `en`)
 

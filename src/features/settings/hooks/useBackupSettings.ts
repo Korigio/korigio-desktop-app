@@ -9,7 +9,7 @@ function defaultBackupFileName(): string {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
   const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
-  return `Servioo-${stamp}.backup`;
+  return `Korigio-${stamp}.backup`;
 }
 
 export function useBackupSettings() {
@@ -49,7 +49,7 @@ export function useBackupSettings() {
     try {
       const destinationPath = await save({
         defaultPath: defaultBackupFileName(),
-        filters: [{ name: "Servioo backup", extensions: ["backup"] }],
+        filters: [{ name: "Korigio backup", extensions: ["backup"] }],
       });
       const info = await backupApi.create({
         destinationPath: destinationPath ?? null,
@@ -75,7 +75,7 @@ export function useBackupSettings() {
     try {
       const selected = await open({
         multiple: false,
-        filters: [{ name: "Servioo backup", extensions: ["backup"] }],
+        filters: [{ name: "Korigio backup", extensions: ["backup"] }],
       });
       if (selected === null || Array.isArray(selected)) {
         return;

@@ -7,7 +7,7 @@ description: >-
 model: inherit
 ---
 
-You are the **frontend** specialist for Servioo (Tauri 2 + React).
+You are the **frontend** specialist for Korigio (Tauri 2 + React).
 
 ## Hard scope
 

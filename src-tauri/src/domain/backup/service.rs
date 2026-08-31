@@ -12,7 +12,8 @@ use zip::{CompressionMethod, ZipArchive, ZipWriter};
 use crate::db::repository::now_utc_rfc3339;
 use crate::db::Db;
 use crate::domain::backup::constants::{
-    APP_VERSION, BACKUP_EXTENSION, DATABASE_ENTRY, MANIFEST_NAME,
+    APP_VERSION, BACKUP_EXTENSION, BACKUP_FILE_PREFIX, BACKUP_FILE_PREFIX_LEGACY, DATABASE_ENTRY,
+    MANIFEST_NAME,
 };
 use crate::domain::backup::types::{
     AutoBackupResult, AutoBackupSkipReason, BackupInfo, BackupKind, BackupManifest,
@@ -29,13 +30,13 @@ pub fn create_backup(db: &Db, input: CreateBackupInput) -> Result<BackupInfo, Ap
 }
 
 pub fn create_safety_backup(db: &Db) -> Result<BackupInfo, AppError> {
-    let file_name = format!("Servioo-safety-{}.{}", local_stamp()?, BACKUP_EXTENSION);
+    let file_name = backup_file_name(&local_stamp()?, true);
     let dest = db.paths().backups.join(&file_name);
     write_backup_package(db, &dest, BackupKind::Safety)
 }
 
 pub fn create_auto_backup(db: &Db, dest_dir: &Path) -> Result<BackupInfo, AppError> {
-    let file_name = format!("Servioo-{}.{}", local_stamp()?, BACKUP_EXTENSION);
+    let file_name = backup_file_name(&local_stamp()?, false);
     let dest = dest_dir.join(&file_name);
     write_backup_package(db, &dest, BackupKind::Auto)
 }
@@ -169,7 +170,7 @@ pub fn restore_backup(db: &mut Db, path: &Path) -> Result<RestoreBackupResult, A
     };
     if max_version < 10 {
         return Err(AppError::conflict(
-            "This backup is from an older Servioo version and cannot be restored.",
+            "This backup is from an older Korigio version and cannot be restored.",
         ));
     }
 
@@ -250,7 +251,8 @@ fn skipped_auto_backup(reason: AutoBackupSkipReason) -> AutoBackupResult {
     }
 }
 
-/// True when `name` is `Servioo-YYYY-MM-DD-HHmm.backup` and that date covers `today` for `interval`.
+/// True when `name` is `{Korigio|Servioo}-YYYY-MM-DD-HHmm.backup` and that date covers `today` for `interval`.
+/// Safety files (`*-safety-*`) of either prefix never count as covering the period.
 pub fn filename_covers_period(name: &str, interval: AutoBackupInterval, today: Date) -> bool {
     let Some(date) = parse_scheduled_backup_date(name) else {
         return false;
@@ -270,10 +272,7 @@ pub fn filename_covers_period(name: &str, interval: AutoBackupInterval, today: D
 
 fn parse_scheduled_backup_date(name: &str) -> Option<Date> {
     let stem = name.strip_suffix(&format!(".{BACKUP_EXTENSION}"))?;
-    if stem.starts_with("Servioo-safety-") || !stem.starts_with("Servioo-") {
-        return None;
-    }
-    let rest = stem.get("Servioo-".len()..)?;
+    let rest = scheduled_backup_date_stem(stem)?;
     let parts: Vec<&str> = rest.split('-').collect();
     if parts.len() != 4 {
         return None;
@@ -549,14 +548,14 @@ fn resolve_manual_destination(
         Some(raw) if !raw.trim().is_empty() => {
             let path = PathBuf::from(raw.trim());
             if path.is_dir() {
-                Ok(path.join(format!("Servioo-{}.{}", local_stamp()?, BACKUP_EXTENSION)))
+                Ok(path.join(backup_file_name(&local_stamp()?, false)))
             } else {
                 Ok(path)
             }
         }
         _ => Ok(paths
             .backups
-            .join(format!("Servioo-{}.{}", local_stamp()?, BACKUP_EXTENSION))),
+            .join(backup_file_name(&local_stamp()?, false))),
     }
 }
 
@@ -578,11 +577,34 @@ fn local_today() -> Result<Date, AppError> {
     Ok(now.date())
 }
 
+fn backup_file_name(stamp: &str, safety: bool) -> String {
+    if safety {
+        format!("{BACKUP_FILE_PREFIX}-safety-{stamp}.{BACKUP_EXTENSION}")
+    } else {
+        format!("{BACKUP_FILE_PREFIX}-{stamp}.{BACKUP_EXTENSION}")
+    }
+}
+
+/// Date portion of a scheduled auto-backup stem (`YYYY-MM-DD-HHmm`).
+/// Accepts `Korigio-` and legacy `Servioo-`. Safety stems of either prefix return `None`.
+fn scheduled_backup_date_stem(stem: &str) -> Option<&str> {
+    for prefix in [BACKUP_FILE_PREFIX, BACKUP_FILE_PREFIX_LEGACY] {
+        if stem.starts_with(&format!("{prefix}-safety-")) {
+            return None;
+        }
+        if let Some(rest) = stem.strip_prefix(&format!("{prefix}-")) {
+            return Some(rest);
+        }
+    }
+    None
+}
+
 fn parse_backup_date_from_name(name: &str) -> Option<Date> {
-    // Servioo-YYYY-MM-DD-HHmm.backup or Servioo-safety-YYYY-MM-DD-HHmm.backup
+    // Korigio-YYYY-MM-DD-HHmm.backup or Korigio-safety-YYYY-MM-DD-HHmm.backup
+    // (legacy Servioo- / Servioo-safety- stems from older installs are also parsed)
     let stem = name.strip_suffix(&format!(".{BACKUP_EXTENSION}"))?;
     let parts: Vec<&str> = stem.split('-').collect();
-    // Servioo YYYY MM DD HHmm  OR Servioo safety YYYY MM DD HHmm
+    // {Korigio|Servioo} YYYY MM DD HHmm  OR  {Korigio|Servioo} safety YYYY MM DD HHmm
     let (y, m, d) = if parts.len() >= 5 && parts[1] == "safety" {
         (parts[2], parts[3], parts[4])
     } else if parts.len() >= 4 {

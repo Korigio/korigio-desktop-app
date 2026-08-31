@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
   <key>NSLocalNetworkUsageDescription</key>
-  <string>Servioo syncs repair jobs with other shop computers on this Wi-Fi.</string>
+  <string>Korigio syncs repair jobs with other shop computers on this Wi-Fi.</string>
 </dict>
 </plist>
