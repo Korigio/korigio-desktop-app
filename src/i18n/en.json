@@ -796,6 +796,13 @@
   "print": {
     "title": "Repair report",
     "emptyValue": "—",
+    "meta": {
+      "date": "Date"
+    },
+    "page": "Page",
+    "running": {
+      "continued": "continued"
+    },
     "yes": "Yes",
     "no": "No",
     "noDiagnosis": "No diagnosis checklist on this repair.",

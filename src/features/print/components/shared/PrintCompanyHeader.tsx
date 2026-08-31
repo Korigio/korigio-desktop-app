@@ -18,6 +18,25 @@ type Props = {
   fieldLabels: PrintCompanyFieldLabels;
 };
 
+function contactLines(
+  company: PrintCompany,
+  fieldLabels: PrintCompanyFieldLabels,
+): string[] {
+  const lines: string[] = [];
+  const address = company.address?.trim();
+  const phone = company.phone?.trim();
+  const email = company.email?.trim();
+  const website = company.website?.trim();
+  const taxId = company.taxId?.trim();
+
+  if (address) lines.push(address);
+  if (phone) lines.push(phone);
+  if (email) lines.push(email);
+  if (fieldLabels.website && website) lines.push(website);
+  if (taxId) lines.push(`${fieldLabels.taxId} ${taxId}`);
+  return lines;
+}
+
 export function PrintCompanyHeader({
   company,
   companyLogoAbsolutePath,
@@ -28,62 +47,38 @@ export function PrintCompanyHeader({
   const logoSrc = companyLogoAbsolutePath
     ? convertFileSrc(companyLogoAbsolutePath)
     : null;
+  const displayName = company ? companyDisplayName(company) : appNameFallback;
+  const showLegalName = Boolean(
+    company && company.legalName !== displayName,
+  );
 
   return (
-    <header className="flex items-start justify-between gap-4 border-b border-black pb-3">
-      <div className="min-w-0 flex-1">
-        {company ? (
-          <>
-            <p className="text-2xl font-semibold tracking-tight">
-              {companyDisplayName(company)}
-            </p>
-            {company.legalName !== companyDisplayName(company) ? (
-              <p className="text-sm">{company.legalName}</p>
+    <header className="pt-4">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex min-w-0 items-start gap-3">
+          {logoSrc ? (
+            <img
+              src={logoSrc}
+              alt={logoAlt}
+              className="h-16 w-auto max-w-[40%] object-contain"
+            />
+          ) : null}
+          <div className="min-w-0">
+            <p className="text-2xl font-semibold tracking-tight">{displayName}</p>
+            {showLegalName && company ? (
+              <p className="text-sm text-neutral-700">{company.legalName}</p>
             ) : null}
-            <dl className="mt-2 grid grid-cols-[6rem_1fr] gap-x-3 gap-y-0.5 text-sm">
-              {company.taxId ? (
-                <>
-                  <dt>{fieldLabels.taxId}</dt>
-                  <dd>{company.taxId}</dd>
-                </>
-              ) : null}
-              {company.address ? (
-                <>
-                  <dt>{fieldLabels.address}</dt>
-                  <dd>{company.address}</dd>
-                </>
-              ) : null}
-              {company.phone ? (
-                <>
-                  <dt>{fieldLabels.phone}</dt>
-                  <dd>{company.phone}</dd>
-                </>
-              ) : null}
-              {company.email ? (
-                <>
-                  <dt>{fieldLabels.email}</dt>
-                  <dd>{company.email}</dd>
-                </>
-              ) : null}
-              {fieldLabels.website && company.website ? (
-                <>
-                  <dt>{fieldLabels.website}</dt>
-                  <dd>{company.website}</dd>
-                </>
-              ) : null}
-            </dl>
-          </>
-        ) : (
-          <p className="text-2xl font-semibold tracking-tight">{appNameFallback}</p>
-        )}
+          </div>
+        </div>
+        {company ? (
+          <div className="shrink-0 text-right text-sm leading-snug">
+            {contactLines(company, fieldLabels).map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        ) : null}
       </div>
-      {logoSrc ? (
-        <img
-          src={logoSrc}
-          alt={logoAlt}
-          className="h-16 w-auto max-w-[40%] object-contain"
-        />
-      ) : null}
+      <div className="mt-3 border-b border-[#cccccc]" />
     </header>
   );
 }

@@ -796,6 +796,13 @@
   "print": {
     "title": "Reparaturbericht",
     "emptyValue": "—",
+    "meta": {
+      "date": "Datum"
+    },
+    "page": "Seite",
+    "running": {
+      "continued": "Fortsetzung"
+    },
     "yes": "Ja",
     "no": "Nein",
     "noDiagnosis": "Keine Diagnose-Checkliste für diese Reparatur.",
