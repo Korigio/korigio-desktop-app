@@ -63,6 +63,8 @@ export function DiagnosisTemplatesPage() {
         totalPages={totalPages}
         onPrevious={() => list.setPage(list.page - 1)}
         onNext={() => list.setPage(list.page + 1)}
+        pageSize={list.pageSize}
+        onPageSizeChange={list.setPageSize}
       />
     </Page>
   );

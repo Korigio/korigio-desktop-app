@@ -50,6 +50,8 @@ export function CustomerDevicesSection({ customerId }: Props) {
           totalPages={totalPages}
           onPrevious={() => list.setPage(list.page - 1)}
           onNext={() => list.setPage(list.page + 1)}
+          pageSize={list.pageSize}
+          onPageSizeChange={list.setPageSize}
         />
       </div>
     </Card>

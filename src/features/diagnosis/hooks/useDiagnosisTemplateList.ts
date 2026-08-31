@@ -4,11 +4,13 @@ import type {
   DiagnosisTemplate,
   DiagnosisTemplateListResult,
 } from "@/features/diagnosis/types/diagnosis";
+import { DEFAULT_PAGE_SIZE } from "@/shared/constants/pagination";
 import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 export function useDiagnosisTemplateList() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
   const [result, setResult] = useState<DiagnosisTemplateListResult | null>(
     null,
   );
@@ -26,7 +28,7 @@ export function useDiagnosisTemplateList() {
         const next = await diagnosisTemplatesApi.list({
           query: query.trim() || undefined,
           page,
-          pageSize: 25,
+          pageSize,
         });
         setResult(next);
         setError(null);
@@ -45,7 +47,7 @@ export function useDiagnosisTemplateList() {
         }
       }
     },
-    [query, page],
+    [query, page, pageSize],
   );
 
   useEffect(() => {
@@ -72,6 +74,11 @@ export function useDiagnosisTemplateList() {
     },
     page,
     setPage,
+    pageSize,
+    setPageSize: (size: number) => {
+      setPage(1);
+      setPageSizeState(size);
+    },
     result,
     loading,
     error,

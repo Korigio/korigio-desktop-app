@@ -5,11 +5,13 @@ import type {
   RepairStatus,
 } from "@/features/repairs/types/repair";
 import { REPAIR_STATUSES } from "@/features/repairs/types/repair";
+import { DEFAULT_PAGE_SIZE } from "@/shared/constants/pagination";
 import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 type Options = {
   customerId?: string;
   deviceId?: string;
+  companyId?: string;
   initialStatus?: RepairStatus | "";
 };
 
@@ -28,6 +30,7 @@ export function useRepairList(options: Options = {}) {
     () => parseStatus(options.initialStatus),
   );
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
   const [result, setResult] = useState<RepairListResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,9 +53,10 @@ export function useRepairList(options: Options = {}) {
           query: query.trim() || undefined,
           customerId: options.customerId,
           deviceId: options.deviceId,
+          companyId: options.companyId,
           status: status || undefined,
           page,
-          pageSize: 25,
+          pageSize,
         });
         setResult(next);
         setError(null);
@@ -67,7 +71,15 @@ export function useRepairList(options: Options = {}) {
         }
       }
     },
-    [query, status, page, options.customerId, options.deviceId],
+    [
+      query,
+      status,
+      page,
+      pageSize,
+      options.customerId,
+      options.deviceId,
+      options.companyId,
+    ],
   );
 
   useEffect(() => {
@@ -91,6 +103,11 @@ export function useRepairList(options: Options = {}) {
     },
     page,
     setPage,
+    pageSize,
+    setPageSize: (size: number) => {
+      setPage(1);
+      setPageSizeState(size);
+    },
     result,
     loading,
     error,

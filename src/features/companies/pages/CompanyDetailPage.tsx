@@ -6,6 +6,7 @@ import { CompanyLoadState } from "@/features/companies/components/CompanyLoadSta
 import { CompanyLogoCard } from "@/features/companies/components/CompanyLogoCard";
 import { useCompanyDetail } from "@/features/companies/hooks/useCompanyDetail";
 import { companyLabel } from "@/features/companies/types/company";
+import { CompanyRepairsSection } from "@/features/repairs/components/CompanyRepairsSection";
 import { Page, PageHeader } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useNavigate } from "react-router";
@@ -53,6 +54,8 @@ export function CompanyDetailPage({ companyId }: Props) {
             disabled={isArchived}
           />
         </div>
+
+        <CompanyRepairsSection companyId={company.id} />
       </div>
     </Page>
   );

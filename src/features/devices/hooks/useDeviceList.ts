@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { devicesApi } from "@/features/devices/api/devicesApi";
 import type { Device, DeviceListResult } from "@/features/devices/types/device";
+import { DEFAULT_PAGE_SIZE } from "@/shared/constants/pagination";
 import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 type Options = {
@@ -11,6 +12,7 @@ export function useDeviceList(options: Options = {}) {
   const [query, setQuery] = useState("");
   const [includeArchived, setIncludeArchived] = useState(false);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
   const [result, setResult] = useState<DeviceListResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function useDeviceList(options: Options = {}) {
           customerId: options.customerId,
           includeArchived,
           page,
-          pageSize: 25,
+          pageSize,
         });
         setResult(next);
         setError(null);
@@ -43,7 +45,7 @@ export function useDeviceList(options: Options = {}) {
         }
       }
     },
-    [query, includeArchived, page, options.customerId],
+    [query, includeArchived, page, pageSize, options.customerId],
   );
 
   useEffect(() => {
@@ -83,6 +85,11 @@ export function useDeviceList(options: Options = {}) {
     },
     page,
     setPage,
+    pageSize,
+    setPageSize: (size: number) => {
+      setPage(1);
+      setPageSizeState(size);
+    },
     result,
     loading,
     error,

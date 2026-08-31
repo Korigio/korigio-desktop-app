@@ -24,8 +24,6 @@ type FormValues = {
 };
 
 type Options = {
-  repair?: Repair;
-  mode: "create" | "edit";
   defaultCustomerId?: string;
   defaultDeviceId?: string;
   defaultCompanyId?: string;
@@ -34,23 +32,22 @@ type Options = {
 };
 
 function toValues(
-  repair?: Repair,
   defaultCustomerId?: string,
   defaultDeviceId?: string,
   defaultCompanyId?: string,
 ): FormValues {
   return {
-    customerId: repair?.customerId ?? defaultCustomerId ?? "",
-    deviceId: repair?.deviceId ?? defaultDeviceId ?? "",
-    companyId: repair?.companyId ?? defaultCompanyId ?? "",
-    status: repair?.status ?? "received",
-    reportedProblem: repair?.reportedProblem ?? "",
-    accessoriesReceived: repair?.accessoriesReceived ?? "",
-    deviceCondition: repair?.deviceCondition ?? "",
-    expectedPickupAt: repair?.expectedPickupAt ?? "",
-    diagnosisNotes: repair?.diagnosisNotes ?? "",
-    workPerformed: repair?.workPerformed ?? "",
-    notes: repair?.notes ?? "",
+    customerId: defaultCustomerId ?? "",
+    deviceId: defaultDeviceId ?? "",
+    companyId: defaultCompanyId ?? "",
+    status: "received",
+    reportedProblem: "",
+    accessoriesReceived: "",
+    deviceCondition: "",
+    expectedPickupAt: "",
+    diagnosisNotes: "",
+    workPerformed: "",
+    notes: "",
   };
 }
 
@@ -71,8 +68,6 @@ function toInput(value: FormValues): RepairInput {
 }
 
 export function useRepairForm({
-  repair,
-  mode,
   defaultCustomerId,
   defaultDeviceId,
   defaultCompanyId,
@@ -87,7 +82,6 @@ export function useRepairForm({
 
   const form = useForm({
     defaultValues: toValues(
-      repair,
       defaultCustomerId,
       defaultDeviceId,
       defaultCompanyId,
@@ -95,31 +89,19 @@ export function useRepairForm({
     onSubmit: async ({ value }) => {
       const input = toInput(value);
 
-      if (mode === "create") {
-        if (!isEntityId(input.customerId)) {
-          throw new Error("Customer is required");
-        }
-        if (!isEntityId(input.deviceId)) {
-          throw new Error("Device is required");
-        }
-        if (!isEntityId(input.companyId)) {
-          throw new Error("Company is required");
-        }
-        const created = await repairsApi.create(input);
-        onSuccessRef.current?.(created);
-        if (navigateOnSuccessRef.current) {
-          navigate(`/repairs/${created.id}`);
-        }
-        return;
+      if (!isEntityId(input.customerId)) {
+        throw new Error("Customer is required");
       }
-
-      if (!repair) {
-        throw new Error("Missing repair for edit");
+      if (!isEntityId(input.deviceId)) {
+        throw new Error("Device is required");
       }
-      const updated = await repairsApi.update(repair.id, input);
-      onSuccessRef.current?.(updated);
+      if (!isEntityId(input.companyId)) {
+        throw new Error("Company is required");
+      }
+      const created = await repairsApi.create(input);
+      onSuccessRef.current?.(created);
       if (navigateOnSuccessRef.current) {
-        navigate(`/repairs/${updated.id}`);
+        navigate(`/repairs/${created.id}`);
       }
     },
   });

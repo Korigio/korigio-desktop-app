@@ -1,6 +1,6 @@
 import { repairsApi } from "@/features/repairs/api/repairsApi";
 import { repairToInput, type Repair } from "@/features/repairs/types/repair";
-import { Button, LinkButton } from "@/ui";
+import { Button } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
@@ -20,14 +20,6 @@ export function RepairDetailActions({
 
   return (
     <>
-      {!isArchived ? (
-        <LinkButton to={`/repairs/${repair.id}/edit`} variant="secondary">
-          {t("repairs.actions.edit")}
-        </LinkButton>
-      ) : null}
-      <LinkButton to={`/repairs/${repair.id}/print`} variant="secondary">
-        {t("repairs.actions.print")}
-      </LinkButton>
       {!isCancelled && !isArchived ? (
         <Button
           type="button"

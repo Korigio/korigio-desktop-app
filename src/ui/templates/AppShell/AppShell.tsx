@@ -30,10 +30,9 @@ type NavItemConfig = {
   icon: LucideIcon;
 };
 
-const NAV_ITEMS: NavItemConfig[] = [
+const PRIMARY_NAV_ITEMS: NavItemConfig[] = [
   { to: "/", end: true, labelKey: "nav.home", icon: Home },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
-  { to: "/companies", labelKey: "nav.companies", icon: Building2 },
   { to: "/devices", labelKey: "nav.devices", icon: MonitorSmartphone },
   { to: "/repairs", labelKey: "nav.repairs", icon: Wrench },
   {
@@ -41,6 +40,10 @@ const NAV_ITEMS: NavItemConfig[] = [
     labelKey: "nav.diagnosisTemplates",
     icon: ClipboardList,
   },
+];
+
+const SECONDARY_NAV_ITEMS: NavItemConfig[] = [
+  { to: "/companies", labelKey: "nav.companies", icon: Building2 },
   { to: "/team", labelKey: "nav.team", icon: UsersRound },
   { to: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
@@ -156,7 +159,21 @@ function AppShellLayout() {
             collapsed && "md:items-stretch",
           )}
         >
-          {NAV_ITEMS.map((item) => (
+          {PRIMARY_NAV_ITEMS.map((item) => (
+            <NavItem
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              label={t(item.labelKey)}
+              icon={item.icon}
+              collapsed={collapsed}
+            />
+          ))}
+          <div
+            role="separator"
+            className="w-px shrink-0 self-stretch bg-border md:h-px md:w-full"
+          />
+          {SECONDARY_NAV_ITEMS.map((item) => (
             <NavItem
               key={item.to}
               to={item.to}

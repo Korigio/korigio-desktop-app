@@ -107,12 +107,17 @@ pub fn list_repairs(
         Some(raw) => Some(parse_entity_id_field(&raw, "deviceId")?),
         None => None,
     };
+    let company_id = match query.company_id {
+        Some(raw) => Some(parse_entity_id_field(&raw, "companyId")?),
+        None => None,
+    };
 
     let (items, total) = repository::list_repairs(
         conn,
         query.query.as_deref(),
         customer_id.as_deref(),
         device_id.as_deref(),
+        company_id.as_deref(),
         status,
         page_size,
         offset,

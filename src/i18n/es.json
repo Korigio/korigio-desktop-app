@@ -26,6 +26,7 @@
     "prev": "Anterior",
     "next": "Siguiente",
     "page": "Página",
+    "pageSize": "Filas por página",
     "clearSelection": "Quitar selección",
     "close": "Cerrar"
   },
@@ -96,23 +97,8 @@
   "home": {
     "title": "Inicio",
     "dashboard": {
-      "title": "Mostrador del taller",
-      "subtitle": "Qué necesita atención ahora",
       "loadFailed": "No se pudo cargar el panel.",
-      "pipeline": "Reparaciones abiertas por estado",
-      "todayLine": "Hoy: {received} recibidas · {collected} entregadas",
-      "readyTitle": "Listas para recoger",
-      "readyEmpty": "No hay reparaciones pendientes de entrega.",
-      "readyAt": "Lista {date}",
-      "staleTitle": "Estancadas (sin actualización en {days}+ días)",
-      "staleEmpty": "No hay reparaciones abiertas estancadas.",
-      "daysInStatus": "{days}d",
       "kpi": {
-        "receivedToday": "Recibidas hoy",
-        "collectedToday": "Entregadas hoy",
-        "ready": "Listas",
-        "open": "Abiertas",
-        "stale": "Estancadas",
         "collectedRevenueToday": "Estimaciones cobradas hoy",
         "collectedRevenueWeek": "Estimaciones cobradas esta semana",
         "openEstimate": "Estimaciones abiertas"
@@ -302,7 +288,7 @@
     "subtitle": "Buscar, crear y gestionar reparaciones",
     "customerSectionTitle": "Reparaciones",
     "deviceSectionTitle": "Reparaciones",
-    "editTitle": "Editar reparación",
+    "companySectionTitle": "Reparaciones",
     "search": "Buscar",
     "searchPlaceholder": "Número, cliente o dispositivo",
     "statusFilterAll": "Todos los estados",
@@ -310,7 +296,6 @@
     "notFound": "Reparación no encontrada",
     "invalidId": "Identificador de reparación no válido",
     "backToList": "Volver a reparaciones",
-    "archivedEditHint": "Desarchive la reparación para poder editarla.",
     "assign": "Asignar",
     "takeOver": "Hacerse cargo",
     "assignedTo": "Asignada a {name}",
@@ -378,8 +363,6 @@
     "actions": {
       "new": "Nueva reparación",
       "save": "Guardar",
-      "edit": "Editar",
-      "print": "Imprimir",
       "cancel": "Cancelar reparación",
       "changeStatus": "Cambiar estado",
       "diagnose": "Diagnosticar",

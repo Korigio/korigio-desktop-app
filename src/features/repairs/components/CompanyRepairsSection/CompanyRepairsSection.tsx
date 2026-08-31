@@ -1,30 +1,23 @@
 import { RepairListFilters } from "@/features/repairs/components/RepairListFilters";
 import { RepairTable } from "@/features/repairs/components/RepairTable";
-import { NewRepairButton } from "@/features/repairs/components/NewRepairButton";
 import { useRepairList } from "@/features/repairs/hooks/useRepairList";
 import { Card, PaginationBar, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
-  customerId: string;
-  deviceId: string;
+  companyId: string;
 };
 
-/** Repairs for one device — used on device detail. */
-export function DeviceRepairsSection({ customerId, deviceId }: Props) {
+/** Repairs belonging to one company — used on company detail. */
+export function CompanyRepairsSection({ companyId }: Props) {
   const { t } = useI18n();
-  const list = useRepairList({ customerId, deviceId });
+  const list = useRepairList({ companyId });
   const totalPages = list.result
     ? Math.max(1, Math.ceil(list.result.total / list.result.pageSize))
     : 1;
 
   return (
-    <Card
-      title={t("repairs.deviceSectionTitle")}
-      actions={
-        <NewRepairButton customerId={customerId} deviceId={deviceId} />
-      }
-    >
+    <Card title={t("repairs.companySectionTitle")}>
       <div className="flex flex-col gap-4">
         <RepairListFilters
           query={list.query}
@@ -40,11 +33,7 @@ export function DeviceRepairsSection({ customerId, deviceId }: Props) {
         {list.loading ? (
           <StatusMessage>{t("common.loading")}</StatusMessage>
         ) : (
-          <RepairTable
-            repairs={list.result?.items ?? []}
-            showCustomerLink={false}
-            showDeviceLink={false}
-          />
+          <RepairTable repairs={list.result?.items ?? []} />
         )}
 
         <PaginationBar

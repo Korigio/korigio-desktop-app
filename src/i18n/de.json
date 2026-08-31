@@ -26,6 +26,7 @@
     "prev": "Zurück",
     "next": "Weiter",
     "page": "Seite",
+    "pageSize": "Zeilen pro Seite",
     "clearSelection": "Auswahl löschen",
     "close": "Schließen"
   },
@@ -96,23 +97,8 @@
   "home": {
     "title": "Start",
     "dashboard": {
-      "title": "Werkstatt-Schalter",
-      "subtitle": "Was jetzt Aufmerksamkeit braucht",
       "loadFailed": "Dashboard konnte nicht geladen werden.",
-      "pipeline": "Offene Reparaturen nach Status",
-      "todayLine": "Heute: {received} eingegangen · {collected} abgeholt",
-      "readyTitle": "Bereit zur Abholung",
-      "readyEmpty": "Keine Reparaturen warten auf Abholung.",
-      "readyAt": "Fertig {date}",
-      "staleTitle": "Liegengeblieben (keine Aktualisierung seit {days}+ Tagen)",
-      "staleEmpty": "Keine liegengebliebenen offenen Reparaturen.",
-      "daysInStatus": "{days}d",
       "kpi": {
-        "receivedToday": "Heute eingegangen",
-        "collectedToday": "Heute abgeholt",
-        "ready": "Bereit",
-        "open": "Offen",
-        "stale": "Liegengeblieben",
         "collectedRevenueToday": "Eingenommene Kostenvoranschläge heute",
         "collectedRevenueWeek": "Eingenommene Kostenvoranschläge diese Woche",
         "openEstimate": "Offene Kostenvoranschläge"
@@ -302,7 +288,7 @@
     "subtitle": "Reparaturen suchen, anlegen und verwalten",
     "customerSectionTitle": "Reparaturen",
     "deviceSectionTitle": "Reparaturen",
-    "editTitle": "Reparatur bearbeiten",
+    "companySectionTitle": "Reparaturen",
     "search": "Suche",
     "searchPlaceholder": "Nummer, Kunde oder Gerät",
     "statusFilterAll": "Alle Status",
@@ -310,7 +296,6 @@
     "notFound": "Reparatur nicht gefunden",
     "invalidId": "Ungültige Reparatur-ID",
     "backToList": "Zurück zu Reparaturen",
-    "archivedEditHint": "Reparatur zuerst wiederherstellen, um zu bearbeiten.",
     "assign": "Zuweisen",
     "takeOver": "Übernehmen",
     "assignedTo": "Zugewiesen an {name}",
@@ -378,8 +363,6 @@
     "actions": {
       "new": "Neue Reparatur",
       "save": "Speichern",
-      "edit": "Bearbeiten",
-      "print": "Drucken",
       "cancel": "Reparatur stornieren",
       "changeStatus": "Status ändern",
       "diagnose": "Diagnose",

@@ -26,6 +26,7 @@
     "prev": "Previous",
     "next": "Next",
     "page": "Page",
+    "pageSize": "Rows per page",
     "clearSelection": "Clear selection",
     "close": "Close"
   },
@@ -96,23 +97,8 @@
   "home": {
     "title": "Home",
     "dashboard": {
-      "title": "Workshop desk",
-      "subtitle": "What needs attention right now",
       "loadFailed": "Could not load the dashboard.",
-      "pipeline": "Open repairs by status",
-      "todayLine": "Today: {received} received · {collected} collected",
-      "readyTitle": "Ready for pickup",
-      "readyEmpty": "No repairs waiting for pickup.",
-      "readyAt": "Ready {date}",
-      "staleTitle": "Stale (no update in {days}+ days)",
-      "staleEmpty": "No stale open repairs.",
-      "daysInStatus": "{days}d",
       "kpi": {
-        "receivedToday": "Received today",
-        "collectedToday": "Collected today",
-        "ready": "Ready",
-        "open": "Open",
-        "stale": "Stale",
         "collectedRevenueToday": "Collected estimates today",
         "collectedRevenueWeek": "Collected estimates this week",
         "openEstimate": "Open estimates"
@@ -302,7 +288,7 @@
     "subtitle": "Search, create and manage repairs",
     "customerSectionTitle": "Repairs",
     "deviceSectionTitle": "Repairs",
-    "editTitle": "Edit repair",
+    "companySectionTitle": "Repairs",
     "search": "Search",
     "searchPlaceholder": "Number, customer or device",
     "statusFilterAll": "All statuses",
@@ -310,7 +296,6 @@
     "notFound": "Repair not found",
     "invalidId": "Invalid repair id",
     "backToList": "Back to repairs",
-    "archivedEditHint": "Unarchive the repair before editing.",
     "assign": "Assign",
     "takeOver": "Take over",
     "assignedTo": "Assigned to {name}",
@@ -378,8 +363,6 @@
     "actions": {
       "new": "New repair",
       "save": "Save",
-      "edit": "Edit",
-      "print": "Print",
       "cancel": "Cancel repair",
       "changeStatus": "Change status",
       "diagnose": "Diagnose",

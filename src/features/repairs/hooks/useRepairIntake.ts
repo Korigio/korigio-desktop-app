@@ -175,7 +175,6 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
   });
 
   const repairForm = useRepairForm({
-    mode: "create",
     defaultCustomerId: customer?.id,
     defaultDeviceId: device?.id,
     defaultCompanyId: company?.id,

@@ -4,12 +4,14 @@ import type {
   Customer,
   CustomerListResult,
 } from "@/features/customers/types/customer";
+import { DEFAULT_PAGE_SIZE } from "@/shared/constants/pagination";
 import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
 
 export function useCustomerList() {
   const [query, setQuery] = useState("");
   const [includeArchived, setIncludeArchived] = useState(false);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
   const [result, setResult] = useState<CustomerListResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export function useCustomerList() {
           query: query.trim() || undefined,
           includeArchived,
           page,
-          pageSize: 25,
+          pageSize,
         });
         setResult(next);
         setError(null);
@@ -43,7 +45,7 @@ export function useCustomerList() {
         }
       }
     },
-    [query, includeArchived, page],
+    [query, includeArchived, page, pageSize],
   );
 
   useEffect(() => {
@@ -83,6 +85,11 @@ export function useCustomerList() {
     },
     page,
     setPage,
+    pageSize,
+    setPageSize: (size: number) => {
+      setPage(1);
+      setPageSizeState(size);
+    },
     result,
     loading,
     error,

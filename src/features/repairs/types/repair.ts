@@ -77,6 +77,7 @@ export type RepairListQuery = {
   query?: string;
   customerId?: string;
   deviceId?: string;
+  companyId?: string;
   status?: RepairStatus;
   page?: number;
   pageSize?: number;

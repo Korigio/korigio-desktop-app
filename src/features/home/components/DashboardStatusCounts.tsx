@@ -18,7 +18,6 @@ export function DashboardStatusCounts({ counts }: Props) {
 
   return (
     <section className="flex min-w-0 flex-col gap-2">
-      <h2 className="text-sm font-semibold">{t("home.dashboard.pipeline")}</h2>
       <div className="flex flex-wrap gap-2">
         {HOME_PIPELINE_STATUSES.map((status) => {
           const count = byStatus.get(status) ?? 0;

@@ -1,4 +1,4 @@
-use rusqlite::{params, Connection, OptionalExtension, Transaction};
+use rusqlite::{params, params_from_iter, Connection, OptionalExtension, ToSql, Transaction};
 
 use crate::db::repository::like_pattern;
 use crate::domain::repairs::types::{Repair, RepairListItem};
@@ -167,6 +167,7 @@ pub fn list_repairs(
     search: Option<&str>,
     customer_id: Option<&str>,
     device_id: Option<&str>,
+    company_id: Option<&str>,
     status: Option<&str>,
     limit: u32,
     offset: u32,
@@ -176,24 +177,27 @@ pub fn list_repairs(
 
     let mut where_parts =
         vec!["repairs.archived_at IS NULL AND repairs.deleted_at IS NULL".to_string()];
+    let mut idx = 1usize;
     if customer_id.is_some() {
-        where_parts.push("repairs.customer_id = ?1".into());
+        where_parts.push(format!("repairs.customer_id = ?{idx}"));
+        idx += 1;
     }
     if device_id.is_some() {
-        let idx = 1 + usize::from(customer_id.is_some());
         where_parts.push(format!("repairs.device_id = ?{idx}"));
+        idx += 1;
+    }
+    if company_id.is_some() {
+        where_parts.push(format!("repairs.company_id = ?{idx}"));
+        idx += 1;
     }
     if status.is_some() {
-        let idx = 1 + usize::from(customer_id.is_some()) + usize::from(device_id.is_some());
         where_parts.push(format!("repairs.status = ?{idx}"));
+        idx += 1;
     }
     if pattern.is_some() {
-        let idx = 1
-            + usize::from(customer_id.is_some())
-            + usize::from(device_id.is_some())
-            + usize::from(status.is_some());
         let ph = format!("?{idx}");
         where_parts.push(SEARCH_MATCH_SQL.replace("{ph}", &ph));
+        idx += 1;
     }
 
     let where_sql = format!("WHERE {}", where_parts.join(" AND "));
@@ -207,13 +211,8 @@ pub fn list_repairs(
     };
 
     let select_cols = format!("{REPAIR_SELECT_COLS}, customers.name AS customer_name");
-
-    let param_count = usize::from(customer_id.is_some())
-        + usize::from(device_id.is_some())
-        + usize::from(status.is_some())
-        + usize::from(pattern.is_some());
-    let limit_ph = format!("?{}", param_count + 1);
-    let offset_ph = format!("?{}", param_count + 2);
+    let limit_ph = format!("?{idx}");
+    let offset_ph = format!("?{}", idx + 1);
 
     let count_sql = format!("SELECT COUNT(*) {from_sql} {where_sql}");
     let list_sql = format!(
@@ -229,6 +228,7 @@ pub fn list_repairs(
         &count_sql,
         customer_id,
         device_id,
+        company_id,
         status,
         pattern.as_deref(),
     )?;
@@ -238,6 +238,7 @@ pub fn list_repairs(
         &mut stmt,
         customer_id,
         device_id,
+        company_id,
         status,
         pattern.as_deref(),
         limit,
@@ -247,104 +248,59 @@ pub fn list_repairs(
     Ok((rows, total))
 }
 
+/// Bind order: customer_id, device_id, company_id, status, search pattern.
+fn list_filter_params<'a>(
+    customer_id: &'a Option<&str>,
+    device_id: &'a Option<&str>,
+    company_id: &'a Option<&str>,
+    status: &'a Option<&str>,
+    pattern: &'a Option<&str>,
+) -> Vec<&'a dyn ToSql> {
+    let mut params: Vec<&dyn ToSql> = Vec::new();
+    push_opt(&mut params, customer_id);
+    push_opt(&mut params, device_id);
+    push_opt(&mut params, company_id);
+    push_opt(&mut params, status);
+    push_opt(&mut params, pattern);
+    params
+}
+
+fn push_opt<'a>(params: &mut Vec<&'a dyn ToSql>, value: &'a Option<&str>) {
+    if let Some(v) = value.as_ref() {
+        params.push(v);
+    }
+}
+
 fn query_count(
     conn: &Connection,
     sql: &str,
     customer_id: Option<&str>,
     device_id: Option<&str>,
+    company_id: Option<&str>,
     status: Option<&str>,
     pattern: Option<&str>,
 ) -> Result<i64, AppError> {
-    match (customer_id, device_id, status, pattern) {
-        (None, None, None, None) => conn.query_row(sql, [], |row| row.get(0)),
-        (Some(c), None, None, None) => conn.query_row(sql, params![c], |row| row.get(0)),
-        (None, Some(d), None, None) => conn.query_row(sql, params![d], |row| row.get(0)),
-        (None, None, Some(s), None) => conn.query_row(sql, params![s], |row| row.get(0)),
-        (None, None, None, Some(q)) => conn.query_row(sql, params![q], |row| row.get(0)),
-        (Some(c), Some(d), None, None) => conn.query_row(sql, params![c, d], |row| row.get(0)),
-        (Some(c), None, Some(s), None) => conn.query_row(sql, params![c, s], |row| row.get(0)),
-        (Some(c), None, None, Some(q)) => conn.query_row(sql, params![c, q], |row| row.get(0)),
-        (None, Some(d), Some(s), None) => conn.query_row(sql, params![d, s], |row| row.get(0)),
-        (None, Some(d), None, Some(q)) => conn.query_row(sql, params![d, q], |row| row.get(0)),
-        (None, None, Some(s), Some(q)) => conn.query_row(sql, params![s, q], |row| row.get(0)),
-        (Some(c), Some(d), Some(s), None) => {
-            conn.query_row(sql, params![c, d, s], |row| row.get(0))
-        }
-        (Some(c), Some(d), None, Some(q)) => {
-            conn.query_row(sql, params![c, d, q], |row| row.get(0))
-        }
-        (Some(c), None, Some(s), Some(q)) => {
-            conn.query_row(sql, params![c, s, q], |row| row.get(0))
-        }
-        (None, Some(d), Some(s), Some(q)) => {
-            conn.query_row(sql, params![d, s, q], |row| row.get(0))
-        }
-        (Some(c), Some(d), Some(s), Some(q)) => {
-            conn.query_row(sql, params![c, d, s, q], |row| row.get(0))
-        }
-    }
-    .map_err(AppError::from)
+    let params = list_filter_params(&customer_id, &device_id, &company_id, &status, &pattern);
+    conn.query_row(sql, params_from_iter(params), |row| row.get(0))
+        .map_err(AppError::from)
 }
 
 fn query_rows(
     stmt: &mut rusqlite::Statement<'_>,
     customer_id: Option<&str>,
     device_id: Option<&str>,
+    company_id: Option<&str>,
     status: Option<&str>,
     pattern: Option<&str>,
     limit: u32,
     offset: u32,
 ) -> Result<Vec<RepairListItem>, AppError> {
-    let rows = match (customer_id, device_id, status, pattern) {
-        (None, None, None, None) => stmt
-            .query_map(params![limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), None, None, None) => stmt
-            .query_map(params![c, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (None, Some(d), None, None) => stmt
-            .query_map(params![d, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (None, None, Some(s), None) => stmt
-            .query_map(params![s, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (None, None, None, Some(q)) => stmt
-            .query_map(params![q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), Some(d), None, None) => stmt
-            .query_map(params![c, d, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), None, Some(s), None) => stmt
-            .query_map(params![c, s, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), None, None, Some(q)) => stmt
-            .query_map(params![c, q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (None, Some(d), Some(s), None) => stmt
-            .query_map(params![d, s, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (None, Some(d), None, Some(q)) => stmt
-            .query_map(params![d, q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (None, None, Some(s), Some(q)) => stmt
-            .query_map(params![s, q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), Some(d), Some(s), None) => stmt
-            .query_map(params![c, d, s, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), Some(d), None, Some(q)) => stmt
-            .query_map(params![c, d, q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), None, Some(s), Some(q)) => stmt
-            .query_map(params![c, s, q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (None, Some(d), Some(s), Some(q)) => stmt
-            .query_map(params![d, s, q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-        (Some(c), Some(d), Some(s), Some(q)) => stmt
-            .query_map(params![c, d, s, q, limit, offset], map_repair_list_item)?
-            .collect::<Result<Vec<_>, _>>()?,
-    };
+    let mut params = list_filter_params(&customer_id, &device_id, &company_id, &status, &pattern);
+    params.push(&limit);
+    params.push(&offset);
+    let rows = stmt
+        .query_map(params_from_iter(params), map_repair_list_item)?
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)
 }
 

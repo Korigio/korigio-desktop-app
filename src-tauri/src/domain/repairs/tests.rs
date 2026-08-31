@@ -276,6 +276,7 @@ fn list_filters_by_customer_device_status_and_query() {
             query: None,
             customer_id: Some(customer_id),
             device_id: None,
+            company_id: None,
             status: None,
             page: Some(1),
             page_size: Some(10),
@@ -290,6 +291,7 @@ fn list_filters_by_customer_device_status_and_query() {
             query: None,
             customer_id: None,
             device_id: Some(device_id),
+            company_id: None,
             status: None,
             page: Some(1),
             page_size: Some(10),
@@ -304,6 +306,7 @@ fn list_filters_by_customer_device_status_and_query() {
             query: None,
             customer_id: None,
             device_id: None,
+            company_id: None,
             status: Some("received".into()),
             page: Some(1),
             page_size: Some(10),
@@ -318,6 +321,7 @@ fn list_filters_by_customer_device_status_and_query() {
             query: Some(repair.repair_number.clone()),
             customer_id: None,
             device_id: None,
+            company_id: None,
             status: None,
             page: Some(1),
             page_size: Some(10),
@@ -334,6 +338,7 @@ fn list_filters_by_customer_device_status_and_query() {
             query: None,
             customer_id: None,
             device_id: None,
+            company_id: None,
             status: Some("ready".into()),
             page: Some(1),
             page_size: Some(10),
@@ -341,6 +346,102 @@ fn list_filters_by_customer_device_status_and_query() {
     )
     .expect("empty");
     assert_eq!(empty.total, 0);
+}
+
+#[test]
+fn list_filters_by_company_id() {
+    let db = Db::open_in_memory().expect("db");
+    let company_a = company(&db);
+    let company_b = company(&db);
+    let customer_a = customer(&db, "Owner A");
+    let customer_b = customer(&db, "Owner B");
+    let device_a = device(&db, &customer_a, "SN-A");
+    let device_b = device(&db, &customer_b, "SN-B");
+
+    let repair_a = create_repair(
+        db.conn(),
+        sample_repair(&customer_a, &device_a, &company_a),
+    )
+    .expect("create a");
+    let repair_b = create_repair(
+        db.conn(),
+        sample_repair(&customer_b, &device_b, &company_b),
+    )
+    .expect("create b");
+
+    let by_company_a = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            company_id: Some(company_a.clone()),
+            page: Some(1),
+            page_size: Some(10),
+            ..Default::default()
+        },
+    )
+    .expect("by company a");
+    assert_eq!(by_company_a.total, 1);
+    assert_eq!(by_company_a.items[0].id, repair_a.id);
+    assert!(!by_company_a
+        .items
+        .iter()
+        .any(|item| item.id == repair_b.id));
+
+    let by_company_b = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            company_id: Some(company_b.clone()),
+            page: Some(1),
+            page_size: Some(10),
+            ..Default::default()
+        },
+    )
+    .expect("by company b");
+    assert_eq!(by_company_b.total, 1);
+    assert_eq!(by_company_b.items[0].id, repair_b.id);
+
+    let by_company_and_status = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            company_id: Some(company_a.clone()),
+            status: Some("received".into()),
+            page: Some(1),
+            page_size: Some(10),
+            ..Default::default()
+        },
+    )
+    .expect("company + received");
+    assert_eq!(by_company_and_status.total, 1);
+    assert_eq!(by_company_and_status.items[0].id, repair_a.id);
+
+    let company_and_other_status = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            company_id: Some(company_a),
+            status: Some("ready".into()),
+            page: Some(1),
+            page_size: Some(10),
+            ..Default::default()
+        },
+    )
+    .expect("company + ready");
+    assert_eq!(company_and_other_status.total, 0);
+
+    let err = list_repairs(
+        db.conn(),
+        RepairListQuery {
+            company_id: Some("not-a-uuid".into()),
+            page: Some(1),
+            page_size: Some(10),
+            ..Default::default()
+        },
+    )
+    .expect_err("invalid companyId");
+    match err {
+        AppError::Validation { field, .. } => {
+            assert_eq!(field.as_deref(), Some("companyId"));
+        }
+        other => panic!("unexpected error: {other:?}"),
+    }
 }
 
 #[test]
@@ -398,6 +499,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
             query: Some("600 111".into()),
             customer_id: None,
             device_id: None,
+            company_id: None,
             status: None,
             page: Some(1),
             page_size: Some(10),
@@ -413,6 +515,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
             query: Some("SERIAL-FIND".into()),
             customer_id: None,
             device_id: None,
+            company_id: None,
             status: None,
             page: Some(1),
             page_size: Some(10),
@@ -428,6 +531,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
             query: Some("won't boot".into()),
             customer_id: None,
             device_id: None,
+            company_id: None,
             status: None,
             page: Some(1),
             page_size: Some(10),
@@ -443,6 +547,7 @@ fn list_repairs_finds_by_phone_serial_and_reported_problem() {
             query: Some("Lenovo".into()),
             customer_id: None,
             device_id: None,
+            company_id: None,
             status: None,
             page: Some(1),
             page_size: Some(10),

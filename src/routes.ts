@@ -33,7 +33,6 @@ export default [
     route("repairs/intake", "./routes/repairs/intake.tsx"),
     route("repairs/new", "./routes/repairs/new.tsx"),
     route("repairs/:id", "./routes/repairs/detail.tsx"),
-    route("repairs/:id/edit", "./routes/repairs/edit.tsx"),
     route("repairs/:id/diagnosis", "./routes/repairs/diagnosis.tsx"),
     route("diagnosis-templates", "./routes/diagnosis-templates/list.tsx"),
     route("diagnosis-templates/new", "./routes/diagnosis-templates/new.tsx"),
