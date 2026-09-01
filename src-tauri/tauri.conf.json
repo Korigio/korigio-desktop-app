@@ -43,7 +43,7 @@
     "category": "Business",
     "shortDescription": "Offline workshop repair manager",
     "longDescription": "Korigio is an offline-first desktop app for repair shops: customers, devices, repairs, diagnosis, print, and local Wi-Fi team sync. No cloud required.",
-    "homepage": "https://m-wri.github.io/servioo/",
+    "homepage": "https://korigio.github.io/korigio-downloads/",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

@@ -1,6 +1,6 @@
-Source for the Korigio public download page at [m-wri.github.io/servioo](https://m-wri.github.io/servioo/).
+Source for the Korigio public download page at [korigio.github.io/korigio-downloads](https://korigio.github.io/korigio-downloads/).
 
-The live site lives in the public repo [M-WRI/servioo](https://github.com/M-WRI/servioo). On each `v*` tag, the Release workflow:
+The live site lives in the public repo [Korigio/korigio-downloads](https://github.com/Korigio/korigio-downloads). On each `v*` tag, the Release workflow:
 
 1. Uploads installers to a public GitHub Release
 2. Runs `scripts/build-download-page.mjs` against those releases

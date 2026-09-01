@@ -4,13 +4,13 @@
  *
  *   node scripts/build-download-page.mjs --output website/index.html
  *   node scripts/build-download-page.mjs --input releases.json --output website/index.html
- *   node scripts/build-download-page.mjs --repo M-WRI/servioo --output index.html
+ *   node scripts/build-download-page.mjs --repo Korigio/korigio-downloads --output index.html
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-const DEFAULT_REPO = "M-WRI/servioo";
+const DEFAULT_REPO = "Korigio/korigio-downloads";
 const PRODUCT = "Korigio";
 
 function parseArgs(argv) {

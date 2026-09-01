@@ -40,7 +40,7 @@ Use this before handing Korigio to a customer. Check each item on a **Windows 10
 - [ ] `npm run typecheck` and `npm run lint` clean on release commit
 - [ ] `cargo test --lib` green
 - [ ] CI workflow `Release` produced Windows / macOS / Linux installers for a `v*` tag (and a GitHub Release)
-- [ ] Public download page [m-wri.github.io/servioo](https://m-wri.github.io/servioo/) shows the latest public release when `SERVIOO_RELEASES_TOKEN` is configured
+- [ ] Public download page [korigio.github.io/korigio-downloads](https://korigio.github.io/korigio-downloads/) shows the latest public release when `SERVIOO_RELEASES_TOKEN` is configured
 
 ## Sign-off
 
