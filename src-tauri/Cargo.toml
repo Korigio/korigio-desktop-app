@@ -4,7 +4,7 @@ version = "1.0.1"
 description = "Korigio — offline workshop repair manager"
 authors = ["Moritz Alexander Wright"]
 edition = "2021"
-repository = "https://github.com/M-WRI/cp-reparaciones"
+repository = "https://github.com/Korigio/korigio-desktop-app"
 homepage = "https://m-wri.github.io/servioo/"
 
 [lib]
