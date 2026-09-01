@@ -15,6 +15,7 @@
     "diagnosisTemplates": "Diagnosevorlagen",
     "intake": "Annahme",
     "settings": "Einstellungen",
+    "settingsUpdateAvailable": "Update verfügbar",
     "team": "Team",
     "collapse": "Seitenleiste einklappen",
     "expand": "Seitenleiste ausklappen"
@@ -791,6 +792,30 @@
         "loadFailed": "Werkstatt-Einstellungen konnten nicht geladen werden.",
         "saveFailed": "Werkstatt-Einstellungen konnten nicht gespeichert werden."
       }
+    },
+    "updates": {
+      "title": "Updates",
+      "hint": "Prüft die öffentliche Download-Seite. Wenn eine neuere Version vorliegt, laden Sie das Setup herunter und installieren Sie es selbst. Korigio aktualisiert sich nicht im Hintergrund.",
+      "currentVersion": "Aktuelle Version: {version}",
+      "latestVersion": "Neueste Version: {version}",
+      "available": "Eine neuere Version ist verfügbar.",
+      "upToDate": "Sie verwenden die neueste Version.",
+      "noInstaller": "Es gibt eine neuere Version, aber kein Installationsprogramm für dieses System.",
+      "download": "Herunterladen",
+      "openDownloadPage": "Download-Seite öffnen",
+      "checkAgain": "Erneut prüfen",
+      "checking": "Wird geprüft…",
+      "checkFailed": "Updates konnten nicht geprüft werden.",
+      "offlineHint": "Sie können Korigio offline weiter nutzen. Diese Prüfung ist optional."
+    },
+    "feedback": {
+      "title": "Feedback",
+      "body": "Melden Sie einen Fehler, wünschen Sie eine neue Funktion oder senden Sie sonstiges Feedback. Es öffnet sich Ihr E-Mail-Programm; es wird nichts automatisch gesendet.",
+      "emailLabel": "E-Mail",
+      "email": "info@korigio.com",
+      "openMail": "E-Mail schreiben",
+      "mailSubject": "Korigio-Feedback (v{version})",
+      "mailBody": "App-Version: {version}"
     }
   },
   "print": {
@@ -948,6 +973,18 @@
   "backup": {
     "restore": {
       "unsupportedSchema": "Diese Sicherung stammt von einer älteren Korigio-Version und kann nicht wiederhergestellt werden."
+    }
+  },
+  "setup": {
+    "title": "Richten Sie Ihre Werkstatt ein",
+    "subtitle": "Fügen Sie das Unternehmen für Ausdrucke hinzu, plus Steuersatz und Währung. Dieser Schritt ist Pflicht.",
+    "actions": {
+      "submit": "Speichern und fortfahren"
+    },
+    "backupHint": "Einen Backup-Ordner können Sie später in den Einstellungen wählen.",
+    "errors": {
+      "submitFailed": "Einrichtung fehlgeschlagen. Prüfen Sie die Firmendaten und versuchen Sie es erneut.",
+      "shopSaveFailed": "Firma gespeichert; Steuersatz und Währung können unter Einstellungen angepasst werden."
     }
   }
 }

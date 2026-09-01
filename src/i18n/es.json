@@ -15,6 +15,7 @@
     "diagnosisTemplates": "Plantillas de diagnóstico",
     "intake": "Recepción",
     "settings": "Ajustes",
+    "settingsUpdateAvailable": "Actualización disponible",
     "team": "Equipo",
     "collapse": "Contraer barra lateral",
     "expand": "Expandir barra lateral"
@@ -791,6 +792,30 @@
         "loadFailed": "No se pudieron cargar los ajustes del taller.",
         "saveFailed": "No se pudieron guardar los ajustes del taller."
       }
+    },
+    "updates": {
+      "title": "Actualizaciones",
+      "hint": "Consulta la página pública de descargas. Si hay una versión más nueva, descarga el instalador e instálalo tú. Korigio no se actualiza en segundo plano.",
+      "currentVersion": "Versión actual: {version}",
+      "latestVersion": "Última versión: {version}",
+      "available": "Hay una versión más nueva disponible.",
+      "upToDate": "Tienes la última versión.",
+      "noInstaller": "Hay una versión más nueva, pero no hay instalador para este sistema.",
+      "download": "Descargar",
+      "openDownloadPage": "Abrir página de descargas",
+      "checkAgain": "Comprobar de nuevo",
+      "checking": "Comprobando…",
+      "checkFailed": "No se pudieron buscar actualizaciones.",
+      "offlineHint": "Puedes seguir usando Korigio sin conexión. Esta comprobación es opcional."
+    },
+    "feedback": {
+      "title": "Comentarios",
+      "body": "Informa de un error, pide una función nueva o envía cualquier otro comentario. Se abre tu correo; no se envía nada automáticamente.",
+      "emailLabel": "Correo",
+      "email": "info@korigio.com",
+      "openMail": "Escribir un correo",
+      "mailSubject": "Comentarios sobre Korigio (v{version})",
+      "mailBody": "Versión de la app: {version}"
     }
   },
   "print": {
@@ -948,6 +973,18 @@
   "backup": {
     "restore": {
       "unsupportedSchema": "Esta copia de seguridad es de una versión anterior de Korigio y no se puede restaurar."
+    }
+  },
+  "setup": {
+    "title": "Configura tu taller",
+    "subtitle": "Añade la empresa que aparece en los documentos, más el impuesto y la moneda. No puedes omitir este paso.",
+    "actions": {
+      "submit": "Guardar y continuar"
+    },
+    "backupHint": "Más adelante puedes elegir una carpeta de copias de seguridad en Ajustes.",
+    "errors": {
+      "submitFailed": "No se pudo completar la configuración. Revisa los datos de la empresa e inténtalo de nuevo.",
+      "shopSaveFailed": "Empresa guardada; el impuesto y la moneda se pueden corregir en Ajustes."
     }
   }
 }

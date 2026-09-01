@@ -1,6 +1,8 @@
+import { FeedbackCard } from "@/features/settings/components/FeedbackCard";
 import { LanguagePreferenceField } from "@/features/settings/components/LanguagePreferenceField";
 import { SyncIntervalField } from "@/features/settings/components/SyncIntervalField";
 import { ThemePreferenceField } from "@/features/settings/components/ThemePreferenceField";
+import { UpdatesCard } from "@/features/settings/components/UpdatesCard";
 import { Card } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -30,6 +32,8 @@ export function GeneralSettingsPage() {
           <SyncIntervalField />
         </div>
       </Card>
+      <UpdatesCard />
+      <FeedbackCard />
     </div>
   );
 }

@@ -1,5 +1,9 @@
-import { Navigate } from "react-router";
+import { replace } from "react-router";
+
+export function clientLoader() {
+  return replace("/settings/general");
+}
 
 export default function SettingsIndexRoute() {
-  return <Navigate to="/settings/general" replace />;
+  return null;
 }

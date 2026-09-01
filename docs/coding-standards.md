@@ -30,7 +30,7 @@ src/
 - Pattern: `index(...)`, `route(...)`, `layout(...)`, `prefix(...)` as in the [official routing docs](https://reactrouter.com/start/framework/routing).
 - Route modules in `src/routes/` stay thin; feature UI lives in `features/*/pages`.
 - Do not use `RouterProvider` / `createBrowserRouter` / `createHashRouter` for primary app routing.
-- SPA mode: `react-router.config.ts` → `ssr: false`. Use `clientLoader` / `clientAction` for route data.
+- SPA mode: `react-router.config.ts` → `ssr: false` and `routeDiscovery: { mode: "initial" }` (no runtime `/__manifest`). Use `clientLoader` / `clientAction` for route data.
 
 ### Feature module shape
 

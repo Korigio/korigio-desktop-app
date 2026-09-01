@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import { NativeMenuBridge } from "@/app/NativeMenuBridge";
 import { AutoBackupOnStartup } from "@/features/settings/components/AutoBackupOnStartup";
+import {
+  AppUpdateProvider,
+  useAppUpdate,
+} from "@/features/settings/hooks/useAppUpdate";
 import { SessionProvider } from "@/features/staff/hooks/useSession";
 import { Button } from "@/ui/atoms/Button";
 import { LinkButton } from "@/ui/molecules/LinkButton";
@@ -28,6 +32,7 @@ type NavItemConfig = {
   end?: boolean;
   labelKey: string;
   icon: LucideIcon;
+  showUpdateBadge?: boolean;
 };
 
 const PRIMARY_NAV_ITEMS: NavItemConfig[] = [
@@ -45,7 +50,12 @@ const PRIMARY_NAV_ITEMS: NavItemConfig[] = [
 const SECONDARY_NAV_ITEMS: NavItemConfig[] = [
   { to: "/companies", labelKey: "nav.companies", icon: Building2 },
   { to: "/team", labelKey: "nav.team", icon: UsersRound },
-  { to: "/settings", labelKey: "nav.settings", icon: Settings },
+  {
+    to: "/settings",
+    labelKey: "nav.settings",
+    icon: Settings,
+    showUpdateBadge: true,
+  },
 ];
 
 function readSidebarCollapsed(): boolean {
@@ -70,9 +80,19 @@ type NavItemProps = {
   label: string;
   icon: LucideIcon;
   collapsed: boolean;
+  updateAvailable?: boolean;
+  updateBadgeLabel?: string;
 };
 
-function NavItem({ to, end, label, icon: Icon, collapsed }: NavItemProps) {
+function NavItem({
+  to,
+  end,
+  label,
+  icon: Icon,
+  collapsed,
+  updateAvailable,
+  updateBadgeLabel,
+}: NavItemProps) {
   return (
     <NavLink
       to={to}
@@ -91,6 +111,12 @@ function NavItem({ to, end, label, icon: Icon, collapsed }: NavItemProps) {
     >
       <Icon className="size-4 shrink-0" aria-hidden />
       <span className={cn(collapsed && "md:hidden")}>{label}</span>
+      {updateAvailable ? (
+        <span
+          className="size-2 shrink-0 rounded-full bg-primary"
+          aria-label={updateBadgeLabel}
+        />
+      ) : null}
     </NavLink>
   );
 }
@@ -98,13 +124,16 @@ function NavItem({ to, end, label, icon: Icon, collapsed }: NavItemProps) {
 export function AppShell() {
   return (
     <SessionProvider>
-      <AppShellLayout />
+      <AppUpdateProvider>
+        <AppShellLayout />
+      </AppUpdateProvider>
     </SessionProvider>
   );
 }
 
 function AppShellLayout() {
   const { t } = useI18n();
+  const { updateAvailable } = useAppUpdate();
   const [collapsed, setCollapsed] = useState(readSidebarCollapsed);
 
   function toggleCollapsed() {
@@ -181,6 +210,14 @@ function AppShellLayout() {
               label={t(item.labelKey)}
               icon={item.icon}
               collapsed={collapsed}
+              updateAvailable={
+                item.showUpdateBadge ? updateAvailable : undefined
+              }
+              updateBadgeLabel={
+                item.showUpdateBadge
+                  ? t("nav.settingsUpdateAvailable")
+                  : undefined
+              }
             />
           ))}
         </nav>

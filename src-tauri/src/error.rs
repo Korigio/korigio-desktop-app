@@ -46,6 +46,9 @@ pub enum AppError {
 
     #[error("Sync error")]
     Sync { message: String },
+
+    #[error("Network error")]
+    Network { message: String },
 }
 
 impl AppError {
@@ -79,6 +82,12 @@ impl AppError {
         }
     }
 
+    pub fn network(reason: impl Into<String>) -> Self {
+        Self::Network {
+            message: reason.into(),
+        }
+    }
+
     pub fn code(&self) -> &'static str {
         match self {
             Self::Database { .. } => "database",
@@ -92,6 +101,7 @@ impl AppError {
             Self::Forbidden { .. } => "forbidden",
             Self::Conflict { .. } => "conflict",
             Self::Sync { .. } => "sync",
+            Self::Network { .. } => "network",
         }
     }
 
@@ -113,6 +123,7 @@ impl AppError {
             Self::Forbidden { message } => message.clone(),
             Self::Conflict { message } => message.clone(),
             Self::Sync { message } => message.clone(),
+            Self::Network { .. } => "Could not check for updates.".into(),
         }
     }
 
@@ -146,7 +157,14 @@ pub struct CommandError {
 
 impl From<AppError> for CommandError {
     fn from(value: AppError) -> Self {
-        eprintln!("app_error code={} detail={value:?}", value.code());
+        match &value {
+            AppError::Network { message } => {
+                eprintln!("app_error code=network reason={message}");
+            }
+            other => {
+                eprintln!("app_error code={} detail={other:?}", other.code());
+            }
+        }
         Self {
             code: value.code().to_string(),
             field: value.field().map(str::to_string),

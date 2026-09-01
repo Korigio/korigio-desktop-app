@@ -8,7 +8,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 
 const DEFAULT_REPO = "Korigio/korigio-downloads";
 const PRODUCT = "Korigio";
@@ -109,6 +109,24 @@ function loadReleases(input, repo) {
     encoding: "utf8",
   });
   return JSON.parse(json);
+}
+
+function buildLatestJson(latest) {
+  const payload = { version: latest ? versionOf(latest) : "" };
+  const assets = classifyAssets(latest?.assets);
+  const windows = downloadHref(assets.windows);
+  const macos = downloadHref(assets.macos);
+  const linux = downloadHref(assets.linux);
+  if (windows) {
+    payload.windows = windows;
+  }
+  if (macos) {
+    payload.macos = macos;
+  }
+  if (linux) {
+    payload.linux = linux;
+  }
+  return payload;
 }
 
 function downloadHref(asset) {
@@ -355,7 +373,13 @@ if (!args.output) {
   );
 }
 
-const html = renderPage(loadReleases(args.input, args.repo));
-mkdirSync(dirname(args.output), { recursive: true });
+const releases = loadReleases(args.input, args.repo);
+const html = renderPage(releases);
+const outputDir = dirname(args.output);
+mkdirSync(outputDir, { recursive: true });
 writeFileSync(args.output, html);
+const latestPath = join(outputDir, "latest.json");
+const { latest } = selectReleases(releases);
+writeFileSync(latestPath, `${JSON.stringify(buildLatestJson(latest), null, 2)}\n`);
 console.log(`Wrote download page to ${args.output}`);
+console.log(`Wrote latest manifest to ${latestPath}`);

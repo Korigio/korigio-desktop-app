@@ -14,3 +14,4 @@ pub mod settings;
 pub mod staff;
 pub mod sync;
 pub mod team;
+pub mod updates;

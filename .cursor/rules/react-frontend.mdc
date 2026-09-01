@@ -22,7 +22,7 @@ alwaysApply: false
 - Follow https://reactrouter.com/start/framework/routing
 - Do **not** use `createBrowserRouter`, `createHashRouter`, or `RouterProvider` for primary navigation.
 - Route modules stay thin; render `features/*/pages` components.
-- SPA: `react-router.config.ts` has `ssr: false`. Prefer `clientLoader` / `clientAction` for data.
+- SPA: `react-router.config.ts` has `ssr: false` and `routeDiscovery: { mode: "initial" }` (no runtime `/__manifest`). Prefer `clientLoader` / `clientAction` for data.
 
 ## Atomic Design
 

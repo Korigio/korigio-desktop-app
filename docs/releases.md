@@ -41,7 +41,7 @@ The tag **must** match the files (`v1.0.1` ↔ `1.0.1`) or the Release workflow 
 2. Build NSIS / DMG / AppImage
 3. GitHub Release on this private repo (for you)
 4. Publish the same files to **public** `Korigio/korigio-downloads`
-5. Bake [https://korigio.github.io/korigio-downloads/](https://korigio.github.io/korigio-downloads/) from those public releases: latest installers on top, older versions listed below
+5. Bake [https://korigio.github.io/korigio-downloads/](https://korigio.github.io/korigio-downloads/) from those public releases: latest installers on top, older versions listed below. The same step writes `latest.json` beside `index.html` so the desktop app can check for updates.
 
 Step 4 requires repo secret `SERVIOO_RELEASES_TOKEN` (classic PAT or fine-grained token with `contents: write` on `Korigio/korigio-downloads` only). The job **fails** if that secret is missing — otherwise the download page stays on an old release.
 

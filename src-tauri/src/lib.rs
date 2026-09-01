@@ -18,6 +18,7 @@ use crate::sync_net::SyncRuntime;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let app_data_dir = app
                 .path()
@@ -59,6 +60,9 @@ pub fn run() {
             commands::set_shop_settings,
             commands::get_sync_interval,
             commands::set_sync_interval,
+            commands::get_app_version,
+            commands::check_app_update,
+            commands::open_external_url,
             commands::list_companies,
             commands::get_company,
             commands::create_company,

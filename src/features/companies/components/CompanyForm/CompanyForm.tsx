@@ -1,12 +1,54 @@
-import type { useCompanyForm } from "@/features/companies/hooks/useCompanyForm";
+import type { ReactNode } from "react";
 import { Button, FormField, TextField } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
+type CompanyFieldName =
+  | "legalName"
+  | "tradeName"
+  | "taxId"
+  | "address"
+  | "phone"
+  | "email"
+  | "website";
+
+type CompanyFieldInstance = {
+  name: string;
+  state: {
+    value: string | null | undefined;
+    meta: { errors: unknown[] };
+  };
+  handleBlur: () => void;
+  handleChange: (value: string) => void;
+};
+
+/**
+ * Minimum TanStack Form surface CompanyForm needs so first-run (extra
+ * tax/currency fields) can pass the same instance as create/edit.
+ */
+export type CompanyFormApi = {
+  handleSubmit: () => unknown;
+  Field: (props: {
+    name: CompanyFieldName;
+    validators?: {
+      onChange?: (opts: { value: string }) => string | undefined;
+    };
+    children: (field: CompanyFieldInstance) => ReactNode;
+  }) => ReactNode | Promise<ReactNode>;
+  Subscribe: <TSelected>(props: {
+    selector: (state: {
+      canSubmit: boolean;
+      isSubmitting: boolean;
+    }) => TSelected;
+    children: (state: TSelected) => ReactNode;
+  }) => ReactNode | Promise<ReactNode>;
+};
+
 type Props = {
-  form: ReturnType<typeof useCompanyForm>;
+  form: CompanyFormApi;
   submitLabel?: string;
   disabled?: boolean;
   hideSubmit?: boolean;
+  children?: ReactNode;
 };
 
 export function CompanyForm({
@@ -14,6 +56,7 @@ export function CompanyForm({
   submitLabel = "",
   disabled,
   hideSubmit = false,
+  children,
 }: Props) {
   const { t } = useI18n();
 
@@ -23,9 +66,7 @@ export function CompanyForm({
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        if (!hideSubmit) {
-          void form.handleSubmit();
-        }
+        void form.handleSubmit();
       }}
     >
       <form.Field
@@ -50,7 +91,7 @@ export function CompanyForm({
             <TextField
               id={field.name}
               name={field.name}
-              value={field.state.value}
+              value={field.state.value ?? ""}
               disabled={disabled}
               onBlur={field.handleBlur}
               onChange={(event) => field.handleChange(event.target.value)}
@@ -94,10 +135,7 @@ export function CompanyForm({
 
       <form.Field name="address">
         {(field) => (
-          <FormField
-            label={t("companies.fields.address")}
-            htmlFor={field.name}
-          >
+          <FormField label={t("companies.fields.address")} htmlFor={field.name}>
             <TextField
               id={field.name}
               name={field.name}
@@ -143,10 +181,7 @@ export function CompanyForm({
 
       <form.Field name="website">
         {(field) => (
-          <FormField
-            label={t("companies.fields.website")}
-            htmlFor={field.name}
-          >
+          <FormField label={t("companies.fields.website")} htmlFor={field.name}>
             <TextField
               id={field.name}
               name={field.name}
@@ -158,6 +193,8 @@ export function CompanyForm({
           </FormField>
         )}
       </form.Field>
+
+      {children}
 
       {!hideSubmit ? (
         <div>

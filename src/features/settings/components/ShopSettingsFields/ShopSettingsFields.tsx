@@ -1,5 +1,6 @@
+import { ShopTaxCurrencyFields } from "@/features/settings/components/ShopTaxCurrencyFields";
 import { useShopSettings } from "@/features/settings/hooks/useShopSettings";
-import { Button, FormField, StatusMessage, TextField } from "@/ui";
+import { Button, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 export function ShopSettingsFields() {
@@ -12,31 +13,14 @@ export function ShopSettingsFields() {
 
   return (
     <div className="flex max-w-md flex-col gap-3">
-      <FormField
-        label={t("settings.shop.fields.taxRatePercent")}
-        htmlFor="settings-tax-rate"
-      >
-        <TextField
-          id="settings-tax-rate"
-          inputMode="decimal"
-          value={shop.taxRatePercent}
-          disabled={shop.saving}
-          onChange={(event) => shop.setTaxRatePercent(event.target.value)}
-        />
-      </FormField>
-      <FormField
-        label={t("settings.shop.fields.currency")}
-        htmlFor="settings-currency"
-      >
-        <TextField
-          id="settings-currency"
-          value={shop.currency}
-          disabled={shop.saving}
-          maxLength={3}
-          onChange={(event) => shop.setCurrency(event.target.value)}
-        />
-      </FormField>
-      <p className="text-sm text-muted">{t("settings.shop.hint")}</p>
+      <ShopTaxCurrencyFields
+        taxRatePercent={shop.taxRatePercent}
+        currency={shop.currency}
+        onTaxRatePercentChange={shop.setTaxRatePercent}
+        onCurrencyChange={shop.setCurrency}
+        disabled={shop.saving}
+        idPrefix="settings"
+      />
       <div>
         <Button
           type="button"

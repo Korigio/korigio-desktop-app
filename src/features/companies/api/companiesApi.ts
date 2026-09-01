@@ -12,6 +12,14 @@ export const companiesApi = {
   list(query: CompanyListQuery = {}): Promise<CompanyListResult> {
     return invoke<CompanyListResult>("list_companies", { query });
   },
+  async hasActiveCompanies(): Promise<boolean> {
+    const result = await companiesApi.list({
+      includeArchived: false,
+      page: 1,
+      pageSize: 1,
+    });
+    return result.total > 0;
+  },
   get(id: string): Promise<Company> {
     return invoke<Company>("get_company", { id });
   },

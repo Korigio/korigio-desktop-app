@@ -147,6 +147,6 @@ jobs:
           cd public-site
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add index.html
+          git add index.html latest.json
           git diff --staged --quiet || git commit -m "docs: refresh download page for ${GITHUB_REF_NAME}"
           git push origin HEAD:main

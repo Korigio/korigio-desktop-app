@@ -12,6 +12,7 @@ mod staff;
 mod sync;
 mod system;
 mod team;
+mod updates;
 
 pub use backup::*;
 pub use companies::*;
@@ -27,3 +28,4 @@ pub use staff::*;
 pub use sync::*;
 pub use system::*;
 pub use team::*;
+pub use updates::*;

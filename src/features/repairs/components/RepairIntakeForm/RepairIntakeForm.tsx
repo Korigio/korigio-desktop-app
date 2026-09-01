@@ -28,9 +28,11 @@ export function RepairIntakeForm({ intake }: Props) {
         <StatusMessage tone="danger">
           {t("repairs.intake.noCompany")}
         </StatusMessage>
-        <p className="text-sm text-muted">{t("repairs.intake.noCompanyHint")}</p>
+        <p className="text-sm text-muted">
+          {t("repairs.intake.noCompanyHint")}
+        </p>
         <div>
-          <LinkButton to="/companies/new">
+          <LinkButton to="/setup">
             {t("repairs.intake.noCompanyAction")}
           </LinkButton>
         </div>
@@ -65,9 +67,7 @@ export function RepairIntakeForm({ intake }: Props) {
         <IntakeCustomerStep intake={intake} />
       ) : null}
       {intake.step === "device" ? <IntakeDeviceStep intake={intake} /> : null}
-      {intake.step === "details" ? (
-        <IntakeDetailsStep intake={intake} />
-      ) : null}
+      {intake.step === "details" ? <IntakeDetailsStep intake={intake} /> : null}
       {intake.step === "review" ? <IntakeReviewStep intake={intake} /> : null}
       {intake.step === "done" ? <IntakeDoneStep intake={intake} /> : null}
 

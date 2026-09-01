@@ -8,6 +8,14 @@
     "core:path:default",
     "dialog:default",
     "dialog:allow-open",
-    "dialog:allow-save"
+    "dialog:allow-save",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        { "url": "mailto:info@korigio.com*" },
+        { "url": "https://github.com/Korigio/korigio-downloads/*" },
+        { "url": "https://korigio.github.io/korigio-downloads/*" }
+      ]
+    }
   ]
 }

@@ -34,8 +34,11 @@ Backups stay portable/unencrypted until a future ADR. Do not invent cryptography
 | `core:default` | Required Tauri window/event IPC |
 | `core:path:default` | Path helpers for AppData / `convertFileSrc` |
 | `dialog:default` / `allow-open` / `allow-save` | File pickers for images + backup create/restore |
+| `opener:allow-open-url` (scoped) | Open the in-app feedback `mailto:info@korigio.com*` and HTTPS download links under `github.com/Korigio/korigio-downloads/*` and `korigio.github.io/korigio-downloads/*`. No `opener:default` and no `open-path`. |
 
-No shell, HTTP, or broad filesystem plugin. Asset protocol scope is limited to `$APPDATA/images/**` and `$APPDATA/thumbs/**` in `tauri.conf.json`.
+No shell, HTTP plugin, or broad filesystem plugin. Asset protocol scope is limited to `$APPDATA/images/**` and `$APPDATA/thumbs/**` in `tauri.conf.json`.
+
+Update checks use **reqwest in Rust only** (GET `https://korigio.github.io/korigio-downloads/latest.json`). The WebView CSP is unchanged; there is no `connect-src` for that host.
 
 ## CSP
 

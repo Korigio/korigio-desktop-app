@@ -15,6 +15,7 @@
     "diagnosisTemplates": "Diagnosis templates",
     "intake": "Intake",
     "settings": "Settings",
+    "settingsUpdateAvailable": "Update available",
     "team": "Team",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar"
@@ -791,6 +792,30 @@
         "loadFailed": "Could not load shop settings.",
         "saveFailed": "Could not save shop settings."
       }
+    },
+    "updates": {
+      "title": "Updates",
+      "hint": "Checks the public download page. If a newer version exists, download the installer and install it yourself. Korigio does not update in the background.",
+      "currentVersion": "Current version: {version}",
+      "latestVersion": "Latest version: {version}",
+      "available": "A newer version is available.",
+      "upToDate": "You're on the latest version.",
+      "noInstaller": "A newer version exists, but there is no installer for this system.",
+      "download": "Download",
+      "openDownloadPage": "Open download page",
+      "checkAgain": "Check again",
+      "checking": "Checking…",
+      "checkFailed": "Could not check for updates.",
+      "offlineHint": "You can keep using Korigio offline. This check is optional."
+    },
+    "feedback": {
+      "title": "Feedback",
+      "body": "Report a bug, ask for a new feature, or send any other feedback. This opens your email app; nothing is sent automatically.",
+      "emailLabel": "Email",
+      "email": "info@korigio.com",
+      "openMail": "Write an email",
+      "mailSubject": "Korigio feedback (v{version})",
+      "mailBody": "App version: {version}"
     }
   },
   "print": {
@@ -948,6 +973,18 @@
   "backup": {
     "restore": {
       "unsupportedSchema": "This backup is from an older Korigio version and cannot be restored."
+    }
+  },
+  "setup": {
+    "title": "Set up your shop",
+    "subtitle": "Add the company that appears on printouts, plus tax and currency. You cannot skip this.",
+    "actions": {
+      "submit": "Save and continue"
+    },
+    "backupHint": "You can choose a backup folder later in Settings.",
+    "errors": {
+      "submitFailed": "Could not finish setup. Check the company details and try again.",
+      "shopSaveFailed": "Company saved; tax and currency can be fixed in Settings."
     }
   }
 }
