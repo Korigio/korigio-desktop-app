@@ -40,9 +40,16 @@ The tag **must** match the files (`v1.0.1` ↔ `1.0.1`) or the Release workflow 
 1. Typecheck, lint, `cargo test`, version check
 2. Build NSIS / DMG / AppImage
 3. GitHub Release on this private repo (for you)
-4. If secret `SERVIOO_RELEASES_TOKEN` is set, the same files are published to **public** `M-WRI/servioo` (that is what the download page reads)
+4. Publish the same files to **public** `M-WRI/servioo`
+5. Bake [https://m-wri.github.io/servioo/](https://m-wri.github.io/servioo/) from those public releases: latest installers on top, older versions listed below
 
-Create a classic PAT (or fine-grained token) with `contents: write` on `M-WRI/servioo` only, then add it as repo secret `SERVIOO_RELEASES_TOKEN` on **this** private repo.
+Step 4 requires repo secret `SERVIOO_RELEASES_TOKEN` (classic PAT or fine-grained token with `contents: write` on `M-WRI/servioo` only). The job **fails** if that secret is missing — otherwise the download page stays on an old release.
+
+Preview the page locally after a public release exists:
+
+```bash
+npm run website:build
+```
 
 ## Metadata
 

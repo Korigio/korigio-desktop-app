@@ -23,7 +23,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "version:bump": "node scripts/bump-version.mjs",
-    "version:check": "node scripts/bump-version.mjs --check"
+    "version:check": "node scripts/bump-version.mjs --check",
+    "website:build": "node scripts/build-download-page.mjs --output website/index.html"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",

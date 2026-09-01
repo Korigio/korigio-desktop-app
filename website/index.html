@@ -38,6 +38,10 @@
         margin: 0 0 0.35rem;
         font-size: 2rem;
       }
+      h2 {
+        margin: 2.25rem 0 0.4rem;
+        font-size: 1.1rem;
+      }
       .tagline {
         margin: 0 0 2rem;
         color: var(--muted);
@@ -84,6 +88,7 @@
         margin-top: 0.25rem;
         font-size: 0.8rem;
         color: var(--muted);
+        word-break: break-all;
       }
       .btn {
         display: inline-block;
@@ -96,10 +101,41 @@
         font-weight: 600;
       }
       .note,
+      .archive-note,
       footer {
         margin-top: 2rem;
         font-size: 0.875rem;
         color: var(--muted);
+      }
+      .archive-note {
+        margin-top: 0;
+        margin-bottom: 1rem;
+      }
+      .archive-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 1rem;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-top: 1px solid var(--border);
+      }
+      .archive-meta {
+        display: flex;
+        gap: 0.75rem;
+        align-items: baseline;
+      }
+      .archive-meta time,
+      .archive-links {
+        font-size: 0.875rem;
+        color: var(--muted);
+      }
+      .archive-links a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .archive-links a:hover {
+        text-decoration: underline;
       }
       footer {
         border-top: 1px solid var(--border);
@@ -111,83 +147,39 @@
     <main>
       <h1>Korigio</h1>
       <p class="tagline">Offline workshop repair manager.</p>
-      <p id="version-pill" class="version">Version 1.0.0</p>
+      <p class="version">Version 1.0.1</p>
       <div class="grid">
-        <a class="card disabled" id="dl-windows" href="#">
+        <a class="card" href="https://github.com/M-WRI/servioo/releases/download/v1.0.1/Korigio_1.0.1_x64-setup.exe">
           <span class="os">Windows</span>
-          <span class="file" id="file-windows">10 / 11 · x64 installer</span>
+          <span class="file">Korigio_1.0.1_x64-setup.exe</span>
           <span class="btn">Download</span>
         </a>
-        <a class="card disabled" id="dl-macos" href="#">
+        <a class="card" href="https://github.com/M-WRI/servioo/releases/download/v1.0.1/Korigio_1.0.1_aarch64.dmg">
           <span class="os">macOS</span>
-          <span class="file" id="file-macos">Disk image (.dmg)</span>
+          <span class="file">Korigio_1.0.1_aarch64.dmg</span>
           <span class="btn">Download</span>
         </a>
-        <a class="card disabled" id="dl-linux" href="#">
+        <a class="card" href="https://github.com/M-WRI/servioo/releases/download/v1.0.1/Korigio_1.0.1_amd64.AppImage">
           <span class="os">Linux</span>
-          <span class="file" id="file-linux">AppImage</span>
+          <span class="file">Korigio_1.0.1_amd64.AppImage</span>
           <span class="btn">Download</span>
         </a>
       </div>
-      <p class="note" id="status">
-        Installers appear here after the first public <code>v1.0.0</code> GitHub
-        Release. Windows is the supported shop target. macOS and Linux builds are
-        unsigned convenience downloads.
-      </p>
+      <p class="note">Latest release v1.0.1. Windows is the supported shop target. macOS and Linux builds are unsigned convenience downloads.</p>
+      <section class="archive" aria-labelledby="previous-heading">
+        <h2 id="previous-heading">Previous versions</h2>
+        <p class="archive-note">Use these only if you need to roll back. New shops should install the latest release.</p>
+        <article class="archive-row">
+          <div class="archive-meta">
+            <strong>1.0.0</strong>
+            <time datetime="2026-08-31T19:51:55Z">31 Aug 2026</time>
+          </div>
+          <div class="archive-links"><a href="https://github.com/M-WRI/servioo/releases/download/v1.0.0/Servioo_1.0.0_x64-setup.exe">Windows</a> · <a href="https://github.com/M-WRI/servioo/releases/download/v1.0.0/Servioo_1.0.0_aarch64.dmg">macOS</a> · <a href="https://github.com/M-WRI/servioo/releases/download/v1.0.0/Servioo_1.0.0_amd64.AppImage">Linux</a></div>
+        </article>
+      </section>
       <footer>
         Author: Moritz Alexander Wright · Copyright © 2026 · All rights reserved
       </footer>
     </main>
-    <script>
-      const RELEASES =
-        "https://api.github.com/repos/M-WRI/servioo/releases/latest";
-
-      function pickAsset(assets, test) {
-        return assets.find((asset) => test(asset.name.toLowerCase()));
-      }
-
-      fetch(RELEASES)
-        .then((response) => (response.ok ? response.json() : null))
-        .then((release) => {
-          if (!release || !Array.isArray(release.assets)) {
-            return;
-          }
-          const version = String(release.tag_name || "").replace(/^v/, "");
-          if (version) {
-            document.getElementById("version-pill").textContent =
-              "Version " + version;
-          }
-          const assets = release.assets;
-          const windows = pickAsset(
-            assets,
-            (name) => name.endsWith(".exe") || name.includes("setup"),
-          );
-          const macos = pickAsset(assets, (name) => name.endsWith(".dmg"));
-          const linux = pickAsset(
-            assets,
-            (name) => name.endsWith(".appimage") || name.endsWith(".AppImage"),
-          );
-          function bind(id, fileId, asset) {
-            if (!asset) {
-              return;
-            }
-            const link = document.getElementById(id);
-            link.href = asset.browser_download_url;
-            link.classList.remove("disabled");
-            document.getElementById(fileId).textContent = asset.name;
-          }
-          bind("dl-windows", "file-windows", windows);
-          bind("dl-macos", "file-macos", macos);
-          bind("dl-linux", "file-linux", linux);
-          const found = [windows, macos, linux].filter(Boolean).length;
-          document.getElementById("status").textContent =
-            found > 0
-              ? "Latest release " +
-                (release.tag_name || "") +
-                ". Choose your operating system."
-              : document.getElementById("status").textContent;
-        })
-        .catch(() => {});
-    </script>
   </body>
 </html>

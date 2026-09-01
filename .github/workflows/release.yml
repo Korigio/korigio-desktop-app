@@ -119,23 +119,31 @@ jobs:
             --title "Korigio ${GITHUB_REF_NAME}" \
             --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build. macOS and Linux are unsigned convenience builds."
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
       - name: Publish public download repo
         env:
           GH_TOKEN: ${{ secrets.SERVIOO_RELEASES_TOKEN }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
-            echo "Skipping public publish (add repo secret SERVIOO_RELEASES_TOKEN with write access to M-WRI/servioo)."
-            exit 0
+            echo "::error::SERVIOO_RELEASES_TOKEN is not set. Add a PAT with contents:write on M-WRI/servioo or the download page will stay stale."
+            exit 1
           fi
           shopt -s nullglob
           files=(dist/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No installer artifacts in dist/."
+            exit 1
+          fi
           gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
             --repo M-WRI/servioo \
             --title "Korigio ${GITHUB_REF_NAME}" \
             --notes "Public download for Korigio ${GITHUB_REF_NAME}." \
             || gh release upload "${GITHUB_REF_NAME}" "${files[@]}" --repo M-WRI/servioo --clobber
           git clone --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/M-WRI/servioo.git" public-site
-          cp website/index.html public-site/index.html
+          node scripts/build-download-page.mjs --repo M-WRI/servioo --output public-site/index.html
           cd public-site
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
