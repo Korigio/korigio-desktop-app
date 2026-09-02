@@ -115,9 +115,14 @@ jobs:
         run: |
           shopt -s nullglob
           files=(dist/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No installer artifacts in dist/."
+            exit 1
+          fi
           gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
             --title "Korigio ${GITHUB_REF_NAME}" \
-            --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build. macOS and Linux are unsigned convenience builds."
+            --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build. macOS and Linux are unsigned convenience builds." \
+            || gh release upload "${GITHUB_REF_NAME}" "${files[@]}" --clobber
 
       - uses: actions/setup-node@v4
         with:
