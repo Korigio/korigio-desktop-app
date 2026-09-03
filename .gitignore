@@ -29,3 +29,13 @@ build
 /target/
 src-tauri/target
 src-tauri/gen
+
+# Windows Authenticode (private key material — never commit)
+*.pfx
+*.p12
+korigio-codesign.key
+korigio-codesign.crt
+korigio-codesign.cer
+korigio-codesign.pem
+korigio-codesign.b64.txt
+src-tauri/tauri.windows-signing.json

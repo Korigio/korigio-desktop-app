@@ -45,6 +45,8 @@ The tag **must** match the files (`v1.0.1` ↔ `1.0.1`) or the Release workflow 
 
 Step 4 requires repo secret `SERVIOO_RELEASES_TOKEN` (classic PAT or fine-grained token with `contents: write` on `Korigio/korigio-downloads` only). The job **fails** if that secret is missing — otherwise the download page stays on an old release.
 
+Windows NSIS signing (optional): repository secrets `WINDOWS_CERTIFICATE` (Base64 `.pfx`) and `WINDOWS_CERTIFICATE_PASSWORD`. If both are set, the Windows job Authenticode-signs the exe and NSIS installer, then verifies. If they are absent, the Windows artifact stays unsigned. Details: [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md).
+
 Preview the page locally after a public release exists:
 
 ```bash

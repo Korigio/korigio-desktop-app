@@ -19,6 +19,7 @@
     "typecheck": "react-router typegen && tsc --noEmit",
     "preview": "vite preview",
     "tauri": "tauri",
+    "build:windows": "node scripts/build-windows.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

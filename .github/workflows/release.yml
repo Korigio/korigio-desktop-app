@@ -88,7 +88,16 @@ jobs:
       - run: npm ci
 
       - name: Build installer
+        if: runner.os != 'Windows'
         run: npm run tauri build -- --bundles ${{ matrix.bundle }}
+
+      - name: Build and sign Windows installer
+        if: runner.os == 'Windows'
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        shell: pwsh
+        run: ./scripts/ci-windows-build.ps1 -Bundles ${{ matrix.bundle }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -121,7 +130,7 @@ jobs:
           fi
           gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
             --title "Korigio ${GITHUB_REF_NAME}" \
-            --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build. macOS and Linux are unsigned convenience builds." \
+            --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build; Authenticode-signed when WINDOWS_CERTIFICATE secrets are set (self-signed until a public CA or Artifact Signing is configured). macOS and Linux are unsigned convenience builds." \
             || gh release upload "${GITHUB_REF_NAME}" "${files[@]}" --clobber
 
       - uses: actions/setup-node@v4

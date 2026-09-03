@@ -53,11 +53,19 @@ src-tauri/target/release/bundle/nsis/Korigio_*_x64-setup.exe
 
 ## Code signing
 
-Not configured in v1 (no certificate in repo). Shops that need SmartScreen reputation should sign the NSIS exe with their Authenticode cert via CI secrets later.
+Authenticode is optional and lives in the **build/release** layer. See [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md).
+
+- `npm run tauri dev` never requires a certificate.
+- `npm run tauri build` stays unsigned unless a thumbprint is supplied (so macOS and cert-less Windows keep working).
+- On Windows, `npm run build:windows` signs via Tauri when `WINDOWS_CERTIFICATE_THUMBPRINT` or `src-tauri/tauri.windows-signing.json` is present, then verifies the NSIS installer.
+- GitHub Actions imports a PFX from secrets `WINDOWS_CERTIFICATE` and `WINDOWS_CERTIFICATE_PASSWORD` when those secrets exist.
+
+A **self-signed** cert names the publisher in the signature. It does **not** clear SmartScreen on customer PCs.
 
 ## Related
 
 - Architecture OS target: [architecture.md](architecture.md)
 - CI release: [`.github/workflows/release.yml`](../.github/workflows/release.yml)
+- Windows Authenticode: [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md)
 - Version tags and public downloads: [releases.md](releases.md)
 - Backup AppData layout: [backup.md](backup.md) / [database.md](database.md)
