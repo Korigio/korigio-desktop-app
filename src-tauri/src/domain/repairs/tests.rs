@@ -1386,27 +1386,14 @@ fn record_repair_summary_handover_sets_collected_at_while_ready() {
     assert!(ready.collected_at.is_none());
     assert!(ready.warranty_years.is_none());
 
-    let handed = record_repair_summary_handover(
-        &db,
-        ready.id.clone(),
-        "2026-08-28".into(),
-        1,
-    )
-    .expect("handover");
+    let handed = record_repair_summary_handover(&db, ready.id.clone(), "2026-08-28".into(), 1)
+        .expect("handover");
     assert_eq!(handed.status, "ready");
-    assert_eq!(
-        handed.collected_at.as_deref(),
-        Some("2026-08-28T00:00:00Z")
-    );
+    assert_eq!(handed.collected_at.as_deref(), Some("2026-08-28T00:00:00Z"));
     assert_eq!(handed.warranty_years, Some(1));
 
-    let updated = record_repair_summary_handover(
-        &db,
-        ready.id.clone(),
-        "2026-08-29".into(),
-        2,
-    )
-    .expect("re-handover");
+    let updated = record_repair_summary_handover(&db, ready.id.clone(), "2026-08-29".into(), 2)
+        .expect("re-handover");
     assert_eq!(updated.status, "ready");
     assert_eq!(
         updated.collected_at.as_deref(),
@@ -1480,9 +1467,8 @@ fn record_repair_summary_handover_rejects_warranty_out_of_range() {
     let ready = complete_repair_protocol(&db, created.id.clone(), "Done".into()).expect("protocol");
 
     for bad in [-1_i64, 11] {
-        let err =
-            record_repair_summary_handover(&db, ready.id.clone(), "2026-08-28".into(), bad)
-                .expect_err("out of range");
+        let err = record_repair_summary_handover(&db, ready.id.clone(), "2026-08-28".into(), bad)
+            .expect_err("out of range");
         match err {
             AppError::Validation { field, message } => {
                 assert_eq!(field.as_deref(), Some("warrantyYears"));
@@ -1683,7 +1669,10 @@ fn upload_repair_document_sync_payload_includes_file_path_and_content_hash() {
         .expect("document sync change");
     let payload: serde_json::Value = serde_json::from_str(&payload_json).expect("json");
 
-    assert_eq!(payload.get("id").and_then(|v| v.as_str()), Some(doc_id.as_str()));
+    assert_eq!(
+        payload.get("id").and_then(|v| v.as_str()),
+        Some(doc_id.as_str())
+    );
     assert_eq!(
         payload.get("repairId").and_then(|v| v.as_str()),
         Some(created.id.as_str())
@@ -1700,10 +1689,15 @@ fn upload_repair_document_sync_payload_includes_file_path_and_content_hash() {
         payload.get("contentHash").and_then(|v| v.as_str()),
         Some(content_hash.as_str())
     );
-    assert!(payload.get("originalFilename").and_then(|v| v.as_str()).is_some());
+    assert!(payload
+        .get("originalFilename")
+        .and_then(|v| v.as_str())
+        .is_some());
     assert!(payload.get("createdAt").and_then(|v| v.as_str()).is_some());
     assert!(payload.get("updatedAt").and_then(|v| v.as_str()).is_some());
     assert!(payload.get("updatedByStaffId").is_some());
-    assert!(payload.get("deletedAt").map(|v| v.is_null()).unwrap_or(false));
+    assert!(payload
+        .get("deletedAt")
+        .map(|v| v.is_null())
+        .unwrap_or(false));
 }
-
