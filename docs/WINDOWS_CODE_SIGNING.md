@@ -104,7 +104,7 @@ npm run build:windows
 That runs:
 
 1. One `tauri build --bundles nsis`. Tauri patches the app for NSIS, signs that payload, builds/signs the installer, then restores the original unsigned executable.
-2. Signs the restored standalone `repair-manager.exe`, without re-bundling.
+2. Signs the restored standalone `korigio.exe`, without re-bundling.
 3. Verifies the standalone exe, exact current-version installer, and the app extracted from that installer using 7-Zip. Extraction does not launch or install anything.
 
 The ordering is documented in [the pinned Tauri CLI 2.11.4 bundler source](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.4/crates/tauri-bundler/src/bundle.rs#L137-L188). An unsigned file in `target/release` after Tauri exits does not by itself mean the installer contains an unsigned app. The standalone and embedded executables can have different hashes because only the embedded copy has the NSIS bundle marker.

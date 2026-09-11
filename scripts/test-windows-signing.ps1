@@ -24,6 +24,35 @@ $otherCert = $null
 $tlsCert = $null
 try {
   New-Item -ItemType Directory -Path $tempDir | Out-Null
+  $repoRoot = Split-Path -Parent $PSScriptRoot
+  $actual = Get-WindowsArtifactPaths -RepoRoot $repoRoot
+  if ((Split-Path -Leaf $actual.Exe) -ne 'korigio.exe') { throw 'Repository application executable must be korigio.exe.' }
+  # Cargo metadata must honor target names and default-run rather than package-name guesses.
+  $fixtureRoot = Join-Path $tempDir 'cargo-fixture'
+  $tauriDir = Join-Path $fixtureRoot 'src-tauri'
+  New-Item -ItemType Directory -Path $tauriDir | Out-Null
+  Set-Content -LiteralPath (Join-Path $tauriDir 'app.rs') -Value 'fn main() {}'
+  $manifest = Join-Path $tauriDir 'Cargo.toml'
+  $configPath = Join-Path $tauriDir 'tauri.conf.json'
+  Set-Content -LiteralPath $configPath -Value '{"productName":"Fixture","version":"1.0.0"}'
+  $single = @'
+[package]
+name = "different-package-name"
+version = "1.0.0"
+[[bin]]
+name = "actual-app"
+path = "app.rs"
+'@
+  Set-Content -LiteralPath $manifest -Value $single
+  if ((Split-Path -Leaf (Get-WindowsArtifactPaths -RepoRoot $fixtureRoot).Exe) -ne 'actual-app.exe') { throw 'Single Cargo binary target was not selected.' }
+  $multiple = $single + "`n[[bin]]`nname = `"helper`"`npath = `"app.rs`"`n"
+  Set-Content -LiteralPath $manifest -Value $multiple
+  Assert-Rejected -Label 'ambiguous Cargo binary targets' -Action { Get-WindowsArtifactPaths -RepoRoot $fixtureRoot }
+  Set-Content -LiteralPath $manifest -Value ($multiple.Replace('[package]', "[package]`ndefault-run = `"actual-app`""))
+  if ((Split-Path -Leaf (Get-WindowsArtifactPaths -RepoRoot $fixtureRoot).Exe) -ne 'actual-app.exe') { throw 'Cargo default-run was not selected.' }
+  Set-Content -LiteralPath $configPath -Value '{"productName":"Fixture","version":"1.0.0","mainBinaryName":"renamed-app"}'
+  if ((Split-Path -Leaf (Get-WindowsArtifactPaths -RepoRoot $fixtureRoot).Exe) -ne 'renamed-app.exe') { throw 'Tauri mainBinaryName was not selected.' }
+  Write-Host 'PASS: repository and fixture application binary resolution'
   $cert = New-SelfSignedCertificate -Type CodeSigningCert -KeyExportPolicy Exportable -Subject "CN=Korigio test $([guid]::NewGuid())" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddDays(1)
   $otherCert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=Korigio other test $([guid]::NewGuid())" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddDays(1)
   # Exercise the same certificate lookup used by the release import path.

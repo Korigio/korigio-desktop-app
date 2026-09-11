@@ -3,9 +3,26 @@
 function Get-WindowsArtifactPaths {
   param([string]$RepoRoot)
   $config = Get-Content -LiteralPath (Join-Path $RepoRoot 'src-tauri\tauri.conf.json') -Raw | ConvertFrom-Json
-  $binary = 'repair-manager'
-  if ($config.mainBinaryName) { $binary = $config.mainBinaryName }
-  $release = Join-Path $RepoRoot 'src-tauri\target\release'
+  $manifest = (Resolve-Path -LiteralPath (Join-Path $RepoRoot 'src-tauri\Cargo.toml')).Path
+  $metadataJson = & cargo metadata --no-deps --format-version 1 --manifest-path $manifest
+  if ($LASTEXITCODE -ne 0) { throw 'Unable to resolve the Windows application binary from Cargo metadata.' }
+  $metadata = ($metadataJson -join "`n") | ConvertFrom-Json
+  $package = @($metadata.packages | Where-Object {
+    [System.IO.Path]::GetFullPath($_.manifest_path) -eq $manifest
+  })
+  if ($package.Count -ne 1) { throw 'Cargo metadata did not identify the application package.' }
+  $bins = @($package[0].targets | Where-Object { $_.kind -contains 'bin' })
+  if ($config.mainBinaryName) {
+    $binary = $config.mainBinaryName
+  } elseif ($package[0].default_run) {
+    $binary = $package[0].default_run
+    if ($bins.name -notcontains $binary) { throw 'Cargo default-run does not identify a binary target.' }
+  } elseif ($bins.Count -eq 1) {
+    $binary = $bins[0].name
+  } else {
+    throw 'Cannot identify the application binary: set Cargo default-run or Tauri mainBinaryName.'
+  }
+  $release = Join-Path $metadata.target_directory 'release'
   [pscustomobject]@{
     Exe = Join-Path $release "$binary.exe"
     Installer = Join-Path $release "bundle\nsis\$($config.productName)_$($config.version)_x64-setup.exe"
