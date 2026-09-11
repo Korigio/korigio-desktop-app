@@ -29,10 +29,15 @@ Configure these repository secrets together:
 | `APPLE_PASSWORD`             | Apple **app-specific password**, not the normal account password     |
 | `APPLE_TEAM_ID`              | Developer team ID matching the certificate                           |
 
-The workflow passes these only to the macOS step. Tauri imports the `.p12` into its temporary signing keychain, signs the app with hardened runtime (the existing Tauri default), submits for notarization, and staples the ticket. The build script then runs `codesign --verify --deep --strict`, `xcrun stapler validate`, and Gatekeeper assessment against the app before artifact upload.
+The workflow passes these only to the macOS step. The build script:
+
+1. Preflights notarization credentials with `notarytool history` (fails fast on a bad app-specific password).
+2. Lets Tauri import the `.p12` and sign with hardened runtime, but **does not** pass `APPLE_ID` / `APPLE_PASSWORD` / `APPLE_TEAM_ID` into Tauri — Tauri’s built-in notarization uses an unbounded `--wait` and can hang for hours with no log output.
+3. After the DMG exists, submits it once with `notarytool`, polls status with progress logs, staples on `Accepted`, and fails after 45 minutes (override with `APPLE_NOTARY_TIMEOUT_MS`) instead of hanging forever.
+4. Verifies with `codesign --verify --deep --strict`, `xcrun stapler validate` on the DMG, and Gatekeeper assessment of the app.
+
+First Developer ID submissions are often held by Apple for additional analysis (sometimes many hours). If CI times out, use the printed submission id — do not keep re-submitting; that queues more jobs. When Apple reports `Accepted`, re-run the release workflow (or staple the DMG locally).
 
 When all six secrets are absent, the existing unsigned convenience-build behavior remains. A partial setup fails before building; it cannot silently produce an unsigned release. A certificate issued for App Store distribution is rejected by the direct-download script.
-
-The integration is prepared in the repository; having a CSR and private key alone does not activate Apple signing. No Apple certificate or notarization secret was available during the initial integration, so an actual signed/notarized build still needs verification after those secrets are configured.
 
 References: [Tauri macOS signing](https://v2.tauri.app/distribute/sign/macos/), [Apple Developer certificates](https://developer.apple.com/account/resources/certificates/list).
