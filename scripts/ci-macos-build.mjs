@@ -262,24 +262,15 @@ function main() {
     env: tauriBuildEnvironment(env, signed),
   });
 
-  const config = JSON.parse(
-    readFileSync(resolve(cwd, "src-tauri/tauri.conf.json"), "utf8"),
-  );
-  const app = resolve(
-    cwd,
-    "src-tauri/target/release/bundle/macos",
-    `${config.productName}.app`,
-  );
-
   if (signed) {
-    run("codesign", ["--verify", "--deep", "--strict", "--verbose=2", app], {
-      cwd,
-      env,
-    });
-
+    // `--bundles dmg` signs the DMG then removes the intermediate .app ("Cleaning …").
+    // Verify / notarize / staple the DMG only — that is the uploaded artifact.
+    const config = JSON.parse(
+      readFileSync(resolve(cwd, "src-tauri/tauri.conf.json"), "utf8"),
+    );
     const dmg = findDmg(cwd, config.productName);
+    run("codesign", ["--verify", "--verbose=2", dmg], { cwd, env });
     notarizeAndStapleDmg(dmg, env);
-
     run("xcrun", ["stapler", "validate", dmg], { cwd, env });
     run(
       "spctl",
