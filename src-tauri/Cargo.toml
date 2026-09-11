@@ -1,6 +1,6 @@
 [package]
 name = "korigio"
-version = "1.1.0"
+version = "1.1.1"
 description = "Korigio — offline workshop repair manager"
 authors = ["Moritz Alexander Wright"]
 edition = "2021"
