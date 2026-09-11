@@ -21,10 +21,24 @@ function Assert-NoTemporaryTrust {
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ('korigio-signing-test-' + [guid]::NewGuid().ToString('N'))
 $cert = $null
 $otherCert = $null
+$tlsCert = $null
 try {
   New-Item -ItemType Directory -Path $tempDir | Out-Null
-  $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=Korigio test $([guid]::NewGuid())" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddDays(1)
+  $cert = New-SelfSignedCertificate -Type CodeSigningCert -KeyExportPolicy Exportable -Subject "CN=Korigio test $([guid]::NewGuid())" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddDays(1)
   $otherCert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=Korigio other test $([guid]::NewGuid())" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddDays(1)
+  # Exercise the same certificate lookup used by the release import path.
+  $cert = Get-WindowsSigningCertificate -Thumbprint $cert.Thumbprint -RequirePrivateKey
+  $pfx = Join-Path $tempDir 'fixture.pfx'
+  $password = ConvertTo-SecureString ([guid]::NewGuid().ToString('N')) -AsPlainText -Force
+  Export-PfxCertificate -Cert $cert -FilePath $pfx -Password $password | Out-Null
+  Remove-Item -LiteralPath "Cert:\CurrentUser\My\$($cert.Thumbprint)" -Force
+  Import-PfxCertificate -FilePath $pfx -Password $password -CertStoreLocation Cert:\CurrentUser\My | Out-Null
+  $cert = Get-WindowsSigningCertificate -Thumbprint $cert.Thumbprint -RequirePrivateKey
+  Write-Host 'PASS: generated and PFX-imported code-signing certificates accepted'
+  $tlsCert = New-SelfSignedCertificate -Type SSLServerAuthentication -Subject "CN=Korigio TLS test $([guid]::NewGuid())" -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddDays(1)
+  Assert-Rejected -Label 'TLS certificate without code-signing EKU' -Action {
+    Get-WindowsSigningCertificate -Thumbprint $tlsCert.Thumbprint -RequirePrivateKey
+  }
   $source = Join-Path $tempDir 'fixture.cs'
   $unsigned = Join-Path $tempDir 'unsigned.exe'
   Set-Content -LiteralPath $source -Value 'public class Fixture { public static void Main() { System.Console.WriteLine("signing test"); } }'
@@ -70,7 +84,7 @@ try {
   Assert-NoTemporaryTrust -Thumbprint $cert.Thumbprint
   Write-Host 'Windows Authenticode regression tests passed.'
 } finally {
-  foreach ($item in @($cert, $otherCert)) {
+  foreach ($item in @($cert, $otherCert, $tlsCert)) {
     if ($item) {
       foreach ($store in @('My', 'Root', 'TrustedPublisher')) {
         $path = "Cert:\CurrentUser\$store\$($item.Thumbprint)"

@@ -36,7 +36,17 @@ function Get-WindowsSigningCertificate {
   if ($normalized -notmatch '^[0-9a-fA-F]{40}$') { throw 'Expected a 40-digit certificate thumbprint.' }
   $cert = Get-Item -LiteralPath "Cert:\CurrentUser\My\$normalized" -ErrorAction Stop
   if ($RequirePrivateKey -and -not $cert.HasPrivateKey) { throw 'The selected certificate has no private key.' }
-  $eku = @($cert.EnhancedKeyUsageList | ForEach-Object { $_.ObjectId.Value })
+  # Read the standard X.509 EKU extension, not PowerShell's display-oriented
+  # EnhancedKeyUsageList (whose ObjectId can be a string rather than an Oid).
+  $eku = @(
+    foreach ($extension in $cert.Extensions) {
+      if ($extension.Oid.Value -eq '2.5.29.37') {
+        $usage = New-Object System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension
+        $usage.CopyFrom($extension)
+        $usage.EnhancedKeyUsages | ForEach-Object { $_.Value }
+      }
+    }
+  )
   if ($eku -notcontains '1.3.6.1.5.5.7.3.3') { throw 'The selected certificate is not a code-signing certificate.' }
   return $cert
 }
