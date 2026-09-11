@@ -36,9 +36,9 @@ try {
   if ($imported -and $imported.PfxPath -and (Test-Path $imported.PfxPath)) {
     Remove-Item -LiteralPath $imported.PfxPath -Force -ErrorAction SilentlyContinue
   }
-  if ($imported -and $imported.Thumbprint) {
-    Get-ChildItem Cert:\CurrentUser\My |
-      Where-Object { $_.Thumbprint -eq $imported.Thumbprint } |
-      Remove-Item -ErrorAction SilentlyContinue
+  if ($imported) {
+    foreach ($thumbprint in @($imported.AddedThumbprints)) {
+      Remove-Item -LiteralPath "Cert:\CurrentUser\My\$thumbprint" -ErrorAction SilentlyContinue
+    }
   }
 }

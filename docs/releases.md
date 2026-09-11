@@ -45,7 +45,9 @@ The tag **must** match the files (`v1.0.1` ↔ `1.0.1`) or the Release workflow 
 
 Step 4 requires repo secret `SERVIOO_RELEASES_TOKEN` (classic PAT or fine-grained token with `contents: write` on `Korigio/korigio-downloads` only). The job **fails** if that secret is missing — otherwise the download page stays on an old release.
 
-Windows NSIS signing (optional): repository secrets `WINDOWS_CERTIFICATE` (Base64 `.pfx`) and `WINDOWS_CERTIFICATE_PASSWORD`. If both are set, the Windows job Authenticode-signs the exe and NSIS installer (including a post-sign pass after Tauri’s NSIS binary patch), then verifies. If they are absent, the Windows artifact stays unsigned. Details: [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md).
+Windows NSIS signing (optional): repository secrets `WINDOWS_CERTIFICATE` (Base64 `.pfx`) and `WINDOWS_CERTIFICATE_PASSWORD`. If both are set, Tauri signs the packaged executable and installer; the script then signs the standalone executable restored by Tauri and verifies all three artifacts, including the extracted payload. If they are absent, the Windows artifact stays unsigned. Details: [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md).
+
+macOS signing and notarization use the six `APPLE_*` repository secrets described in [MACOS_CODE_SIGNING.md](MACOS_CODE_SIGNING.md). The workflow rejects partial signing credentials; with no Apple credentials it retains the unsigned convenience DMG.
 
 Preview the page locally after a public release exists:
 

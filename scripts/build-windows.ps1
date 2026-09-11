@@ -1,145 +1,66 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-  Production Windows NSIS build. Signs only when a thumbprint/config is present.
-
-.DESCRIPTION
-  Runs `npm run tauri build -- --bundles nsis` and, when signing config exists,
-  lets Tauri invoke signtool, then post-signs the main exe and NSIS installer.
-
-  Post-sign is required because Tauri's NSIS bundle-type binary patch can leave
-  the release exe unsigned even when the installer was signed. After signing the
-  exe, this script re-bundles NSIS with the exe marked read-only so the patch
-  cannot strip the signature again, then signs the fresh installer.
-
-  Does not use a second secret contract — same thumbprint / merge JSON as Tauri.
+  Build one Windows x64 NSIS installer, sign the restored standalone exe, verify both and the payload.
 #>
 [CmdletBinding()]
 param(
-  [string]$Bundles = "nsis",
+  [ValidateSet('nsis')][string]$Bundles = 'nsis',
   [switch]$RequireSigned,
-  [string]$RepoRoot,
+  [string]$RepoRoot = (Split-Path -Parent $PSScriptRoot),
   [string]$ConfigPath
 )
-
-$ErrorActionPreference = "Stop"
-
-if (-not $IsWindows -and $env:OS -ne "Windows_NT") {
-  Write-Error "Windows production builds must run on Windows (or GitHub windows-latest)."
-}
-
-if (-not $RepoRoot) {
-  $RepoRoot = Split-Path -Parent $PSScriptRoot
-}
-if (-not $ConfigPath) {
-  $ConfigPath = Join-Path $RepoRoot "src-tauri\tauri.windows-signing.json"
-}
-
-Set-Location $RepoRoot
-
-$thumbprint = $env:WINDOWS_CERTIFICATE_THUMBPRINT
-if ($thumbprint) {
-  $thumbprint = $thumbprint.Trim()
-}
-
-$useConfig = $false
-if (Test-Path $ConfigPath) {
-  $useConfig = $true
+$ErrorActionPreference = 'Stop'
+if ($env:OS -ne 'Windows_NT') { throw 'Windows production builds must run on Windows.' }
+. (Join-Path $PSScriptRoot 'windows-signing-common.ps1')
+if (-not $ConfigPath) { $ConfigPath = Join-Path $RepoRoot 'src-tauri\tauri.windows-signing.json' }
+$thumbprint = $env:WINDOWS_CERTIFICATE_THUMBPRINT -replace '\s', ''
+if (Test-Path -LiteralPath $ConfigPath) {
+  $signing = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
+  if ($signing.mainBinaryName -or $signing.productName -or $signing.version -or $signing.build) {
+    throw 'Signing merge config must not override binary name, product name, version, or build paths.'
+  }
+  if ($signing.bundle.windows.nsis.installerHooks -or $signing.bundle.windows.nsis.template) {
+    throw 'Custom NSIS templates/hooks require a separate reviewed signing pipeline.'
+  }
+  $configured = [string]$signing.bundle.windows.certificateThumbprint -replace '\s', ''
+  if ($thumbprint -and $configured -ne $thumbprint) { throw 'Environment and signing config certificate thumbprints disagree.' }
+  $thumbprint = $configured
+  if (-not $thumbprint) { throw 'Signing config is missing certificateThumbprint.' }
 } elseif ($thumbprint) {
-  $config = @{
-    bundle = @{
-      windows = @{
-        certificateThumbprint = $thumbprint
-        digestAlgorithm = "sha256"
-        timestampUrl = "http://timestamp.digicert.com"
-      }
-    }
+  $signing = @{ bundle = @{ windows = @{
+    certificateThumbprint = $thumbprint
+    digestAlgorithm = 'sha256'
+    timestampUrl = 'http://timestamp.digicert.com'
+  } } }
+  [System.IO.File]::WriteAllText($ConfigPath, ($signing | ConvertTo-Json -Depth 6), (New-Object System.Text.UTF8Encoding $false))
+}
+if ($RequireSigned -and -not $thumbprint) { throw 'Signing was required but no signing certificate was configured.' }
+if ($thumbprint) {
+  $cert = Get-WindowsSigningCertificate -Thumbprint $thumbprint -RequirePrivateKey
+  Write-Host "Signing publisher: $($cert.Subject)"
+  if ($cert.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false) -ne 'Moritz Alexander Wright' -or
+      $cert.GetNameInfo([System.Security.Cryptography.X509Certificates.X509NameType]::EmailName, $false) -ne 'info@korigio.com') {
+    Write-Warning 'The existing certificate does not contain the documented publisher name/email. Build metadata cannot change its subject; replace the PFX only if you intend to change identity.'
   }
-  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-  [System.IO.File]::WriteAllText($ConfigPath, ($config | ConvertTo-Json -Depth 6), $utf8NoBom)
-  $useConfig = $true
-  Write-Host "Wrote $ConfigPath from WINDOWS_CERTIFICATE_THUMBPRINT."
-}
-
-function Get-SigningThumbprintFromConfig {
-  param([string]$Path)
-  if (-not (Test-Path $Path)) { return $null }
-  try {
-    $json = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
-    $value = $json.bundle.windows.certificateThumbprint
-    if ($value) { return ([string]$value).Trim() }
-  } catch {
-    Write-Error "Failed to read certificateThumbprint from $Path"
+} else { Write-Host 'No signing certificate configured; building unsigned NSIS.' }
+$artifacts = Get-WindowsArtifactPaths -RepoRoot $RepoRoot
+# Never let verification select an older successful installer after a failed build.
+if (Test-Path -LiteralPath $artifacts.Installer) { Remove-Item -LiteralPath $artifacts.Installer -Force }
+Push-Location $RepoRoot
+try {
+  $arguments = @('run', 'tauri', 'build', '--', '--bundles', $Bundles)
+  if ($thumbprint) { $arguments += @('--config', $ConfigPath) }
+  & npm.cmd @arguments
+  if ($LASTEXITCODE -ne 0) { throw "tauri build failed (exit $LASTEXITCODE)." }
+  if ($thumbprint) {
+    $digest = $signing.bundle.windows.digestAlgorithm
+    if (-not $digest) { $digest = 'sha256' }
+    $timestamp = $signing.bundle.windows.timestampUrl
+    if (-not $timestamp) { $timestamp = 'http://timestamp.digicert.com' }
+    # Tauri 2.11.4 signs after patching, packages, then restores the unsigned original.
+    # Do not re-bundle or modify the payload. Verify what NSIS actually contains below.
+    & (Join-Path $PSScriptRoot 'sign-windows-artifacts.ps1') -RepoRoot $RepoRoot -Thumbprint $thumbprint -ExeOnly -DigestAlgorithm $digest -TimestampUrl $timestamp
+    & (Join-Path $PSScriptRoot 'verify-windows-signature.ps1') -RepoRoot $RepoRoot -Thumbprint $thumbprint
   }
-  return $null
-}
-
-function Get-MainExePath {
-  param([string]$Root)
-  $releaseDir = Join-Path $Root "src-tauri\target\release"
-  $candidates = @(
-    (Join-Path $releaseDir "Korigio.exe"),
-    (Join-Path $releaseDir "korigio.exe"),
-    (Join-Path $releaseDir "repair-manager.exe")
-  )
-  return $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-}
-
-if ($useConfig) {
-  Write-Host "Tauri will Authenticode-sign with the configured certificate (SHA-256 + timestamp)."
-  if (-not $thumbprint) {
-    $thumbprint = Get-SigningThumbprintFromConfig -Path $ConfigPath
-  }
-} else {
-  Write-Host "No signing thumbprint/config. Building an unsigned NSIS installer."
-  if ($RequireSigned) {
-    Write-Error "Signing was required but no WINDOWS_CERTIFICATE_THUMBPRINT or $ConfigPath was found."
-  }
-}
-
-$configArg = ""
-if ($useConfig) {
-  $configArg = " --config `"$ConfigPath`""
-}
-
-$command = "npm run tauri build -- --bundles $Bundles$configArg"
-Write-Host $command
-cmd.exe /c $command
-if ($LASTEXITCODE -ne 0) {
-  Write-Error "tauri build failed with exit code $LASTEXITCODE."
-}
-
-if ($useConfig) {
-  if (-not $thumbprint) {
-    Write-Error "Signing config is present but certificateThumbprint could not be resolved."
-  }
-
-  $signScript = Join-Path $PSScriptRoot "sign-windows-artifacts.ps1"
-  $exe = Get-MainExePath -Root $RepoRoot
-  if (-not $exe) {
-    Write-Error "No main exe under src-tauri/target/release after tauri build."
-  }
-
-  # Sign the patched release exe, then re-bundle NSIS while the exe is read-only so
-  # Tauri cannot strip the signature via bundle-type binary patching.
-  & $signScript -RepoRoot $RepoRoot -Thumbprint $thumbprint -ExeOnly
-  $wasReadOnly = (Get-Item -LiteralPath $exe).IsReadOnly
-  Set-ItemProperty -LiteralPath $exe -Name IsReadOnly -Value $true
-  try {
-    $bundleCommand = "npm run tauri bundle -- --bundles $Bundles$configArg"
-    Write-Host $bundleCommand
-    cmd.exe /c $bundleCommand
-    if ($LASTEXITCODE -ne 0) {
-      Write-Warning "tauri bundle re-pack failed (exit $LASTEXITCODE). Keeping the previous NSIS output; installer signature still applied below."
-    }
-  } finally {
-    Set-ItemProperty -LiteralPath $exe -Name IsReadOnly -Value $wasReadOnly
-  }
-
-  # Always re-sign exe + NSIS so verify passes even if Tauri skipped or stripped a pass.
-  & $signScript -RepoRoot $RepoRoot -Thumbprint $thumbprint
-}
-
-if ($useConfig -or $RequireSigned) {
-  & (Join-Path $PSScriptRoot "verify-windows-signature.ps1") -RepoRoot $RepoRoot
-}
+} finally { Pop-Location }

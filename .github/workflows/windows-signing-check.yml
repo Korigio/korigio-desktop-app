@@ -1,0 +1,16 @@
+name: Windows signing checks
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  signing:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check signing and verification with disposable certificates
+        shell: pwsh
+        run: ./scripts/test-windows-signing.ps1

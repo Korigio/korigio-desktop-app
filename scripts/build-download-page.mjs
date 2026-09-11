@@ -203,8 +203,8 @@ function renderPage(releases) {
     ? `Version ${escapeHtml(version)}`
     : "No public release yet";
   const status = latest
-    ? `Latest release ${escapeHtml(tag)}. Windows is the supported shop target. macOS and Linux builds are unsigned convenience downloads.`
-    : "Installers appear here after the next public GitHub Release. Windows is the supported shop target. macOS and Linux builds are unsigned convenience downloads.";
+    ? `Latest release ${escapeHtml(tag)}. Windows is the supported shop target. macOS and Linux builds are convenience downloads.`
+    : "Installers appear here after the next public GitHub Release. Windows is the supported shop target. macOS and Linux builds are convenience downloads.";
 
   return `<!DOCTYPE html>
 <html lang="en">

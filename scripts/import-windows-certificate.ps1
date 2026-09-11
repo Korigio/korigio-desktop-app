@@ -51,54 +51,72 @@ if (-not $PfxPath) {
   if (-not $tempRoot) {
     $tempRoot = [System.IO.Path]::GetTempPath()
   }
-  $PfxPath = Join-Path $tempRoot "korigio-codesign.pfx"
+  $PfxPath = Join-Path $tempRoot ("korigio-codesign-" + [guid]::NewGuid().ToString("N") + ".pfx")
 }
 
-[System.IO.File]::WriteAllBytes($PfxPath, $bytes)
+if (Test-Path -LiteralPath $PfxPath) { throw 'Refusing to overwrite an existing PFX file.' }
+$existingThumbprints = @(Get-ChildItem Cert:\CurrentUser\My | ForEach-Object { $_.Thumbprint })
+$imported = @()
+try {
+  [System.IO.File]::WriteAllBytes($PfxPath, $bytes)
 
-$password = ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
-$imported = Import-PfxCertificate `
-  -FilePath $PfxPath `
-  -CertStoreLocation Cert:\CurrentUser\My `
-  -Password $password
+  $password = ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
+  $imported = Import-PfxCertificate `
+    -FilePath $PfxPath `
+    -CertStoreLocation Cert:\CurrentUser\My `
+    -Password $password
 
-if (-not $imported) {
-  Write-Error "Failed to import the PFX into Cert:\CurrentUser\My."
-}
+  if (-not $imported) {
+    Write-Error "Failed to import the PFX into Cert:\CurrentUser\My."
+  }
 
-# Import-PfxCertificate may return an array if the PFX contains a chain.
-$cert = @($imported) | Where-Object { $_.HasPrivateKey } | Select-Object -First 1
-if (-not $cert) {
-  $cert = @($imported) | Select-Object -First 1
-}
+  # Import-PfxCertificate may return an array if the PFX contains a chain.
+  $cert = @($imported) | Where-Object { $_.HasPrivateKey } | Select-Object -First 1
+  if (-not $cert) {
+    throw 'The PFX contains no certificate with a private key.'
+  }
+  . (Join-Path $PSScriptRoot 'windows-signing-common.ps1')
+  $cert = Get-WindowsSigningCertificate -Thumbprint $cert.Thumbprint -RequirePrivateKey
 
-$thumbprint = $cert.Thumbprint
-$config = @{
-  bundle = @{
-    windows = @{
-      certificateThumbprint = $thumbprint
-      digestAlgorithm = "sha256"
-      timestampUrl = "http://timestamp.digicert.com"
+  $thumbprint = $cert.Thumbprint
+  $config = @{
+    bundle = @{
+      windows = @{
+        certificateThumbprint = $thumbprint
+        digestAlgorithm = "sha256"
+        timestampUrl = "http://timestamp.digicert.com"
+      }
     }
   }
-}
-$configJson = $config | ConvertTo-Json -Depth 6
-$utf8NoBom = New-Object System.Text.UTF8Encoding $false
-[System.IO.File]::WriteAllText($ConfigPath, $configJson, $utf8NoBom)
+  $configJson = $config | ConvertTo-Json -Depth 6
+  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($ConfigPath, $configJson, $utf8NoBom)
 
-if ($env:GITHUB_OUTPUT) {
-  Add-Content -Path $env:GITHUB_OUTPUT -Value "thumbprint=$thumbprint"
-  Add-Content -Path $env:GITHUB_OUTPUT -Value "pfx_path=$PfxPath"
-  Add-Content -Path $env:GITHUB_OUTPUT -Value "config_path=$ConfigPath"
-}
+  if ($env:GITHUB_OUTPUT) {
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "thumbprint=$thumbprint"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "pfx_path=$PfxPath"
+    Add-Content -Path $env:GITHUB_OUTPUT -Value "config_path=$ConfigPath"
+  }
 
-Write-Host "Imported code-signing certificate into CurrentUser\My."
-Write-Host "Thumbprint: $thumbprint"
-Write-Host "Wrote Tauri signing merge config (no private key): $ConfigPath"
+  Write-Host "Imported code-signing certificate into CurrentUser\My."
+  Write-Host "Thumbprint: $thumbprint"
+  Write-Host "Wrote Tauri signing merge config (no private key): $ConfigPath"
 
-# Return values for callers that capture output objects.
-[pscustomobject]@{
-  Thumbprint = $thumbprint
-  PfxPath    = $PfxPath
-  ConfigPath = $ConfigPath
+  # Return values for callers that capture output objects.
+  [pscustomobject]@{
+    Thumbprint = $thumbprint
+    PfxPath    = $PfxPath
+    ConfigPath = $ConfigPath
+    AddedThumbprints = @($imported | Where-Object { $existingThumbprints -notcontains $_.Thumbprint } | ForEach-Object { $_.Thumbprint })
+  }
+} catch {
+  foreach ($item in @($imported)) {
+    if ($item -and $existingThumbprints -notcontains $item.Thumbprint) {
+      Remove-Item -LiteralPath "Cert:\CurrentUser\My\$($item.Thumbprint)" -ErrorAction SilentlyContinue
+    }
+  }
+  throw
+} finally {
+  # The caller never needs the private-key file after import, including failed imports.
+  if (Test-Path -LiteralPath $PfxPath) { Remove-Item -LiteralPath $PfxPath -Force }
 }

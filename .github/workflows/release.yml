@@ -10,6 +10,9 @@ permissions:
   contents: write
 
 jobs:
+  windows-signing:
+    uses: ./.github/workflows/windows-signing-check.yml
+
   quality:
     runs-on: ubuntu-22.04
     steps:
@@ -33,6 +36,8 @@ jobs:
 
       - run: npm ci
 
+      - run: node --test scripts/ci-macos-build.test.mjs
+
       - name: Check version files
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
@@ -47,7 +52,7 @@ jobs:
         working-directory: src-tauri
 
   build:
-    needs: quality
+    needs: [quality, windows-signing]
     strategy:
       fail-fast: false
       matrix:
@@ -88,8 +93,19 @@ jobs:
       - run: npm ci
 
       - name: Build installer
-        if: runner.os != 'Windows'
+        if: runner.os == 'Linux'
         run: npm run tauri build -- --bundles ${{ matrix.bundle }}
+
+      - name: Build, sign, and notarize macOS installer
+        if: runner.os == 'macOS'
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: node scripts/ci-macos-build.mjs
 
       - name: Build and sign Windows installer
         if: runner.os == 'Windows'
@@ -130,7 +146,7 @@ jobs:
           fi
           gh release create "${GITHUB_REF_NAME}" "${files[@]}" \
             --title "Korigio ${GITHUB_REF_NAME}" \
-            --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build; Authenticode-signed when WINDOWS_CERTIFICATE secrets are set (self-signed until a public CA or Artifact Signing is configured). macOS and Linux are unsigned convenience builds." \
+            --notes "Installers for Korigio ${GITHUB_REF_NAME}. Windows (NSIS) is the supported shop build; Authenticode-signed when WINDOWS_CERTIFICATE secrets are set. macOS is signed and notarized when Apple signing secrets are configured. Linux is an unsigned convenience build." \
             || gh release upload "${GITHUB_REF_NAME}" "${files[@]}" --clobber
 
       - uses: actions/setup-node@v4
