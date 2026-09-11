@@ -110,7 +110,7 @@ mod tests {
                 row.get(0)
             })
             .expect("count");
-        assert_eq!(count, 12);
+        assert_eq!(count, MIGRATIONS.len() as i64);
 
         let tables: i64 = conn
             .query_row(
