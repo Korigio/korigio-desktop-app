@@ -297,6 +297,7 @@ export function useRepairDiagnosisFlow(
       }
     },
     [
+      applyRepairToForm,
       form,
       onDraftSuccess,
       onFinalizeSuccess,

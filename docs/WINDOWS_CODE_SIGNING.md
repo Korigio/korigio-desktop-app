@@ -20,12 +20,12 @@ not automatically trusted on normal customer Windows installations
 
 ## Publisher identity (what maps where)
 
-| Identity                         | Where it lives                                                                 | What users typically see                                      |
-| -------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| **Moritz Alexander Wright**      | Cert `CN=`; also `bundle.publisher` in `tauri.conf.json`                       | UAC / “Publisher” in signature details; Apps & Features       |
-| **Korigio**                      | Cert `O=`; `productName`                                                       | Product / installer name; organization in full cert Subject   |
-| **info@korigio.com**             | Cert `E=` / `emailAddress=`                                                    | Full Subject only — not the UAC headline                      |
-| **https://www.korigio.com**      | `bundle.homepage` (not an Authenticode DN field)                               | Installer / app metadata — not the signature publisher line   |
+| Identity                    | Where it lives                                           | What users typically see                                    |
+| --------------------------- | -------------------------------------------------------- | ----------------------------------------------------------- |
+| **Moritz Alexander Wright** | Cert `CN=`; also `bundle.publisher` in `tauri.conf.json` | UAC / “Publisher” in signature details; Apps & Features     |
+| **Korigio**                 | Cert `O=`; `productName`                                 | Product / installer name; organization in full cert Subject |
+| **info@korigio.com**        | Cert `E=` / `emailAddress=`                              | Full Subject only — not the UAC headline                    |
+| **https://www.korigio.com** | `bundle.homepage` (not an Authenticode DN field)         | Installer / app metadata — not the signature publisher line |
 
 Recommended cert Subject (created by the scripts below):
 

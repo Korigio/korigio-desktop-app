@@ -117,9 +117,7 @@ function buildEstimateReviewItems(
   }
 
   const listCents = estimateMajor ? parseMajorToCents(estimateMajor) : null;
-  const discountBps = discountRaw
-    ? parseDiscountPercentToBps(discountRaw)
-    : 0;
+  const discountBps = discountRaw ? parseDiscountPercentToBps(discountRaw) : 0;
   if (
     listCents === null ||
     (discountRaw && discountBps === null) ||

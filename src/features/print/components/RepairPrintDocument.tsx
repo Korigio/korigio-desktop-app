@@ -56,9 +56,7 @@ export function RepairPrintDocument({ report }: Props) {
     ? formatMoneyCents(estimateListCents, currency, locale)
     : undefined;
   const discountPercent =
-    showListBreakdown &&
-    estimateDiscountBps != null &&
-    estimateDiscountBps > 0
+    showListBreakdown && estimateDiscountBps != null && estimateDiscountBps > 0
       ? `${formatTaxRateBps(estimateDiscountBps)}%`
       : undefined;
   const tax =

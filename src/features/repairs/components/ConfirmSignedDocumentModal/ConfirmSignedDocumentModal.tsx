@@ -71,18 +71,12 @@ function defaultWarrantyYearsInput(warrantyYears: number | null): string {
 /** Required integer in 0..10. */
 function parseWarrantyYearsInput(
   raw: string,
-):
-  | { ok: true; value: number }
-  | { ok: false; reason: "required" | "invalid" } {
+): { ok: true; value: number } | { ok: false; reason: "required" | "invalid" } {
   const trimmed = raw.trim();
   if (!trimmed) return { ok: false, reason: "required" };
   if (!/^\d+$/.test(trimmed)) return { ok: false, reason: "invalid" };
   const value = Number(trimmed);
-  if (
-    !Number.isInteger(value) ||
-    value < 0 ||
-    value > WARRANTY_YEARS_MAX
-  ) {
+  if (!Number.isInteger(value) || value < 0 || value > WARRANTY_YEARS_MAX) {
     return { ok: false, reason: "invalid" };
   }
   return { ok: true, value };

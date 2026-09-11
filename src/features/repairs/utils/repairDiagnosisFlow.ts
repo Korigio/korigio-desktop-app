@@ -107,8 +107,7 @@ export function notesWithChecklist(
 }
 
 export type ResolveDiagnosisEstimateResult =
-  | ResolveIntakeEstimateResult
-  | { ok: false; reason: "required" };
+  ResolveIntakeEstimateResult | { ok: false; reason: "required" };
 
 /**
  * Resolve diagnosis estimate for `complete_repair_diagnosis`

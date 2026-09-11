@@ -155,15 +155,11 @@ export function SummaryPrintDocument({ report }: Props) {
               },
               {
                 label: fields("warranty"),
-                value: formatWarrantyYearsDisplay(
-                  repair.warrantyYears,
-                  empty,
-                  {
-                    none: t("repairs.workflow.summaryPrint.warrantyNone"),
-                    one: t("repairs.workflow.summaryPrint.warrantyOne"),
-                    other: t("repairs.workflow.summaryPrint.warrantyOther"),
-                  },
-                ),
+                value: formatWarrantyYearsDisplay(repair.warrantyYears, empty, {
+                  none: t("repairs.workflow.summaryPrint.warrantyNone"),
+                  one: t("repairs.workflow.summaryPrint.warrantyOne"),
+                  other: t("repairs.workflow.summaryPrint.warrantyOther"),
+                }),
               },
             ]}
           />

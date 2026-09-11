@@ -45,9 +45,7 @@ export function RepairDocumentCard({
       await repairsApi.openDocument(repair.id, documentType);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : t("repairs.documents.openFailed"),
+        err instanceof Error ? err.message : t("repairs.documents.openFailed"),
       );
     } finally {
       setBusyType(null);
@@ -120,7 +118,9 @@ export function RepairDocumentCard({
                     <div className="flex flex-wrap gap-2">
                       <LinkButton
                         variant="secondary"
-                        to={REPAIR_DOCUMENT_PRINT_PATHS[documentType](repair.id)}
+                        to={REPAIR_DOCUMENT_PRINT_PATHS[documentType](
+                          repair.id,
+                        )}
                       >
                         {t("repairs.documents.print")}
                       </LinkButton>
@@ -160,7 +160,9 @@ export function RepairDocumentCard({
                     <div className="flex flex-wrap gap-2">
                       <LinkButton
                         variant="secondary"
-                        to={REPAIR_DOCUMENT_PRINT_PATHS[documentType](repair.id)}
+                        to={REPAIR_DOCUMENT_PRINT_PATHS[documentType](
+                          repair.id,
+                        )}
                       >
                         {t("repairs.documents.print")}
                       </LinkButton>

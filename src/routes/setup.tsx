@@ -24,9 +24,7 @@ export default function SetupRoute() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : String(err ?? "Error"),
-          );
+          setError(err instanceof Error ? err.message : String(err ?? "Error"));
           setState("error");
         }
       });
