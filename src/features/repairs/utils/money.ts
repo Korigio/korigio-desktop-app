@@ -1,10 +1,18 @@
-/** Integer-cent tax math mirroring Rust `tax_cents_from_base` (round half up). */
+/** Integer-cent tax/discount math mirroring Rust `domain/repairs/money` (round half up). */
+
+const BPS_DENOM = 10_000;
+const HALF_UP_BIAS = 5_000;
 
 export type EstimatePreview = {
   baseCents: number;
   taxRateBps: number;
   taxCents: number;
   grossCents: number;
+};
+
+export type DiscountedEstimatePreview = EstimatePreview & {
+  listCents: number;
+  discountBps: number;
 };
 
 /** Parse tax percent string (0–100, ≤2 decimals) to basis points. */
@@ -47,7 +55,37 @@ export function taxCentsFromBase(
   }
   const product = baseCents * taxRateBps;
   if (!Number.isSafeInteger(product)) return null;
-  return Math.floor((product + 5_000) / 10_000);
+  return Math.floor((product + HALF_UP_BIAS) / BPS_DENOM);
+}
+
+/**
+ * Parse a discount percent string (0–100, ≤2 decimals) to basis points.
+ * Same rules as tax rate percent.
+ */
+export function parseDiscountPercentToBps(raw: string): number | null {
+  return parseTaxRatePercentToBps(raw);
+}
+
+/**
+ * Net (pre-tax) cents after discount: `round_half_up(list * (10000 - discount) / 10000)`.
+ */
+export function netCentsAfterDiscount(
+  listCents: number,
+  discountBps: number,
+): number | null {
+  if (
+    !Number.isInteger(listCents) ||
+    !Number.isInteger(discountBps) ||
+    listCents < 0 ||
+    discountBps < 0 ||
+    discountBps > BPS_DENOM
+  ) {
+    return null;
+  }
+  const keepBps = BPS_DENOM - discountBps;
+  const product = listCents * keepBps;
+  if (!Number.isSafeInteger(product)) return null;
+  return Math.floor((product + HALF_UP_BIAS) / BPS_DENOM);
 }
 
 export function previewEstimate(
@@ -61,6 +99,26 @@ export function previewEstimate(
   const grossCents = baseCents + taxCents;
   if (!Number.isSafeInteger(grossCents)) return null;
   return { baseCents, taxRateBps, taxCents, grossCents };
+}
+
+/**
+ * List price + discount % → post-discount net, then tax/gross via shop tax settings.
+ * `baseCents` in the result is the post-discount net (matches persisted estimate).
+ */
+export function previewEstimateWithDiscount(
+  listCents: number,
+  discountBps: number,
+  taxRatePercent: string,
+): DiscountedEstimatePreview | null {
+  const netCents = netCentsAfterDiscount(listCents, discountBps);
+  if (netCents === null) return null;
+  const preview = previewEstimate(netCents, taxRatePercent);
+  if (!preview) return null;
+  return {
+    ...preview,
+    listCents,
+    discountBps,
+  };
 }
 
 /** Parse a major-unit amount (`"100"`, `"100.5"`, `"100.50"`) to integer cents. */

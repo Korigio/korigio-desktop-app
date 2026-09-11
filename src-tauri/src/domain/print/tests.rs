@@ -77,6 +77,8 @@ fn seed_repair(db: &Db) -> (String, String) {
             work_performed: Some("Replaced SSD".into()),
             notes: Some("Rush".into()),
             expected_pickup_at: None,
+            estimate_base_cents: None,
+            estimate_discount_bps: None,
         },
     )
     .expect("repair");
@@ -109,6 +111,78 @@ fn print_report_assembles_core_fields_without_diagnosis() {
     assert_eq!(company.legal_name, "Test Company");
     assert!(report.company_logo_absolute_path.is_none());
     assert!(report.diagnosis.is_none());
+    assert!(report.repair.estimate_list_cents.is_none());
+    assert!(report.repair.estimate_discount_bps.is_none());
+    assert!(report.repair.estimate_base_cents.is_none());
+    assert_eq!(report.currency, "EUR");
+}
+
+#[test]
+fn entrance_print_report_includes_intake_estimate_and_currency() {
+    let db = Db::open_in_memory().expect("db");
+    let company_id = company(&db);
+    let customer = create_customer(
+        db.conn(),
+        CustomerInput {
+            name: "Print Customer".into(),
+            phone: Some("+49111".into()),
+            email: Some("print@example.com".into()),
+            address: Some("Print St 1".into()),
+            notes: None,
+        },
+    )
+    .expect("customer");
+    let device = create_device(
+        db.conn(),
+        DeviceInput {
+            customer_id: customer.id.clone(),
+            device_type: Some("Laptop".into()),
+            manufacturer: Some("Lenovo".into()),
+            model: Some("T14".into()),
+            serial_number: Some("SN-PRINT-EST".into()),
+            accessories: None,
+            notes: None,
+        },
+    )
+    .expect("device");
+
+    set_shop_settings(
+        db.conn(),
+        ShopSettingsInput {
+            tax_rate_percent: None,
+            currency: Some("CHF".into()),
+        },
+    )
+    .expect("currency");
+
+    let repair = create_repair(
+        db.conn(),
+        RepairInput {
+            customer_id: customer.id.clone(),
+            device_id: device.id.clone(),
+            company_id,
+            status: None,
+            reported_problem: Some("Won't boot".into()),
+            accessories_received: None,
+            device_condition: None,
+            diagnosis_notes: None,
+            work_performed: None,
+            notes: None,
+            expected_pickup_at: None,
+            estimate_base_cents: Some(10_000),
+            estimate_discount_bps: Some(1_000),
+        },
+    )
+    .expect("repair");
+
+    let report = get_repair_print_report(&db, repair.id.clone()).expect("report");
+    assert_eq!(report.repair.estimate_list_cents, Some(10_000));
+    assert_eq!(report.repair.estimate_discount_bps, Some(1_000));
+    assert_eq!(report.repair.estimate_base_cents, Some(9_000));
+    assert_eq!(report.repair.estimate_tax_rate_bps, Some(1_900));
+    assert_eq!(report.repair.estimate_tax_cents, Some(1_710));
+    assert_eq!(report.repair.estimate_gross_cents, Some(10_710));
+    assert_eq!(report.currency, "CHF");
 }
 
 #[test]
@@ -182,6 +256,7 @@ fn diagnosis_print_report_includes_estimate_and_currency() {
             diagnosis_notes: Some("Needs board".into()),
             expected_pickup_at: Some("2026-10-01".into()),
             estimate_base_cents: Some(10_000),
+            estimate_discount_bps: None,
         },
     )
     .expect("diagnose");
@@ -229,6 +304,7 @@ fn summary_print_report_includes_work_and_dates() {
             diagnosis_notes: Some("Screen fault".into()),
             expected_pickup_at: Some("2026-10-05".into()),
             estimate_base_cents: Some(8_000),
+            estimate_discount_bps: None,
         },
     )
     .expect("diagnose");
@@ -244,6 +320,7 @@ fn summary_print_report_includes_work_and_dates() {
         Some("2026-10-05")
     );
     assert_eq!(report.repair.estimate_gross_cents, Some(9_520));
+    assert!(report.repair.warranty_years.is_none());
     assert_eq!(report.currency, "EUR");
     assert_eq!(report.customer.name, "Print Customer");
 }

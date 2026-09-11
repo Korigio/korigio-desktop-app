@@ -9,11 +9,7 @@ type Props = {
   onBack: () => void;
 };
 
-export function DeviceDetailActions({
-  device,
-  onDeviceChange,
-  onBack,
-}: Props) {
+export function DeviceDetailActions({ device, onDeviceChange, onBack }: Props) {
   const { t } = useI18n();
   const isArchived = Boolean(device.archivedAt);
 

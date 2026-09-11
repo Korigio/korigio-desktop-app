@@ -10,33 +10,38 @@ export function useCompanyDetail(id: string) {
   const idRef = useRef(id);
   idRef.current = id;
 
-  const load = useCallback(async (silent: boolean) => {
-    const requestedId = id;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-    try {
-      const data = await companiesApi.get(requestedId);
-      if (idRef.current !== requestedId) {
-        return;
-      }
-      setCompany(data);
-      setError(null);
-    } catch (err) {
-      if (idRef.current !== requestedId) {
-        return;
-      }
+  const load = useCallback(
+    async (silent: boolean) => {
+      const requestedId = id;
       if (!silent) {
-        setError(err instanceof Error ? err.message : "Failed to load company");
-        setCompany(null);
+        setLoading(true);
+        setError(null);
       }
-    } finally {
-      if (idRef.current === requestedId && !silent) {
-        setLoading(false);
+      try {
+        const data = await companiesApi.get(requestedId);
+        if (idRef.current !== requestedId) {
+          return;
+        }
+        setCompany(data);
+        setError(null);
+      } catch (err) {
+        if (idRef.current !== requestedId) {
+          return;
+        }
+        if (!silent) {
+          setError(
+            err instanceof Error ? err.message : "Failed to load company",
+          );
+          setCompany(null);
+        }
+      } finally {
+        if (idRef.current === requestedId && !silent) {
+          setLoading(false);
+        }
       }
-    }
-  }, [id]);
+    },
+    [id],
+  );
 
   useEffect(() => {
     void load(false);

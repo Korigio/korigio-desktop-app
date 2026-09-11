@@ -7,8 +7,9 @@
   Checks the app executable and the NSIS installer this repo actually produces.
   MSI is not built and is not checked.
 
-  A self-signed signature is usually Status=NotTrusted on machines that do not
-  trust the cert. That still counts as SIGNED. NotSigned or HashMismatch fails.
+  A self-signed signature is usually Status=NotTrusted or UnknownError on
+  machines that do not trust the cert. That still counts as SIGNED. NotSigned
+  or HashMismatch fails.
 
 .PARAMETER RequireTrusted
   Also fail unless Windows reports Status=Valid (publicly trusted chain).
@@ -54,6 +55,7 @@ $targets = [System.Collections.Generic.List[object]]::new()
 $releaseDir = Join-Path $RepoRoot "src-tauri\target\release"
 $exeCandidates = @(
   (Join-Path $releaseDir "Korigio.exe"),
+  (Join-Path $releaseDir "korigio.exe"),
   (Join-Path $releaseDir "repair-manager.exe")
 )
 $exe = $exeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
@@ -62,7 +64,7 @@ if ($exe) {
 } else {
   Write-Host "Checking application executable..."
   Write-Host "MISSING"
-  Write-Error "No Korigio.exe (or repair-manager.exe) under src-tauri/target/release. Build first."
+  Write-Error "No Korigio.exe (or korigio.exe) under src-tauri/target/release. Build first."
 }
 
 $nsisDir = Join-Path $RepoRoot "src-tauri\target\release\bundle\nsis"

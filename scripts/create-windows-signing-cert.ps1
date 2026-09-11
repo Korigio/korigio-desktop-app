@@ -27,7 +27,10 @@ if (-not $IsWindows -and $env:OS -ne "Windows_NT") {
   Write-Error "This script must run on Windows (PowerShell with the certificate store)."
 }
 
-$subject = "CN=Korigio, O=Moritz Alexander Wright"
+# CN is what Windows usually shows as the publisher name (UAC / signature details).
+# O / E are visible in the full Subject. Website URL is not an Authenticode DN field —
+# use bundle.homepage in tauri.conf.json (https://www.korigio.com).
+$subject = "CN=Moritz Alexander Wright, O=Korigio, E=info@korigio.com"
 $notAfter = (Get-Date).AddYears($ValidYears)
 $repoRoot = Split-Path -Parent $PSScriptRoot
 if (-not $PfxPath) {
@@ -101,6 +104,6 @@ Write-Host "    Then copy only the Base64 body into the secret (not the CERTIFIC
 Write-Host "    or include the full certutil file — the importer accepts either)."
 Write-Host ""
 Write-Host "This certificate will NOT make SmartScreen trust Korigio on your client's PC."
-Write-Host "It only attaches publisher `"Korigio / Moritz Alexander Wright`" to the Authenticode signature."
+Write-Host "It only attaches publisher `"Moritz Alexander Wright`" (O=Korigio, E=info@korigio.com) to the Authenticode signature."
 Write-Host ""
 Write-Host "Thumbprint: $($cert.Thumbprint)"

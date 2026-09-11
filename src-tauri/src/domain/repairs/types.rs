@@ -20,7 +20,13 @@ pub struct Repair {
     pub work_performed: Option<String>,
     pub notes: Option<String>,
     pub expected_pickup_at: Option<String>,
-    /// Pre-tax estimate in integer cents; null until first set via diagnosis flow.
+    /// Pre-discount list price; null for legacy rows without list/discount.
+    #[serde(default)]
+    pub estimate_list_cents: Option<i64>,
+    /// Discount in basis points; null for legacy rows without list/discount.
+    #[serde(default)]
+    pub estimate_discount_bps: Option<i64>,
+    /// Pre-tax net estimate in integer cents; null until set at intake or diagnosis.
     pub estimate_base_cents: Option<i64>,
     /// Tax rate snapshotted at estimate time, in basis points (e.g. 19% → 1900).
     pub estimate_tax_rate_bps: Option<i64>,
@@ -28,6 +34,9 @@ pub struct Repair {
     pub estimate_gross_cents: Option<i64>,
     pub ready_at: Option<String>,
     pub collected_at: Option<String>,
+    /// Whole years of warranty; null until summary handover. Range `0..=10` when set.
+    #[serde(default)]
+    pub warranty_years: Option<i64>,
     pub created_at: String,
     pub updated_at: String,
     pub archived_at: Option<String>,
@@ -92,8 +101,11 @@ pub struct CompleteRepairDiagnosisInput {
     pub mode: CompleteDiagnosisMode,
     pub diagnosis_notes: Option<String>,
     pub expected_pickup_at: Option<String>,
-    /// Null only allowed when the repair has never had an estimate; clearing is rejected.
+    /// List price in cents (same as create_repair). Null only when never set; clearing rejected.
     pub estimate_base_cents: Option<i64>,
+    /// Discount in basis points (`0..=10000`). `None` = 0. Error if set without list.
+    #[serde(default)]
+    pub estimate_discount_bps: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -117,6 +129,14 @@ pub struct RepairInput {
     pub work_performed: Option<String>,
     pub notes: Option<String>,
     pub expected_pickup_at: Option<String>,
+    /// Create only: pre-discount list price in cents. `None` = no intake estimate.
+    /// Ignored on `update_repair`.
+    #[serde(default)]
+    pub estimate_base_cents: Option<i64>,
+    /// Create only: discount in basis points (`0..=10000`). `None` = 0.
+    /// Error if set without `estimate_base_cents`. Ignored on `update_repair`.
+    #[serde(default)]
+    pub estimate_discount_bps: Option<i64>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -138,6 +158,7 @@ pub struct RepairListItem {
     #[serde(flatten)]
     pub repair: Repair,
     pub customer_name: String,
+    pub device_name: String,
 }
 
 impl std::ops::Deref for RepairListItem {

@@ -16,7 +16,8 @@ use crate::domain::repairs::types::{
 };
 use crate::domain::repairs::validation::{
     validate_collected_at_date, validate_complete_diagnosis, validate_create_input,
-    validate_update_input, validate_work_performed, validate_workflow_status,
+    validate_update_input, validate_warranty_years, validate_work_performed,
+    validate_workflow_status,
 };
 use crate::domain::settings;
 use crate::domain::staff;
@@ -32,7 +33,8 @@ fn record(conn: &Connection, repair: &Repair, ctx: &sync::WriteContext) -> Resul
 }
 
 pub fn create_repair(conn: &Connection, input: RepairInput) -> Result<Repair, AppError> {
-    let validated = validate_create_input(&input)?;
+    let shop = settings::get_shop_settings(conn)?;
+    let validated = validate_create_input(&input, &shop.tax_rate_percent)?;
     ensure_customer_accepts_repair(conn, &validated.customer_id)?;
     ensure_device_belongs_to_customer(conn, &validated.device_id, &validated.customer_id)?;
     ensure_company_accepts_repair(conn, &validated.company_id)?;
@@ -156,14 +158,16 @@ pub fn complete_repair_diagnosis(
     let tx = conn.unchecked_transaction()?;
     let ctx = begin_write(&tx)?;
 
-    let (base, rate_bps, tax, gross) = match validated.estimate {
+    let (list, discount, base, rate_bps, tax, gross) = match validated.estimate {
         Some(est) => (
+            est.list_cents,
+            est.discount_bps,
             Some(est.base_cents),
             Some(est.tax_rate_bps),
             Some(est.tax_cents),
             Some(est.gross_cents),
         ),
-        None => (None, None, None, None),
+        None => (None, None, None, None, None, None),
     };
 
     let repair = repository::update_repair_diagnosis(
@@ -172,6 +176,8 @@ pub fn complete_repair_diagnosis(
         &validated.next_status,
         validated.diagnosis_notes.as_deref(),
         validated.expected_pickup_at.as_deref(),
+        list,
+        discount,
         base,
         rate_bps,
         tax,
@@ -247,6 +253,35 @@ pub fn confirm_repair_summary(db: &Db, repair_id: String) -> Result<Repair, AppE
         "awaiting_pickup",
         "confirm summary",
     )
+}
+
+/// Records collection date and warranty years while status remains `ready` (before summary print / confirm).
+/// Allows updating again while still `ready`.
+pub fn record_repair_summary_handover(
+    db: &Db,
+    repair_id: String,
+    collected_at: String,
+    warranty_years: i64,
+) -> Result<Repair, AppError> {
+    let repair_id = parse_entity_id_field(&repair_id, "repairId")?;
+    let collected_at_rfc3339 = validate_collected_at_date(&collected_at)?;
+    let warranty_years = validate_warranty_years(warranty_years)?;
+    let existing = get_repair(db.conn(), repair_id.clone())?;
+    ensure_editable(&existing)?;
+    validate_workflow_status(&existing.status, "ready", "record summary handover")?;
+
+    let now = now_utc_rfc3339()?;
+    let ctx = begin_write(db.conn())?;
+    let repair = repository::update_repair_summary_handover(
+        db.conn(),
+        &repair_id,
+        &collected_at_rfc3339,
+        warranty_years,
+        &now,
+        &ctx,
+    )?;
+    record(db.conn(), &repair, &ctx)?;
+    Ok(repair)
 }
 
 pub fn complete_repair_pickup(

@@ -15,19 +15,12 @@ export const messages = {
 
 export type MessageTree = typeof es;
 
-export function translate(
-  locale: Locale,
-  key: string,
-): string {
+export function translate(locale: Locale, key: string): string {
   const parts = key.split(".");
   let current: unknown = messages[locale];
 
   for (const part of parts) {
-    if (
-      typeof current !== "object" ||
-      current === null ||
-      !(part in current)
-    ) {
+    if (typeof current !== "object" || current === null || !(part in current)) {
       return key;
     }
     current = (current as Record<string, unknown>)[part];

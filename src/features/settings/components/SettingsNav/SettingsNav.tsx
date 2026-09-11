@@ -9,7 +9,10 @@ export function SettingsNav() {
 
   return (
     <Card className="border-primary/20 bg-surface">
-      <nav aria-label={t("settings.nav.label")} className="flex flex-row flex-wrap gap-1">
+      <nav
+        aria-label={t("settings.nav.label")}
+        className="flex flex-row flex-wrap gap-1"
+      >
         {settingsCategories.map((category) => (
           <NavLink
             key={category.path}

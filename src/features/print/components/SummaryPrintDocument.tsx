@@ -15,6 +15,7 @@ import {
 import {
   companyDisplayName,
   formatPrintDate,
+  formatWarrantyYearsDisplay,
   printFieldValue,
   printFooterLine,
 } from "@/features/print/utils/printFormat";
@@ -31,8 +32,14 @@ type Props = {
 export function SummaryPrintDocument({ report }: Props) {
   const { t, locale } = useI18n();
   const empty = t("print.emptyValue");
-  const { repair, customer, device, company, companyLogoAbsolutePath, currency } =
-    report;
+  const {
+    repair,
+    customer,
+    device,
+    company,
+    companyLogoAbsolutePath,
+    currency,
+  } = report;
   const fields = (key: string) =>
     t(`repairs.workflow.summaryPrint.fields.${key}`);
   const sections = (key: string) =>
@@ -145,6 +152,18 @@ export function SummaryPrintDocument({ report }: Props) {
               {
                 label: fields("collected"),
                 value: formatPrintDate(repair.collectedAt, locale, empty),
+              },
+              {
+                label: fields("warranty"),
+                value: formatWarrantyYearsDisplay(
+                  repair.warrantyYears,
+                  empty,
+                  {
+                    none: t("repairs.workflow.summaryPrint.warrantyNone"),
+                    one: t("repairs.workflow.summaryPrint.warrantyOne"),
+                    other: t("repairs.workflow.summaryPrint.warrantyOther"),
+                  },
+                ),
               },
             ]}
           />

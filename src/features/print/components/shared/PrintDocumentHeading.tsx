@@ -20,7 +20,9 @@ export function PrintDocumentHeading({
 }: Props) {
   return (
     <div className="mt-6 flex items-start justify-between gap-4">
-      <h1 className="text-2xl font-semibold uppercase tracking-wide">{title}</h1>
+      <h1 className="text-2xl font-semibold uppercase tracking-wide">
+        {title}
+      </h1>
       <div className="shrink-0 text-right text-sm leading-snug">
         <p>{labeled(dateLabel, formattedDate)}</p>
         <p>{labeled(repairNumberLabel, repairNumber)}</p>

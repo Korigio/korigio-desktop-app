@@ -407,8 +407,25 @@
         "createCustomer": "New customer",
         "createDevice": "New device"
       },
+      "estimate": {
+        "heading": "Estimate",
+        "hint": "Optional. This is only an estimate and may change after a detailed diagnosis.",
+        "fields": {
+          "listPrice": "List price ({currency})",
+          "discountPercent": "Discount (%)"
+        },
+        "preview": {
+          "net": "Net after discount",
+          "tax": "Tax",
+          "gross": "Total (incl. tax)"
+        },
+        "validation": {
+          "discountNeedsPrice": "Enter a list price before applying a discount."
+        }
+      },
       "review": {
-        "heading": "Review and create"
+        "heading": "Review and create",
+        "estimateNet": "Estimate (net)"
       },
       "done": {
         "heading": "Repair created",
@@ -428,8 +445,8 @@
       "noTemplates": "No diagnosis templates yet. Create one under Diagnosis templates.",
       "archivedHint": "This repair is archived. Diagnosis cannot be edited.",
       "cancelledHint": "This repair is cancelled. Diagnosis cannot be edited.",
-      "estimateHint": "Enter the net amount before tax. Tax is calculated from shop settings.",
-      "estimateLockedHint": "An estimate is already saved. You can update the amount, but it cannot be cleared.",
+      "estimateHint": "Optionally enter a list price and discount. Tax is calculated from shop settings.",
+      "estimateLockedHint": "An estimate is already saved. You can change the list price or discount, but it cannot be cleared.",
       "estimatePreviewInvalid": "Enter a valid amount.",
       "applyToNotesSuccess": "Checklist applied to findings.",
       "draftSuccess": "Diagnosis draft saved.",
@@ -463,8 +480,8 @@
         "selectTemplateFirst": "Select a template first.",
         "loadTemplateFailed": "Could not load the template.",
         "nothingToApply": "Nothing to apply. Load a template and fill the checklist first.",
-        "estimateRequired": "Enter a net estimate before finalizing.",
-        "estimateInvalid": "Enter a valid net estimate.",
+        "estimateRequired": "Enter a list price or estimate amount before finalizing.",
+        "estimateInvalid": "Enter a valid list price or estimate amount.",
         "notesRequired": "Enter findings before finalizing.",
         "saveFailed": "Could not save the diagnosis."
       }
@@ -534,8 +551,14 @@
         },
         "confirmSummary": {
           "title": "Signed summary (optional)",
-          "description": "Print the repair summary for the customer to sign at pickup.",
-          "hint": "Uploading a signed copy is optional. You can continue without one.",
+          "description": "Confirm the device was handed over, then print the repair summary for the customer to sign.",
+          "hint": "Handover must be confirmed before printing for signature. Uploading a signed copy is optional — you can continue without one.",
+          "handoverDate": "Handover date",
+          "handoverDateRequired": "Handover date is required.",
+          "handoverFailed": "Could not save handover date.",
+          "warrantyYears": "Warranty (years)",
+          "warrantyYearsRequired": "Warranty years are required.",
+          "warrantyYearsInvalid": "Enter a whole number from 0 to 10.",
           "printSummary": "Print summary",
           "confirmButton": "Confirm",
           "continueWithoutUpload": "Continue without uploading",
@@ -559,7 +582,7 @@
         },
         "recordPickup": {
           "title": "Record pickup",
-          "description": "Confirm when the customer collected the device.",
+          "description": "Confirm that the customer has collected the device.",
           "pickupDate": "Pickup date",
           "confirmButton": "Confirm pickup",
           "dateRequired": "Pickup date is required.",
@@ -598,8 +621,12 @@
           "total": "Total",
           "expected": "Expected",
           "ready": "Ready",
-          "collected": "Collected"
-        }
+          "collected": "Collected",
+          "warranty": "Warranty"
+        },
+        "warrantyNone": "No warranty",
+        "warrantyOne": "1 year",
+        "warrantyOther": "{n} years"
       }
     },
     "documents": {
@@ -607,6 +634,7 @@
       "loading": "Loading documents…",
       "print": "Print",
       "view": "View",
+      "download": "Download",
       "replace": "Replace",
       "delete": "Delete",
       "uploadButton": "Upload signed copy",
@@ -779,11 +807,12 @@
     "shop": {
       "title": "Shop defaults",
       "subtitle": "Tax and currency used for repair estimates",
-      "hint": "Default tax rate is 19%. Use a three-letter currency code (for example EUR).",
+      "hint": "Default tax rate is 19%. Choose the currency used for repair estimates from the list.",
       "saveSuccess": "Shop settings saved.",
       "fields": {
         "taxRatePercent": "Tax rate (%)",
-        "currency": "Currency"
+        "currency": "Currency",
+        "currencyPlaceholder": "Select currency"
       },
       "actions": {
         "save": "Save shop settings"
@@ -863,7 +892,8 @@
       "closeDiagnosis": "Back to repair"
     },
     "errors": {
-      "loadFailed": "Could not load the print report."
+      "loadFailed": "Could not load the print report.",
+      "printFailed": "Could not open the print dialog."
     },
     "entrance": {
       "title": "Device intake receipt",
@@ -892,6 +922,13 @@
         "condition": "Condition",
         "notes": "Notes",
         "expectedPickup": "Possible pickup"
+      },
+      "estimate": {
+        "title": "Preliminary estimate",
+        "disclaimer": "This is an estimate only. The final price may change after a detailed diagnosis.",
+        "listPrice": "List price",
+        "discountPercent": "Discount (%)",
+        "netAfterDiscount": "Net after discount"
       },
       "signatures": {
         "client": "Customer signature",

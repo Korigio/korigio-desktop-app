@@ -10,6 +10,8 @@ pub struct RepairPrintReport {
     pub company: Option<PrintCompany>,
     pub company_logo_absolute_path: Option<String>,
     pub diagnosis: Option<PrintDiagnosis>,
+    /// Display currency from shop settings.
+    pub currency: String,
 }
 
 /// Diagnosis paper for customer signature (notes + estimate; no checklist JSON).
@@ -54,6 +56,12 @@ pub struct PrintRepairCore {
     pub expected_pickup_at: Option<String>,
     pub ready_at: Option<String>,
     pub collected_at: Option<String>,
+    pub estimate_list_cents: Option<i64>,
+    pub estimate_discount_bps: Option<i64>,
+    pub estimate_base_cents: Option<i64>,
+    pub estimate_tax_rate_bps: Option<i64>,
+    pub estimate_tax_cents: Option<i64>,
+    pub estimate_gross_cents: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -84,6 +92,7 @@ pub struct SummaryPrintRepair {
     pub expected_pickup_at: Option<String>,
     pub ready_at: Option<String>,
     pub collected_at: Option<String>,
+    pub warranty_years: Option<i64>,
     pub estimate_base_cents: Option<i64>,
     pub estimate_tax_rate_bps: Option<i64>,
     pub estimate_tax_cents: Option<i64>,

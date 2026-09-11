@@ -66,8 +66,8 @@ export function BackupPanel() {
                 >
                   <p className="font-medium">{item.fileName}</p>
                   <p className="text-muted">
-                    {t(`settings.backup.kind.${item.kind}`)} · {item.createdAt} ·{" "}
-                    {formatSize(item.sizeBytes)}
+                    {t(`settings.backup.kind.${item.kind}`)} · {item.createdAt}{" "}
+                    · {formatSize(item.sizeBytes)}
                   </p>
                 </li>
               ))}

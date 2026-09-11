@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { updatesApi } from "@/features/settings/api/updatesApi";
 import { FEEDBACK_MAILTO_ADDRESS } from "@/features/settings/constants/updates";
-import { useAppUpdate } from "@/features/settings/hooks/useAppUpdate";
+import { useAppUpdate } from "@/features/settings/hooks/app-update-context";
 import { Button, Card, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -33,7 +33,9 @@ export function FeedbackCard() {
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted">{t("settings.feedback.body")}</p>
         <p className="text-sm">
-          <span className="text-muted">{t("settings.feedback.emailLabel")}: </span>
+          <span className="text-muted">
+            {t("settings.feedback.emailLabel")}:{" "}
+          </span>
           <button
             type="button"
             className="text-primary underline underline-offset-2"

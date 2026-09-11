@@ -1,4 +1,9 @@
 type Props = {
+  /** When set with `listPrice`, shows list → optional discount → net breakdown. */
+  listPriceLabel?: string;
+  listPrice?: string;
+  discountPercentLabel?: string;
+  discountPercent?: string;
   netLabel: string;
   net: string;
   taxRateLabel: string;
@@ -31,6 +36,10 @@ function TotalsRow({
 }
 
 export function PrintTotals({
+  listPriceLabel,
+  listPrice,
+  discountPercentLabel,
+  discountPercent,
   netLabel,
   net,
   taxRateLabel,
@@ -38,8 +47,18 @@ export function PrintTotals({
   totalLabel,
   total,
 }: Props) {
+  const showListBreakdown = listPrice != null && listPriceLabel != null;
+
   return (
     <div className="mt-8 ml-auto w-64 break-inside-avoid text-sm leading-relaxed">
+      {showListBreakdown ? (
+        <>
+          <TotalsRow label={listPriceLabel} value={listPrice} />
+          {discountPercent != null && discountPercentLabel != null ? (
+            <TotalsRow label={discountPercentLabel} value={discountPercent} />
+          ) : null}
+        </>
+      ) : null}
       <TotalsRow label={netLabel} value={net} />
       <TotalsRow label={taxRateLabel} value={tax} />
       <div className="mt-1 border-t border-[#cccccc] pt-1">

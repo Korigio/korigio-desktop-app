@@ -4,22 +4,22 @@
 
 **Locked choices:**
 
-| Choice | Decision |
-| --- | --- |
-| Surface | **Both:** deepen list filters **and** a simple global `/search` page |
-| Engine | **Expanded `LIKE` + JOINs + B-tree indexes** (not FTS5) |
+| Choice           | Decision                                                                                                                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Surface          | **Both:** deepen list filters **and** a simple global `/search` page                                                                                                                                  |
+| Engine           | **Expanded `LIKE` + JOINs + B-tree indexes** (not FTS5)                                                                                                                                               |
 | Why not FTS5 now | Workshop lookups are mostly phone / serial / repair-number substrings; FTS5 tokenizers fight punctuation. Existing repos already use escaped `LIKE`. Phase 13 can add FTS5 if measurements show need. |
-| Agent split | `/phase-orchestrator` → `/backend` → `/frontend` → `/i18n` → `/verifier` |
+| Agent split      | `/phase-orchestrator` → `/backend` → `/frontend` → `/i18n` → `/verifier`                                                                                                                              |
 
 ## Current gaps
 
-| Area | Today | Phase 7 target |
-| --- | --- | --- |
-| Customers | name, phone, email | Same fields (already multi-field) + indexes on phone/email |
-| Devices | type, manufacturer, model, serial | Same + indexes on manufacturer/model |
-| Repairs | **`repair_number` only** (UI overclaims) | Number + `reported_problem` + customer name/phone + device serial/manufacturer/model |
-| Global | None | `/search` + `global_search` command |
-| Indexes | FK/status/name/serial only (`001_initial.sql`) | Migration `002_search_indexes.sql` |
+| Area      | Today                                          | Phase 7 target                                                                       |
+| --------- | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Customers | name, phone, email                             | Same fields (already multi-field) + indexes on phone/email                           |
+| Devices   | type, manufacturer, model, serial              | Same + indexes on manufacturer/model                                                 |
+| Repairs   | **`repair_number` only** (UI overclaims)       | Number + `reported_problem` + customer name/phone + device serial/manufacturer/model |
+| Global    | None                                           | `/search` + `global_search` command                                                  |
+| Indexes   | FK/status/name/serial only (`001_initial.sql`) | Migration `002_search_indexes.sql`                                                   |
 
 ## Architecture
 
@@ -53,7 +53,7 @@ flowchart LR
 ```ts
 // invoke("global_search", { query: GlobalSearchQuery })
 type GlobalSearchQuery = {
-  query: string;       // required, trimmed; empty → empty result
+  query: string; // required, trimmed; empty → empty result
   limitPerType?: number; // default 10, max 25
 };
 

@@ -1,6 +1,5 @@
 import type { Repair } from "@/features/repairs/types/repair";
 import { pickupCardStatus } from "@/features/repairs/utils/repairWorkflow";
-import { WorkflowCardStatusBadge } from "@/features/repairs/components/WorkflowCardStatusBadge";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { Button, Card, DefinitionList } from "@/ui";
 
@@ -19,10 +18,7 @@ export function RepairPickupCard({ repair, onRecordClick }: Props) {
   }
 
   return (
-    <Card
-      title={t("repairs.workflow.cards.pickup.title")}
-      actions={<WorkflowCardStatusBadge status={cardStatus} />}
-    >
+    <Card title={t("repairs.workflow.cards.pickup.title")}>
       <DefinitionList
         items={[
           {

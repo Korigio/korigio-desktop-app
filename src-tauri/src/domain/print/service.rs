@@ -20,6 +20,7 @@ pub fn get_repair_print_report(db: &Db, repair_id: String) -> Result<RepairPrint
     let repair = repairs::get_repair(db.conn(), repair_id.clone())?;
     let customer = customers::get_customer(db.conn(), repair.customer_id)?;
     let device = devices::get_device(db.conn(), repair.device_id)?;
+    let shop = settings::get_shop_settings(db.conn())?;
     let diagnosis =
         diagnosis::get_repair_diagnosis(db.conn(), repair_id)?.map(|d| PrintDiagnosis {
             items: d
@@ -52,12 +53,19 @@ pub fn get_repair_print_report(db: &Db, repair_id: String) -> Result<RepairPrint
             expected_pickup_at: repair.expected_pickup_at,
             ready_at: repair.ready_at,
             collected_at: repair.collected_at,
+            estimate_list_cents: repair.estimate_list_cents,
+            estimate_discount_bps: repair.estimate_discount_bps,
+            estimate_base_cents: repair.estimate_base_cents,
+            estimate_tax_rate_bps: repair.estimate_tax_rate_bps,
+            estimate_tax_cents: repair.estimate_tax_cents,
+            estimate_gross_cents: repair.estimate_gross_cents,
         },
         customer: map_customer(customer),
         device: map_device(device),
         company,
         company_logo_absolute_path,
         diagnosis,
+        currency: shop.currency,
     })
 }
 
@@ -116,6 +124,7 @@ pub fn get_repair_summary_print_report(
             expected_pickup_at: repair.expected_pickup_at,
             ready_at: repair.ready_at,
             collected_at: repair.collected_at,
+            warranty_years: repair.warranty_years,
             estimate_base_cents: repair.estimate_base_cents,
             estimate_tax_rate_bps: repair.estimate_tax_rate_bps,
             estimate_tax_cents: repair.estimate_tax_cents,

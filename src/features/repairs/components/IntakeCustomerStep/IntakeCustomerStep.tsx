@@ -25,7 +25,7 @@ export function IntakeCustomerStep({ intake }: Props) {
         <Button
           type="button"
           variant="secondary"
-          className="shrink-0 px-3"
+          className="size-10 shrink-0 px-0"
           aria-label={createLabel}
           title={createLabel}
           disabled={intake.submitting}

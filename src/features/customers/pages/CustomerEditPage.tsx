@@ -30,7 +30,10 @@ function CustomerEditForm({ customer }: { customer: Customer }) {
 
   return (
     <Page>
-      <PageHeader title={t("customers.editTitle")} description={customer.name} />
+      <PageHeader
+        title={t("customers.editTitle")}
+        description={customer.name}
+      />
       <CustomerForm
         form={form}
         submitLabel={t("customers.actions.save")}

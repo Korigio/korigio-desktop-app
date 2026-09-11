@@ -4,17 +4,17 @@
 
 ## Locked product choices
 
-| Choice | Decision |
-| --- | --- |
-| Template storage | Existing `diagnosis_templates` (`name`, `body_json`, `updated_at`) |
-| Applied diagnosis | Existing `repair_diagnosis` (`repair_id`, `template_id`, `result_json`) |
-| Checklist shape | Ordered items: `{ id, label, kind }` where `kind` is `checkbox` or `text` |
-| Result shape | Same items plus `value` (`boolean` for checkbox, `string` for text) |
-| Per repair | **At most one** diagnosis — enforce in Rust; migration `003` adds `UNIQUE(repair_id)` |
-| Template delete | Hard delete only if unused; if referenced → validation error |
-| Apply flow | On repair detail: pick template → copy snapshot into `result_json` (labels frozen even if template later edits) |
-| Status | Applying a template does **not** auto-change repair status |
-| Agent split | `/phase-orchestrator` → `/backend` → `/frontend` → `/i18n` → `/verifier` |
+| Choice            | Decision                                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| Template storage  | Existing `diagnosis_templates` (`name`, `body_json`, `updated_at`)                                              |
+| Applied diagnosis | Existing `repair_diagnosis` (`repair_id`, `template_id`, `result_json`)                                         |
+| Checklist shape   | Ordered items: `{ id, label, kind }` where `kind` is `checkbox` or `text`                                       |
+| Result shape      | Same items plus `value` (`boolean` for checkbox, `string` for text)                                             |
+| Per repair        | **At most one** diagnosis — enforce in Rust; migration `003` adds `UNIQUE(repair_id)`                           |
+| Template delete   | Hard delete only if unused; if referenced → validation error                                                    |
+| Apply flow        | On repair detail: pick template → copy snapshot into `result_json` (labels frozen even if template later edits) |
+| Status            | Applying a template does **not** auto-change repair status                                                      |
+| Agent split       | `/phase-orchestrator` → `/backend` → `/frontend` → `/i18n` → `/verifier`                                        |
 
 ### Locked JSON (examples)
 
@@ -34,8 +34,18 @@ Result `result_json` (after apply + fill):
 ```json
 {
   "items": [
-    { "id": "screen", "label": "Screen intact", "kind": "checkbox", "value": false },
-    { "id": "notes", "label": "Technician notes", "kind": "text", "value": "Hairline crack" }
+    {
+      "id": "screen",
+      "label": "Screen intact",
+      "kind": "checkbox",
+      "value": false
+    },
+    {
+      "id": "notes",
+      "label": "Technician notes",
+      "kind": "text",
+      "value": "Hairline crack"
+    }
   ]
 }
 ```
@@ -71,15 +81,15 @@ flowchart LR
 
 **Domain** `src-tauri/src/domain/diagnosis/`:
 
-| Command | Behavior |
-| --- | --- |
-| `list_diagnosis_templates` | Optional `query` on name; pagination |
-| `get_diagnosis_template` | By id |
-| `create_diagnosis_template` | Validate name + body items |
-| `update_diagnosis_template` | Same validation; bump `updated_at` |
+| Command                     | Behavior                                                 |
+| --------------------------- | -------------------------------------------------------- |
+| `list_diagnosis_templates`  | Optional `query` on name; pagination                     |
+| `get_diagnosis_template`    | By id                                                    |
+| `create_diagnosis_template` | Validate name + body items                               |
+| `update_diagnosis_template` | Same validation; bump `updated_at`                       |
 | `delete_diagnosis_template` | Fail if any `repair_diagnosis.template_id` references it |
-| `get_repair_diagnosis` | By `repairId`; return null when none |
-| `upsert_repair_diagnosis` | `repairId`, optional `templateId`, result items |
+| `get_repair_diagnosis`      | By `repairId`; return null when none                     |
+| `upsert_repair_diagnosis`   | `repairId`, optional `templateId`, result items          |
 
 When **applying** a template from UI: frontend loads template, maps items to default values (`false` / `""`), calls `upsert_repair_diagnosis` with `templateId`.
 

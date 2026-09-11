@@ -19,7 +19,11 @@ export function SearchField({
   ...inputProps
 }: SearchFieldProps) {
   return (
-    <FormField label={label} htmlFor={id} className={cn("min-w-64 flex-1", className)}>
+    <FormField
+      label={label}
+      htmlFor={id}
+      className={cn("min-w-64 flex-1", className)}
+    >
       <TextField id={id} type="search" {...inputProps} />
     </FormField>
   );

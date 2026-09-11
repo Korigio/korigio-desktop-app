@@ -10,33 +10,38 @@ export function useDeviceDetail(deviceId: string) {
   const deviceIdRef = useRef(deviceId);
   deviceIdRef.current = deviceId;
 
-  const load = useCallback(async (silent: boolean) => {
-    const id = deviceId;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-    try {
-      const next = await devicesApi.get(id);
-      if (deviceIdRef.current !== id) {
-        return;
-      }
-      setDevice(next);
-      setError(null);
-    } catch (err) {
-      if (deviceIdRef.current !== id) {
-        return;
-      }
+  const load = useCallback(
+    async (silent: boolean) => {
+      const id = deviceId;
       if (!silent) {
-        setDevice(null);
-        setError(err instanceof Error ? err.message : "Failed to load device");
+        setLoading(true);
+        setError(null);
       }
-    } finally {
-      if (deviceIdRef.current === id && !silent) {
-        setLoading(false);
+      try {
+        const next = await devicesApi.get(id);
+        if (deviceIdRef.current !== id) {
+          return;
+        }
+        setDevice(next);
+        setError(null);
+      } catch (err) {
+        if (deviceIdRef.current !== id) {
+          return;
+        }
+        if (!silent) {
+          setDevice(null);
+          setError(
+            err instanceof Error ? err.message : "Failed to load device",
+          );
+        }
+      } finally {
+        if (deviceIdRef.current === id && !silent) {
+          setLoading(false);
+        }
       }
-    }
-  }, [deviceId]);
+    },
+    [deviceId],
+  );
 
   useEffect(() => {
     void load(false);

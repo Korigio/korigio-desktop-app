@@ -3,10 +3,7 @@ import { CompanyLoadState } from "@/features/companies/components/CompanyLoadSta
 import { CompanyLogoCard } from "@/features/companies/components/CompanyLogoCard";
 import { useCompanyDetail } from "@/features/companies/hooks/useCompanyDetail";
 import { useCompanyForm } from "@/features/companies/hooks/useCompanyForm";
-import {
-  companyLabel,
-  type Company,
-} from "@/features/companies/types/company";
+import { companyLabel, type Company } from "@/features/companies/types/company";
 import { Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 

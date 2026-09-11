@@ -7,9 +7,10 @@ import type {
   RepairInput,
   RepairStatus,
 } from "@/features/repairs/types/repair";
+import { resolveIntakeEstimateFields } from "@/features/repairs/utils/repairIntake";
 import { isEntityId } from "@/shared/utils/entityId";
 
-type FormValues = {
+export type RepairFormValues = {
   customerId: string;
   deviceId: string;
   companyId: string;
@@ -21,6 +22,10 @@ type FormValues = {
   diagnosisNotes: string;
   workPerformed: string;
   notes: string;
+  /** Major-unit list price input for create (e.g. "120.50"). */
+  estimateMajor: string;
+  /** Discount percent input for create (e.g. "10" or "10.5"). */
+  estimateDiscountPercent: string;
 };
 
 type Options = {
@@ -35,7 +40,7 @@ function toValues(
   defaultCustomerId?: string,
   defaultDeviceId?: string,
   defaultCompanyId?: string,
-): FormValues {
+): RepairFormValues {
   return {
     customerId: defaultCustomerId ?? "",
     deviceId: defaultDeviceId ?? "",
@@ -48,10 +53,20 @@ function toValues(
     diagnosisNotes: "",
     workPerformed: "",
     notes: "",
+    estimateMajor: "",
+    estimateDiscountPercent: "",
   };
 }
 
-function toInput(value: FormValues): RepairInput {
+function toInput(value: RepairFormValues): RepairInput {
+  const estimate = resolveIntakeEstimateFields(
+    value.estimateMajor,
+    value.estimateDiscountPercent,
+  );
+  if (!estimate.ok) {
+    throw new Error(estimate.reason);
+  }
+
   return {
     customerId: value.customerId,
     deviceId: value.deviceId,
@@ -64,6 +79,8 @@ function toInput(value: FormValues): RepairInput {
     diagnosisNotes: value.diagnosisNotes || null,
     workPerformed: value.workPerformed || null,
     notes: value.notes || null,
+    estimateBaseCents: estimate.estimateBaseCents,
+    estimateDiscountBps: estimate.estimateDiscountBps,
   };
 }
 

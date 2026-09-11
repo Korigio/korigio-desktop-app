@@ -46,17 +46,20 @@ Pages are **composition only**. Reading a page file should tell you the screen s
 - Hooks own state, effects, TanStack Form instances, TanStack Table instances.
 - Utils are pure (no React, no `invoke`).
 - Pages do not call `invoke` directly — go through feature `api` + hooks.
+- A public hook may remain a composition façade, but extract independently testable state/effect clusters to focused hooks, pure transitions/mappers/derivations to `utils`, shared contracts to `types`, and reusable markup to named components.
+- Review a frontend file near ~400 LOC, after >100 LOC growth, or before adding a third distinct concern. Treat those as review triggers, not hard limits; keep code together when it has one cohesive lifecycle.
+- Avoid one-helper-per-file fragmentation. Preserve hook return shapes, focus/keyboard timing, routes, API payloads, and copy, and add focused tests for extracted seams plus regression coverage for the façade.
 
 ## DRY and reuse (mandatory)
 
 Before finishing a change, scan for duplicated patterns in the same feature (or sibling features).
 
-| Pattern | Extract to |
-| --- | --- |
-| Same pure helper twice (`printFieldValue`, formatters, mappers) | `features/<domain>/utils/` or `shared/` |
+| Pattern                                                                         | Extract to                                                                               |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Same pure helper twice (`printFieldValue`, formatters, mappers)                 | `features/<domain>/utils/` or `shared/`                                                  |
 | Same markup in 2+ sibling components (print sheets, modal bodies, table chrome) | Shared component under `features/<domain>/components/` (e.g. `print/components/shared/`) |
-| Repeated `useState` + `busy`/`uploading`/`error` + async handler | Shared hook (`useModalAsyncAction`, `useRepairDocumentUpload`, …) in `hooks/` |
-| Same modal flow with different labels/API calls | One parameterized component + thin named wrappers |
+| Repeated `useState` + `busy`/`uploading`/`error` + async handler                | Shared hook (`useModalAsyncAction`, `useRepairDocumentUpload`, …) in `hooks/`            |
+| Same modal flow with different labels/API calls                                 | One parameterized component + thin named wrappers                                        |
 
 **Forbidden:** copy-pasting `dash`/`companyDisplayName`, full print headers, or `busy`/`uploading`/`handleConfirm` blocks across files. If it appears twice, extract immediately.
 

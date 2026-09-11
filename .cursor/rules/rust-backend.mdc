@@ -23,6 +23,8 @@ paths.rs      # AppData resolution only
 3. Repositories: parameterized SQL only; explicit columns.
 4. Cross-domain: call the other domain’s **service**, not its repository.
 
+Keep public services/runtimes as stable façades when needed, with cohesive private modules for independently testable responsibilities such as validation, persistence, scheduling, transport, protocol handling, or restore orchestration. Review a backend file near ~400 LOC, after >100 LOC growth, or before adding a third concern. These are advisory triggers: cohesion, invariants, and transaction/I/O boundaries decide extraction. Avoid one-helper-per-file fragmentation and do not widen visibility merely to split a file.
+
 ## Safety
 
 - No `unwrap()` / `expect()` on recoverable paths.
@@ -34,4 +36,5 @@ paths.rs      # AppData resolution only
 ## Testing
 
 - Unit tests for validation/services; integration tests with temporary DBs.
+- Move tests with extracted responsibilities, add focused boundary tests, and run façade/regression tests to prove public commands, DTOs, SQL behavior, timing, and error mapping remain unchanged.
 - Never point automated tests at the real user database.

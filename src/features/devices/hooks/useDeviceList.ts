@@ -36,7 +36,9 @@ export function useDeviceList(options: Options = {}) {
         setError(null);
       } catch (err) {
         if (!silent) {
-          setError(err instanceof Error ? err.message : "Failed to load devices");
+          setError(
+            err instanceof Error ? err.message : "Failed to load devices",
+          );
           setResult(null);
         }
       } finally {

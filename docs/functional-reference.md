@@ -9,16 +9,16 @@ Reference sites (public descriptions):
 
 ## Problems we solve
 
-| User problem | Our approach |
-| --- | --- |
-| Track devices in a small workshop | Repair orders as the core entity |
-| Returning customers | Customer CRUD, search, archive |
-| Known devices / serials | Devices linked to customers; serial search |
-| Know work status | Simple status workflow |
-| Find records quickly | SQL-side search + indexes |
-| Paper for the customer | A4 intake/report (later phase) |
-| Don’t lose data | AppData + backup/restore |
-| Confidential data | Validation, CSP, restricted capabilities; encryption decision Phase 12 |
+| User problem                      | Our approach                                                           |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| Track devices in a small workshop | Repair orders as the core entity                                       |
+| Returning customers               | Customer CRUD, search, archive                                         |
+| Known devices / serials           | Devices linked to customers; serial search                             |
+| Know work status                  | Simple status workflow                                                 |
+| Find records quickly              | SQL-side search + indexes                                              |
+| Paper for the customer            | A4 intake/report (later phase)                                         |
+| Don’t lose data                   | AppData + backup/restore                                               |
+| Confidential data                 | Validation, CSP, restricted capabilities; encryption decision Phase 12 |
 
 ## In scope for the phased roadmap
 

@@ -30,7 +30,11 @@ export type Repair = {
   diagnosisNotes: string | null;
   workPerformed: string | null;
   notes: string | null;
-  /** Pre-tax estimate in integer cents; null until first set via diagnosis flow. */
+  /** Pre-discount list price from intake; null for legacy / diagnosis-set estimates. */
+  estimateListCents?: number | null;
+  /** Intake discount in basis points; null for legacy / diagnosis-set estimates. */
+  estimateDiscountBps?: number | null;
+  /** Post-discount pre-tax net in integer cents; null until set at intake or diagnosis. */
   estimateBaseCents: number | null;
   /** Tax rate snapshotted at estimate time, in basis points (e.g. 19% → 1900). */
   estimateTaxRateBps: number | null;
@@ -38,6 +42,8 @@ export type Repair = {
   estimateGrossCents: number | null;
   readyAt: string | null;
   collectedAt: string | null;
+  /** Warranty years set at summary handover; null until recorded. */
+  warrantyYears: number | null;
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
@@ -50,8 +56,16 @@ export type CompleteRepairDiagnosisInput = {
   mode: CompleteDiagnosisMode;
   diagnosisNotes: string | null;
   expectedPickupAt: string | null;
-  /** Null only when the repair has never had an estimate; clearing is rejected. */
+  /**
+   * List price in integer cents (same as create_repair).
+   * Null only when the repair has never had an estimate; clearing is rejected.
+   */
   estimateBaseCents: number | null;
+  /**
+   * Discount in basis points (`0..=10000`). Omit/null = 0.
+   * Invalid if set without `estimateBaseCents`.
+   */
+  estimateDiscountBps?: number | null;
 };
 
 export type CompleteRepairDiagnosisResult = {
@@ -71,6 +85,16 @@ export type RepairInput = {
   diagnosisNotes?: string | null;
   workPerformed?: string | null;
   notes?: string | null;
+  /**
+   * Optional intake list price in integer cents (pre-discount).
+   * Omit/null = no estimate. Persisted estimate is post-discount net + tax.
+   */
+  estimateBaseCents?: number | null;
+  /**
+   * Optional discount in basis points (0..=10000). Omit/null = 0.
+   * Invalid if set without `estimateBaseCents`.
+   */
+  estimateDiscountBps?: number | null;
 };
 
 export type RepairListQuery = {
@@ -85,6 +109,7 @@ export type RepairListQuery = {
 
 export type RepairListItem = Repair & {
   customerName: string;
+  deviceName: string;
 };
 
 export type RepairListResult = {

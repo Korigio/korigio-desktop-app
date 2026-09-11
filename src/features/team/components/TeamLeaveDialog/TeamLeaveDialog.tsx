@@ -1,4 +1,4 @@
-import { useSession } from "@/features/staff/hooks/useSession";
+import { useSession } from "@/features/staff/hooks/session-context";
 import { teamApi } from "@/features/team/api/teamApi";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useModalAsyncAction } from "@/shared/hooks/useModalAsyncAction";

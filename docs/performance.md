@@ -6,14 +6,14 @@ Windows 10/11 x64 · 2 cores · **4 GB RAM** · integrated graphics · HDD or in
 
 ## Engineering targets
 
-| Metric | Target |
-| --- | --- |
-| Cold start | ≤ 3 s |
-| Idle RAM | preferably ≤ 150 MB |
-| Idle CPU | ~0% |
-| Typical search | well below 500 ms |
-| UI interaction | no noticeable lag |
-| Installer | offline-capable; size growth from embedded WebView2 accepted |
+| Metric         | Target                                                       |
+| -------------- | ------------------------------------------------------------ |
+| Cold start     | ≤ 3 s                                                        |
+| Idle RAM       | preferably ≤ 150 MB                                          |
+| Idle CPU       | ~0%                                                          |
+| Typical search | well below 500 ms                                            |
+| UI interaction | no noticeable lag                                            |
+| Installer      | offline-capable; size growth from embedded WebView2 accepted |
 
 Treat as targets to measure, not marketing claims.
 

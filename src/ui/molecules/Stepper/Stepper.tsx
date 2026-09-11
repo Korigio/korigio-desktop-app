@@ -13,10 +13,7 @@ export type StepperProps = {
 
 type StepState = "complete" | "current" | "upcoming";
 
-function stepState(
-  index: number,
-  currentIndex: number,
-): StepState {
+function stepState(index: number, currentIndex: number): StepState {
   if (index < currentIndex) {
     return "complete";
   }

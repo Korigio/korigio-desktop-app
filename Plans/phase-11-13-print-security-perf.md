@@ -6,12 +6,12 @@
 
 ## Locked defaults
 
-| Area | Decision |
-| --- | --- |
-| Print content | Core repair + diagnosis checklist; **no** images |
-| Print tech | `/repairs/:id/print` + A4 `@media print` + `window.print()` |
-| Encryption | **v1: none + OS account** (ADR 004 closed) |
-| Perf | Synthetic seeder + measured baseline; fix only clear misses |
+| Area          | Decision                                                    |
+| ------------- | ----------------------------------------------------------- |
+| Print content | Core repair + diagnosis checklist; **no** images            |
+| Print tech    | `/repairs/:id/print` + A4 `@media print` + `window.print()` |
+| Encryption    | **v1: none + OS account** (ADR 004 closed)                  |
+| Perf          | Synthetic seeder + measured baseline; fix only clear misses |
 
 ## IPC
 
@@ -80,10 +80,10 @@ type SeedSyntheticDataResult = {
 
 ## Task split
 
-1. **Backend:** `domain/print`, seed module/command, register commands  
-2. **Frontend:** print route (no AppShell), Print button, debug seed UI if needed  
-3. **Security docs:** ADR 004, security.md, capabilities/CSP audit notes  
-4. **Perf:** `docs/performance-results.md`  
+1. **Backend:** `domain/print`, seed module/command, register commands
+2. **Frontend:** print route (no AppShell), Print button, debug seed UI if needed
+3. **Security docs:** ADR 004, security.md, capabilities/CSP audit notes
+4. **Perf:** `docs/performance-results.md`
 5. **i18n + verifier**
 
 ## Out of scope

@@ -1,6 +1,5 @@
 import type { Repair } from "@/features/repairs/types/repair";
 import { partsCardStatus } from "@/features/repairs/utils/repairWorkflow";
-import { WorkflowCardStatusBadge } from "@/features/repairs/components/WorkflowCardStatusBadge";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { Button, Card } from "@/ui";
 
@@ -18,10 +17,7 @@ export function RepairPartsCard({ repair, onConfirmClick }: Props) {
   }
 
   return (
-    <Card
-      title={t("repairs.workflow.cards.parts.title")}
-      actions={<WorkflowCardStatusBadge status={cardStatus} />}
-    >
+    <Card title={t("repairs.workflow.cards.parts.title")}>
       {cardStatus === "active" ? (
         <div className="flex flex-col gap-3">
           <p className="text-sm text-muted">

@@ -25,7 +25,9 @@ export function GeneralSettingsPage() {
       </Card>
       <Card title={t("settings.syncInterval.label")}>
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted">{t("settings.syncInterval.hint")}</p>
+          <p className="text-sm text-muted">
+            {t("settings.syncInterval.hint")}
+          </p>
           <p className="text-sm text-muted">
             {t("settings.syncInterval.rangeHint")}
           </p>

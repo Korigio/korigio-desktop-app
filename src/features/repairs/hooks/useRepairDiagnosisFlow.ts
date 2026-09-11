@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { diagnosisTemplatesApi } from "@/features/diagnosis/api/diagnosisApi";
 import {
   templateItemsToResult,
@@ -11,60 +11,21 @@ import type {
   CompleteDiagnosisMode,
   Repair,
 } from "@/features/repairs/types/repair";
+import { checklistHasApplicableValues } from "@/features/repairs/utils/diagnosisNotesMerge";
 import {
-  appendChecklistToNotes,
-  checklistHasApplicableValues,
-} from "@/features/repairs/utils/diagnosisNotesMerge";
-import {
-  centsToMajorInput,
-  parseMajorToCents,
-} from "@/features/repairs/utils/money";
+  diagnosisFormValues,
+  isDiagnosisFlowDirty,
+  notesWithChecklist,
+  repairCanPrintDiagnosis,
+  resolveDiagnosisEstimateFields,
+  retainedTemplateId,
+  updateChecklistItem,
+  type DiagnosisFormValues,
+} from "@/features/repairs/utils/repairDiagnosisFlow";
 import { settingsApi } from "@/features/settings/api/settingsApi";
 import type { ShopSettings } from "@/features/settings/types/shopSettings";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useSyncApplied } from "@/shared/hooks/useSyncApplied";
-
-type FormValues = {
-  diagnosisNotes: string;
-  expectedPickupAt: string;
-  estimateMajor: string;
-};
-
-function toFormValues(repair: Repair): FormValues {
-  return {
-    diagnosisNotes: repair.diagnosisNotes ?? "",
-    expectedPickupAt: repair.expectedPickupAt ?? "",
-    estimateMajor:
-      repair.estimateBaseCents != null
-        ? centsToMajorInput(repair.estimateBaseCents)
-        : "",
-  };
-}
-
-function repairCanPrint(repair: Repair): boolean {
-  return Boolean(
-    repair.diagnosisNotes?.trim() && repair.estimateBaseCents != null,
-  );
-}
-
-function isDiagnosisFlowDirty(
-  formValues: FormValues,
-  repair: Repair | null,
-  checklistItems: DiagnosisResultItem[],
-): boolean {
-  if (checklistItems.length > 0) {
-    return true;
-  }
-  if (!repair) {
-    return false;
-  }
-  const saved = toFormValues(repair);
-  return (
-    formValues.diagnosisNotes !== saved.diagnosisNotes ||
-    formValues.expectedPickupAt !== saved.expectedPickupAt ||
-    formValues.estimateMajor !== saved.estimateMajor
-  );
-}
 
 export function useRepairDiagnosisFlow(
   repairId: string,
@@ -90,13 +51,32 @@ export function useRepairDiagnosisFlow(
   const [success, setSuccess] = useState<string | null>(null);
   const [estimateLocked, setEstimateLocked] = useState(false);
 
-  const form = useForm({
-    defaultValues: {
+  // Stable empty defaults — `useForm` calls `update(opts)` every render; if
+  // `reset()` also rewrites `options.defaultValues`, the next update wipes
+  // prefilled estimate fields back to "".
+  const emptyDefaults = useMemo<DiagnosisFormValues>(
+    () => ({
       diagnosisNotes: "",
       expectedPickupAt: "",
       estimateMajor: "",
-    } satisfies FormValues,
+      estimateDiscountPercent: "",
+    }),
+    [],
+  );
+
+  const form = useForm({
+    defaultValues: emptyDefaults,
   });
+
+  const applyRepairToForm = useCallback(
+    (nextRepair: Repair) => {
+      setEstimateLocked(nextRepair.estimateBaseCents != null);
+      form.reset(diagnosisFormValues(nextRepair), {
+        keepDefaultValues: true,
+      });
+    },
+    [form],
+  );
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -110,17 +90,10 @@ export function useRepairDiagnosisFlow(
       setRepair(nextRepair);
       setShopSettings(nextShop);
       setTemplates(templateList.items);
-      setEstimateLocked(nextRepair.estimateBaseCents != null);
-      form.reset(toFormValues(nextRepair));
-      setSelectedTemplateId((prev) => {
-        if (
-          prev &&
-          templateList.items.some((template) => String(template.id) === prev)
-        ) {
-          return prev;
-        }
-        return templateList.items[0] ? String(templateList.items[0].id) : "";
-      });
+      applyRepairToForm(nextRepair);
+      setSelectedTemplateId((prev) =>
+        retainedTemplateId(prev, templateList.items),
+      );
       setChecklistItems([]);
     } catch (err) {
       setRepair(null);
@@ -134,7 +107,7 @@ export function useRepairDiagnosisFlow(
     } finally {
       setLoading(false);
     }
-  }, [form, repairId, t]);
+  }, [applyRepairToForm, repairId, t]);
 
   const repairRef = useRef(repair);
   repairRef.current = repair;
@@ -174,21 +147,14 @@ export function useRepairDiagnosisFlow(
       setRepair(nextRepair);
       setShopSettings(nextShop);
       setTemplates(templateList.items);
-      setEstimateLocked(nextRepair.estimateBaseCents != null);
-      form.reset(toFormValues(nextRepair));
-      setSelectedTemplateId((prev) => {
-        if (
-          prev &&
-          templateList.items.some((template) => String(template.id) === prev)
-        ) {
-          return prev;
-        }
-        return templateList.items[0] ? String(templateList.items[0].id) : "";
-      });
+      applyRepairToForm(nextRepair);
+      setSelectedTemplateId((prev) =>
+        retainedTemplateId(prev, templateList.items),
+      );
     } catch {
       // Keep the last good repair and form values.
     }
-  }, [form, repairId]);
+  }, [applyRepairToForm, form, repairId]);
 
   useEffect(() => {
     if (!enabled) {
@@ -201,7 +167,7 @@ export function useRepairDiagnosisFlow(
     void silentRefresh();
   });
 
-  const canPrint = repair ? repairCanPrint(repair) : false;
+  const canPrint = repair ? repairCanPrintDiagnosis(repair) : false;
 
   const loadTemplateChecklist = useCallback(async () => {
     const templateId = selectedTemplateId.trim();
@@ -229,9 +195,7 @@ export function useRepairDiagnosisFlow(
   const setChecklistItemValue = useCallback(
     (index: number, value: boolean | string) => {
       setSuccess(null);
-      setChecklistItems((prev) =>
-        prev.map((item, i) => (i === index ? { ...item, value } : item)),
-      );
+      setChecklistItems((prev) => updateChecklistItem(prev, index, value));
     },
     [],
   );
@@ -242,38 +206,50 @@ export function useRepairDiagnosisFlow(
       return;
     }
     setError(null);
-    const next = appendChecklistToNotes(
+    const next = notesWithChecklist(
       form.state.values.diagnosisNotes,
       checklistItems,
-    );
+    ).notes;
     form.setFieldValue("diagnosisNotes", next);
     setChecklistItems([]);
     setSuccess(t("repairs.diagnosisFlow.applyToNotesSuccess"));
   }, [checklistItems, form, t]);
 
   const resolveNotesForSave = useCallback(() => {
-    let notes = form.state.values.diagnosisNotes;
-    if (checklistHasApplicableValues(checklistItems)) {
-      notes = appendChecklistToNotes(notes, checklistItems);
+    const result = notesWithChecklist(
+      form.state.values.diagnosisNotes,
+      checklistItems,
+    );
+    if (result.applied) {
+      const notes = result.notes;
       form.setFieldValue("diagnosisNotes", notes);
       setChecklistItems([]);
+      return notes;
     }
-    return notes;
+    return result.notes;
   }, [checklistItems, form]);
 
-  const resolveEstimateCents = useCallback((): number | null => {
-    const raw = form.state.values.estimateMajor.trim();
-    if (!raw) {
-      if (estimateLocked) {
+  const resolveEstimateForSave = useCallback(() => {
+    const result = resolveDiagnosisEstimateFields(
+      form.state.values.estimateMajor,
+      form.state.values.estimateDiscountPercent,
+      estimateLocked,
+    );
+    if (!result.ok) {
+      if (result.reason === "required") {
         throw new Error(t("repairs.diagnosisFlow.errors.estimateRequired"));
       }
-      return null;
-    }
-    const cents = parseMajorToCents(raw);
-    if (cents === null) {
+      if (result.reason === "discountNeedsPrice") {
+        throw new Error(
+          t("repairs.intake.estimate.validation.discountNeedsPrice"),
+        );
+      }
+      if (result.reason === "invalidDiscount") {
+        throw new Error(t("repairs.diagnosisFlow.estimatePreviewInvalid"));
+      }
       throw new Error(t("repairs.diagnosisFlow.errors.estimateInvalid"));
     }
-    return cents;
+    return result;
   }, [estimateLocked, form, t]);
 
   const save = useCallback(
@@ -286,7 +262,7 @@ export function useRepairDiagnosisFlow(
         if (mode === "finalize" && !diagnosisNotes) {
           throw new Error(t("repairs.diagnosisFlow.errors.notesRequired"));
         }
-        const estimateBaseCents = resolveEstimateCents();
+        const estimate = resolveEstimateForSave();
         const expectedPickupAt =
           form.state.values.expectedPickupAt.trim() || null;
 
@@ -295,11 +271,11 @@ export function useRepairDiagnosisFlow(
           mode,
           diagnosisNotes,
           expectedPickupAt,
-          estimateBaseCents,
+          estimateBaseCents: estimate.estimateBaseCents,
+          estimateDiscountBps: estimate.estimateDiscountBps,
         });
         setRepair(result.repair);
-        setEstimateLocked(result.repair.estimateBaseCents != null);
-        form.reset(toFormValues(result.repair));
+        applyRepairToForm(result.repair);
         setSuccess(
           mode === "finalize"
             ? t("repairs.diagnosisFlow.finalizeSuccess")
@@ -320,7 +296,15 @@ export function useRepairDiagnosisFlow(
         setSaving(false);
       }
     },
-    [form, onDraftSuccess, onFinalizeSuccess, repairId, resolveEstimateCents, resolveNotesForSave, t],
+    [
+      form,
+      onDraftSuccess,
+      onFinalizeSuccess,
+      repairId,
+      resolveEstimateForSave,
+      resolveNotesForSave,
+      t,
+    ],
   );
 
   return {
@@ -347,4 +331,6 @@ export function useRepairDiagnosisFlow(
   };
 }
 
-export type RepairDiagnosisFlowState = ReturnType<typeof useRepairDiagnosisFlow>;
+export type RepairDiagnosisFlowState = ReturnType<
+  typeof useRepairDiagnosisFlow
+>;

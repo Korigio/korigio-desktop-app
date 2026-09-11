@@ -6,9 +6,9 @@ use time::Date;
 use crate::domain::repairs::constants::{
     ACCESSORIES_RECEIVED_MAX_LEN, ALLOWED_REPAIR_DOCUMENT_EXTENSIONS, DEFAULT_STATUS,
     DEVICE_CONDITION_MAX_LEN, DIAGNOSIS_NOTES_MAX_LEN, MAX_REPAIR_DOCUMENT_BYTES, NOTES_MAX_LEN,
-    REPAIR_STATUSES, REPORTED_PROBLEM_MAX_LEN, WORK_PERFORMED_MAX_LEN,
+    REPAIR_STATUSES, REPORTED_PROBLEM_MAX_LEN, WARRANTY_YEARS_MAX, WORK_PERFORMED_MAX_LEN,
 };
-use crate::domain::repairs::money::tax_cents_from_base;
+use crate::domain::repairs::money::{net_cents_after_discount, tax_cents_from_base};
 use crate::domain::repairs::types::{
     CompleteDiagnosisMode, CompleteRepairDiagnosisInput, RepairDocumentType, RepairInput,
 };
@@ -28,6 +28,8 @@ pub struct ValidatedCreateRepairInput {
     pub work_performed: Option<String>,
     pub notes: Option<String>,
     pub expected_pickup_at: Option<String>,
+    /// Intake estimate snapshot (net base after discount); `None` leaves estimate columns null.
+    pub estimate: Option<EstimateSnapshot>,
 }
 
 #[derive(Debug)]
@@ -53,13 +55,21 @@ pub struct ValidatedCompleteDiagnosis {
 
 #[derive(Debug, Clone, Copy)]
 pub struct EstimateSnapshot {
+    /// List price before discount.
+    pub list_cents: Option<i64>,
+    /// Discount bps (including 0).
+    pub discount_bps: Option<i64>,
+    /// Pre-tax net after discount.
     pub base_cents: i64,
     pub tax_rate_bps: i64,
     pub tax_cents: i64,
     pub gross_cents: i64,
 }
 
-pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepairInput, AppError> {
+pub fn validate_create_input(
+    input: &RepairInput,
+    tax_rate_percent: &str,
+) -> Result<ValidatedCreateRepairInput, AppError> {
     let customer_id = crate::domain::ids::parse_entity_id_field(&input.customer_id, "customerId")?;
     let device_id = crate::domain::ids::parse_entity_id_field(&input.device_id, "deviceId")?;
     let company_id = crate::domain::ids::parse_entity_id_field(&input.company_id, "companyId")?;
@@ -67,6 +77,11 @@ pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepai
     let fields = validate_text_fields(input)?;
     let status = normalize_status(input.status.as_deref(), None)?;
     let expected_pickup_at = validate_expected_pickup_at(&input.expected_pickup_at)?;
+    let estimate = validate_intake_estimate(
+        input.estimate_base_cents,
+        input.estimate_discount_bps,
+        tax_rate_percent,
+    )?;
 
     Ok(ValidatedCreateRepairInput {
         customer_id,
@@ -80,7 +95,49 @@ pub fn validate_create_input(input: &RepairInput) -> Result<ValidatedCreateRepai
         work_performed: fields.work_performed,
         notes: fields.notes,
         expected_pickup_at,
+        estimate,
     })
+}
+
+/// Intake estimate: list price → net after discount → tax snapshot (same math as diagnosis).
+fn validate_intake_estimate(
+    estimate_base_cents: Option<i64>,
+    estimate_discount_bps: Option<i64>,
+    tax_rate_percent: &str,
+) -> Result<Option<EstimateSnapshot>, AppError> {
+    match (estimate_base_cents, estimate_discount_bps) {
+        (None, None) => Ok(None),
+        (None, Some(_)) => Err(AppError::Validation {
+            field: Some("estimateDiscountBps".into()),
+            message: "Discount requires an estimate base amount.".into(),
+        }),
+        (Some(list_cents), discount_bps) => {
+            if list_cents < 0 {
+                return Err(AppError::Validation {
+                    field: Some("estimateBaseCents".into()),
+                    message: "Estimate must be zero or greater.".into(),
+                });
+            }
+            let discount_bps = discount_bps.unwrap_or(0);
+            let net_cents = net_cents_after_discount(list_cents, discount_bps)?;
+            let (_, tax_rate_bps) = parse_tax_rate_percent(tax_rate_percent)?;
+            let tax_cents = tax_cents_from_base(net_cents, tax_rate_bps)?;
+            let gross_cents = net_cents
+                .checked_add(tax_cents)
+                .ok_or(AppError::Validation {
+                    field: Some("estimateBaseCents".into()),
+                    message: "Estimate amount is too large.".into(),
+                })?;
+            Ok(Some(EstimateSnapshot {
+                list_cents: Some(list_cents),
+                discount_bps: Some(discount_bps),
+                base_cents: net_cents,
+                tax_rate_bps,
+                tax_cents,
+                gross_cents,
+            }))
+        }
+    }
 }
 
 pub fn validate_update_input(
@@ -227,37 +284,18 @@ pub fn validate_complete_diagnosis(
 
     let expected_pickup_at = validate_expected_pickup_at(&input.expected_pickup_at)?;
 
-    let estimate = match input.estimate_base_cents {
-        None => {
-            if existing_estimate_base.is_some() {
-                return Err(AppError::Validation {
-                    field: Some("estimateBaseCents".into()),
-                    message: "Estimate cannot be cleared once set.".into(),
-                });
-            }
-            None
-        }
-        Some(base) => {
-            if base < 0 {
-                return Err(AppError::Validation {
-                    field: Some("estimateBaseCents".into()),
-                    message: "Estimate must be zero or greater.".into(),
-                });
-            }
-            let (_, tax_rate_bps) = parse_tax_rate_percent(tax_rate_percent)?;
-            let tax_cents = tax_cents_from_base(base, tax_rate_bps)?;
-            let gross_cents = base.checked_add(tax_cents).ok_or(AppError::Validation {
-                field: Some("estimateBaseCents".into()),
-                message: "Estimate amount is too large.".into(),
-            })?;
-            Some(EstimateSnapshot {
-                base_cents: base,
-                tax_rate_bps,
-                tax_cents,
-                gross_cents,
-            })
-        }
-    };
+    // Same list → net → tax semantics as create_repair (`validate_intake_estimate`).
+    if input.estimate_base_cents.is_none() && existing_estimate_base.is_some() {
+        return Err(AppError::Validation {
+            field: Some("estimateBaseCents".into()),
+            message: "Estimate cannot be cleared once set.".into(),
+        });
+    }
+    let estimate = validate_intake_estimate(
+        input.estimate_base_cents,
+        input.estimate_discount_bps,
+        tax_rate_percent,
+    )?;
 
     let next_status = resolve_diagnosis_status(input.mode, existing_status);
 
@@ -445,6 +483,17 @@ pub fn validate_collected_at_date(value: &str) -> Result<String, AppError> {
     Ok(format!("{formatted}T00:00:00Z"))
 }
 
+/// Whole warranty years at summary handover (`0..=WARRANTY_YEARS_MAX`).
+pub fn validate_warranty_years(value: i64) -> Result<i64, AppError> {
+    if !(0..=WARRANTY_YEARS_MAX).contains(&value) {
+        return Err(AppError::Validation {
+            field: Some("warrantyYears".into()),
+            message: format!("Warranty years must be between 0 and {WARRANTY_YEARS_MAX}."),
+        });
+    }
+    Ok(value)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -462,14 +511,18 @@ mod tests {
             work_performed: None,
             notes: None,
             expected_pickup_at: None,
+            estimate_base_cents: None,
+            estimate_discount_bps: None,
         }
     }
+
+    const TAX_19: &str = "19";
 
     #[test]
     fn rejects_missing_company_id() {
         let mut input = base_input();
         input.company_id = String::new();
-        let err = validate_create_input(&input).expect_err("company required");
+        let err = validate_create_input(&input, TAX_19).expect_err("company required");
         match err {
             AppError::Validation { field, .. } => {
                 assert_eq!(field.as_deref(), Some("companyId"));
@@ -480,16 +533,17 @@ mod tests {
 
     #[test]
     fn defaults_status_on_create() {
-        let ok = validate_create_input(&base_input()).expect("valid");
+        let ok = validate_create_input(&base_input(), TAX_19).expect("valid");
         assert_eq!(ok.status, DEFAULT_STATUS);
         assert!(ok.expected_pickup_at.is_none());
+        assert!(ok.estimate.is_none());
     }
 
     #[test]
     fn rejects_invalid_status() {
         let mut input = base_input();
         input.status = Some("broken".into());
-        let err = validate_create_input(&input).expect_err("invalid");
+        let err = validate_create_input(&input, TAX_19).expect_err("invalid");
         assert!(matches!(err, AppError::Validation { .. }));
     }
 
@@ -497,7 +551,7 @@ mod tests {
     fn accepts_valid_expected_pickup_at() {
         let mut input = base_input();
         input.expected_pickup_at = Some("2026-09-15".into());
-        let ok = validate_create_input(&input).expect("valid");
+        let ok = validate_create_input(&input, TAX_19).expect("valid");
         assert_eq!(ok.expected_pickup_at.as_deref(), Some("2026-09-15"));
     }
 
@@ -505,7 +559,7 @@ mod tests {
     fn empty_expected_pickup_at_becomes_none() {
         let mut input = base_input();
         input.expected_pickup_at = Some("  ".into());
-        let ok = validate_create_input(&input).expect("valid");
+        let ok = validate_create_input(&input, TAX_19).expect("valid");
         assert!(ok.expected_pickup_at.is_none());
     }
 
@@ -513,7 +567,7 @@ mod tests {
     fn rejects_invalid_expected_pickup_at_format() {
         let mut input = base_input();
         input.expected_pickup_at = Some("15-09-2026".into());
-        let err = validate_create_input(&input).expect_err("invalid date");
+        let err = validate_create_input(&input, TAX_19).expect_err("invalid date");
         match err {
             AppError::Validation { field, .. } => {
                 assert_eq!(field.as_deref(), Some("expectedPickupAt"));
@@ -526,7 +580,7 @@ mod tests {
     fn rejects_nonexistent_calendar_date() {
         let mut input = base_input();
         input.expected_pickup_at = Some("2026-02-30".into());
-        let err = validate_create_input(&input).expect_err("invalid calendar date");
+        let err = validate_create_input(&input, TAX_19).expect_err("invalid calendar date");
         assert!(matches!(
             err,
             AppError::Validation {
@@ -534,5 +588,66 @@ mod tests {
                 ..
             } if f == "expectedPickupAt"
         ));
+    }
+
+    #[test]
+    fn validate_warranty_years_accepts_bounds() {
+        assert_eq!(validate_warranty_years(0).expect("zero"), 0);
+        assert_eq!(validate_warranty_years(10).expect("max"), 10);
+        assert_eq!(validate_warranty_years(5).expect("mid"), 5);
+    }
+
+    #[test]
+    fn validate_warranty_years_rejects_out_of_range() {
+        for bad in [-1_i64, 11, 100] {
+            let err = validate_warranty_years(bad).expect_err("out of range");
+            match err {
+                AppError::Validation { field, .. } => {
+                    assert_eq!(field.as_deref(), Some("warrantyYears"));
+                }
+                other => panic!("unexpected for {bad}: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn intake_estimate_base_only_applies_tax() {
+        let mut input = base_input();
+        input.estimate_base_cents = Some(10_000);
+        let ok = validate_create_input(&input, TAX_19).expect("valid");
+        let est = ok.estimate.expect("estimate");
+        assert_eq!(est.list_cents, Some(10_000));
+        assert_eq!(est.discount_bps, Some(0));
+        assert_eq!(est.base_cents, 10_000);
+        assert_eq!(est.tax_rate_bps, 1_900);
+        assert_eq!(est.tax_cents, 1_900);
+        assert_eq!(est.gross_cents, 11_900);
+    }
+
+    #[test]
+    fn intake_estimate_applies_discount_then_tax() {
+        let mut input = base_input();
+        input.estimate_base_cents = Some(10_000);
+        input.estimate_discount_bps = Some(1_000); // 10% → net 9000
+        let ok = validate_create_input(&input, TAX_19).expect("valid");
+        let est = ok.estimate.expect("estimate");
+        assert_eq!(est.list_cents, Some(10_000));
+        assert_eq!(est.discount_bps, Some(1_000));
+        assert_eq!(est.base_cents, 9_000);
+        assert_eq!(est.tax_cents, 1_710);
+        assert_eq!(est.gross_cents, 10_710);
+    }
+
+    #[test]
+    fn rejects_discount_without_base() {
+        let mut input = base_input();
+        input.estimate_discount_bps = Some(500);
+        let err = validate_create_input(&input, TAX_19).expect_err("discount needs base");
+        match err {
+            AppError::Validation { field, .. } => {
+                assert_eq!(field.as_deref(), Some("estimateDiscountBps"));
+            }
+            other => panic!("unexpected error: {other:?}"),
+        }
     }
 }

@@ -6,6 +6,7 @@
   "permissions": [
     "core:default",
     "core:path:default",
+    "core:webview:allow-print",
     "dialog:default",
     "dialog:allow-open",
     "dialog:allow-save",

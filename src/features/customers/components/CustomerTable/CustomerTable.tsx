@@ -34,12 +34,12 @@ export function CustomerTable({ customers, onArchive, onUnarchive }: Props) {
     {
       accessorKey: "phone",
       header: t("customers.fields.phone"),
-      cell: ({ getValue }) => (getValue<string | null>() ?? "—"),
+      cell: ({ getValue }) => getValue<string | null>() ?? "—",
     },
     {
       accessorKey: "email",
       header: t("customers.fields.email"),
-      cell: ({ getValue }) => (getValue<string | null>() ?? "—"),
+      cell: ({ getValue }) => getValue<string | null>() ?? "—",
     },
     {
       id: "status",
@@ -90,7 +90,10 @@ export function CustomerTable({ customers, onArchive, onUnarchive }: Props) {
             <th key={header.id} className="px-3 py-2 font-medium">
               {header.isPlaceholder
                 ? null
-                : flexRender(header.column.columnDef.header, header.getContext())}
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
             </th>
           ))}
         </tr>

@@ -2,13 +2,13 @@
 
 Korigio **source stays private** (`Korigio/korigio-desktop-app`). Visitors download installers from a **public** GitHub repo and Pages site so they never need access to this repository.
 
-| Piece | Where |
-| --- | --- |
-| Source, CI, version files | this private repo |
-| Public installers + download page | [Korigio/korigio-downloads](https://github.com/Korigio/korigio-downloads) |
-| Public page | [https://korigio.github.io/korigio-downloads/](https://korigio.github.io/korigio-downloads/) |
+| Piece                             | Where                                                                                        |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| Source, CI, version files         | this private repo                                                                            |
+| Public installers + download page | [Korigio/korigio-downloads](https://github.com/Korigio/korigio-downloads)                    |
+| Public page                       | [https://korigio.github.io/korigio-downloads/](https://korigio.github.io/korigio-downloads/) |
 
-Windows 10/11 x64 NSIS remains the supported shop installer. macOS `.dmg` and Linux AppImage are unsigned convenience builds.
+Windows 10/11 x64 NSIS remains the supported shop installer. macOS `.dmg` and Linux AppImage are unsigned convenience builds (Linux has no Authenticode-style “publisher at install” UX; optional AppImage GPG is out of scope — see [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md#linux-appimage)).
 
 ## Version bumper
 
@@ -45,7 +45,7 @@ The tag **must** match the files (`v1.0.1` ↔ `1.0.1`) or the Release workflow 
 
 Step 4 requires repo secret `SERVIOO_RELEASES_TOKEN` (classic PAT or fine-grained token with `contents: write` on `Korigio/korigio-downloads` only). The job **fails** if that secret is missing — otherwise the download page stays on an old release.
 
-Windows NSIS signing (optional): repository secrets `WINDOWS_CERTIFICATE` (Base64 `.pfx`) and `WINDOWS_CERTIFICATE_PASSWORD`. If both are set, the Windows job Authenticode-signs the exe and NSIS installer, then verifies. If they are absent, the Windows artifact stays unsigned. Details: [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md).
+Windows NSIS signing (optional): repository secrets `WINDOWS_CERTIFICATE` (Base64 `.pfx`) and `WINDOWS_CERTIFICATE_PASSWORD`. If both are set, the Windows job Authenticode-signs the exe and NSIS installer (including a post-sign pass after Tauri’s NSIS binary patch), then verifies. If they are absent, the Windows artifact stays unsigned. Details: [WINDOWS_CODE_SIGNING.md](WINDOWS_CODE_SIGNING.md).
 
 Preview the page locally after a public release exists:
 
@@ -55,4 +55,4 @@ npm run website:build
 
 ## Metadata
 
-Publisher / author: **Moritz Alexander Wright** (`bundle.publisher`, Cargo `authors`, npm `author`). Identifier stays `com.servioo.desktop` (do not change after shops install).
+Publisher / author: **Moritz Alexander Wright** (`bundle.publisher`, Cargo `authors`, npm `author`). Homepage: **https://www.korigio.com**. Contact email for the self-signed Windows cert Subject: **info@korigio.com**. Identifier stays `com.servioo.desktop` (do not change after shops install).

@@ -17,9 +17,17 @@ export function CheckboxField({
   return (
     <label
       htmlFor={id}
-      className={cn("flex cursor-pointer items-center gap-2 text-sm", className)}
+      className={cn(
+        "flex cursor-pointer items-center gap-2 text-sm",
+        className,
+      )}
     >
-      <input id={id} type="checkbox" className="size-4 accent-primary" {...props} />
+      <input
+        id={id}
+        type="checkbox"
+        className="size-4 accent-primary"
+        {...props}
+      />
       <span>{label}</span>
     </label>
   );

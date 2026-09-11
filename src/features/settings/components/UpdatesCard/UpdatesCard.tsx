@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { updatesApi } from "@/features/settings/api/updatesApi";
 import { DOWNLOAD_PAGE_URL } from "@/features/settings/constants/updates";
-import { useAppUpdate } from "@/features/settings/hooks/useAppUpdate";
+import { useAppUpdate } from "@/features/settings/hooks/app-update-context";
 import { Button, Card, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -37,7 +37,9 @@ export function UpdatesCard() {
     <Card title={t("settings.updates.title")}>
       <div className="flex flex-col gap-3">
         <p className="text-sm text-muted">{t("settings.updates.hint")}</p>
-        <p className="text-sm text-muted">{t("settings.updates.offlineHint")}</p>
+        <p className="text-sm text-muted">
+          {t("settings.updates.offlineHint")}
+        </p>
         <p className="text-sm">
           {t("settings.updates.currentVersion").replace(
             "{version}",

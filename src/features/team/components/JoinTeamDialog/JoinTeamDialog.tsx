@@ -150,7 +150,9 @@ export function JoinTeamDialog({
               void form.handleSubmit();
             }}
           >
-            {error ? <StatusMessage tone="danger">{error}</StatusMessage> : null}
+            {error ? (
+              <StatusMessage tone="danger">{error}</StatusMessage>
+            ) : null}
             <form.Field
               name="memberName"
               validators={{

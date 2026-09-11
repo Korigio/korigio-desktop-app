@@ -1,5 +1,8 @@
 import type { Repair, RepairStatus } from "@/features/repairs/types/repair";
-import type { RepairDocument, RepairDocumentType } from "@/features/repairs/types/repairDocument";
+import type {
+  RepairDocument,
+  RepairDocumentType,
+} from "@/features/repairs/types/repairDocument";
 import { REPAIR_DOCUMENT_TYPES } from "@/features/repairs/types/repairDocument";
 import {
   isRepairDiagnosisBlocked,

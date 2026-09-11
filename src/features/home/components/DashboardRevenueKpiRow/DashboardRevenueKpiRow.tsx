@@ -35,7 +35,11 @@ export function DashboardRevenueKpiRow({ dashboard }: Props) {
       />
       <DashboardKpiCard
         label={t("home.dashboard.kpi.openEstimate")}
-        value={formatMoneyCents(revenue.openEstimateGrossCents, currency, locale)}
+        value={formatMoneyCents(
+          revenue.openEstimateGrossCents,
+          currency,
+          locale,
+        )}
       />
     </div>
   );

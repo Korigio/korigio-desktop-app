@@ -1,11 +1,5 @@
 import { useRepairImages } from "@/features/images/hooks/useRepairImages";
-import {
-  Button,
-  Card,
-  FormField,
-  StatusMessage,
-  TextField,
-} from "@/ui";
+import { Button, Card, FormField, StatusMessage, TextField } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {

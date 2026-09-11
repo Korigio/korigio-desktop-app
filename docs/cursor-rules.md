@@ -6,13 +6,13 @@ Canonical rules live in `.cursor/rules/*.mdc`. This file is a readable mirror.
 
 Project agents live in `.cursor/agents/`. **Always** split feature/phase work; do not implement backend + frontend + i18n in one parent chat.
 
-| File | Invoke | Role |
-| --- | --- | --- |
+| File                    | Invoke                | Role                                             |
+| ----------------------- | --------------------- | ------------------------------------------------ |
 | `phase-orchestrator.md` | `/phase-orchestrator` | Scope, IPC contract, task split, 12-point report |
-| `backend.md` | `/backend` | Rust/SQLite under `src-tauri/` only |
-| `frontend.md` | `/frontend` | React/TS under `src/` only |
-| `i18n.md` | `/i18n` | `en` / `es` / `de` catalogs |
-| `verifier.md` | `/verifier` | typecheck / lint / `cargo test` report |
+| `backend.md`            | `/backend`            | Rust/SQLite under `src-tauri/` only              |
+| `frontend.md`           | `/frontend`           | React/TS under `src/` only                       |
+| `i18n.md`               | `/i18n`               | `en` / `es` / `de` catalogs                      |
+| `verifier.md`           | `/verifier`           | typecheck / lint / `cargo test` report           |
 
 Order: orchestrator → backend → frontend → i18n → verifier.
 

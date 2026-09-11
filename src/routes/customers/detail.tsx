@@ -8,7 +8,9 @@ export default function CustomersDetailRoute() {
   const params = useParams();
   const id = parseEntityId(params.id);
   if (!id) {
-    return <p className="p-6 text-sm text-red-700">{t("customers.invalidId")}</p>;
+    return (
+      <p className="p-6 text-sm text-red-700">{t("customers.invalidId")}</p>
+    );
   }
   return <CustomerDetailPage customerId={id} />;
 }

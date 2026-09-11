@@ -23,7 +23,10 @@ export function useFlowWizard<T extends string>({
   const onEnterRef = useRef(onEnter);
   onEnterRef.current = onEnter;
 
-  const clampedIndex = Math.min(Math.max(index, 0), Math.max(steps.length - 1, 0));
+  const clampedIndex = Math.min(
+    Math.max(index, 0),
+    Math.max(steps.length - 1, 0),
+  );
   const stepId = steps[clampedIndex] as T;
   const isFirst = clampedIndex <= 0;
   const isLast = clampedIndex >= steps.length - 1;

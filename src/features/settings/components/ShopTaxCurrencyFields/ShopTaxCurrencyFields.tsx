@@ -1,4 +1,8 @@
-import { FormField, TextField } from "@/ui";
+import {
+  currencyOptionLabel,
+  currencySelectOptions,
+} from "@/features/settings/constants/currencies";
+import { FormField, SelectField, TextField } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
 type Props = {
@@ -21,9 +25,11 @@ export function ShopTaxCurrencyFields({
   const { t } = useI18n();
   const taxId = `${idPrefix}-tax-rate`;
   const currencyId = `${idPrefix}-currency`;
+  const currencyOptions = currencySelectOptions(currency);
+  const currencyValue = currency.trim().toUpperCase();
 
   return (
-    <>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <FormField
         label={t("settings.shop.fields.taxRatePercent")}
         htmlFor={taxId}
@@ -40,15 +46,25 @@ export function ShopTaxCurrencyFields({
         label={t("settings.shop.fields.currency")}
         htmlFor={currencyId}
       >
-        <TextField
+        <SelectField
           id={currencyId}
-          value={currency}
+          value={currencyValue}
           disabled={disabled}
-          maxLength={3}
           onChange={(event) => onCurrencyChange(event.target.value)}
-        />
+        >
+          <option value="">
+            {t("settings.shop.fields.currencyPlaceholder")}
+          </option>
+          {currencyOptions.map((option) => (
+            <option key={option.code} value={option.code}>
+              {currencyOptionLabel(option)}
+            </option>
+          ))}
+        </SelectField>
       </FormField>
-      <p className="text-sm text-muted">{t("settings.shop.hint")}</p>
-    </>
+      <p className="text-sm text-muted sm:col-span-2">
+        {t("settings.shop.hint")}
+      </p>
+    </div>
   );
 }

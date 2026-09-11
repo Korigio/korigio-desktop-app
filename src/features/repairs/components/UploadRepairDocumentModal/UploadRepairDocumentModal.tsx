@@ -36,7 +36,9 @@ export function UploadRepairDocumentModal({
       open={isOpen}
       onOpenChange={onOpenChange}
       title={t(`repairs.documents.types.${documentType}.uploadTitle`)}
-      description={t(`repairs.documents.types.${documentType}.uploadDescription`)}
+      description={t(
+        `repairs.documents.types.${documentType}.uploadDescription`,
+      )}
       closeLabel={t("common.close")}
     >
       <div className="flex flex-col gap-4">

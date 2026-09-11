@@ -1,15 +1,15 @@
 # Windows code signing
 
-Korigio’s shop installer is the **NSIS** `Korigio_*_x64-setup.exe`. This document covers **Windows Authenticode** signing of that installer and `Korigio.exe`. It is not Tauri’s updater key (`TAURI_SIGNING_PRIVATE_KEY`).
+Korigio’s shop installer is the **NSIS** `Korigio_*_x64-setup.exe`. This document covers **Windows Authenticode** signing of that installer and the main app exe. It is not Tauri’s updater key (`TAURI_SIGNING_PRIVATE_KEY`).
 
-A **self-signed** certificate is for development, CI rehearsal, and internal testers. It puts **Korigio / Moritz Alexander Wright** on the signature. It does **not** make Microsoft SmartScreen trust the app on a customer PC.
+A **self-signed** certificate is for development, CI rehearsal, and internal testers. It puts **Moritz Alexander Wright** (organization **Korigio**) on the signature. It does **not** make Microsoft SmartScreen trust the app on a customer PC.
 
 ```text
 SELF-SIGNED
     ↓
 Authenticode signature exists
     ↓
-cryptographically signed (publisher name is visible in signature details)
+cryptographically signed (publisher name is visible in signature details / UAC)
     ↓
 BUT
     ↓
@@ -17,6 +17,21 @@ not automatically trusted on normal customer Windows installations
 ```
 
 `npm run tauri dev` never needs a certificate.
+
+## Publisher identity (what maps where)
+
+| Identity                         | Where it lives                                                                 | What users typically see                                      |
+| -------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| **Moritz Alexander Wright**      | Cert `CN=`; also `bundle.publisher` in `tauri.conf.json`                       | UAC / “Publisher” in signature details; Apps & Features       |
+| **Korigio**                      | Cert `O=`; `productName`                                                       | Product / installer name; organization in full cert Subject   |
+| **info@korigio.com**             | Cert `E=` / `emailAddress=`                                                    | Full Subject only — not the UAC headline                      |
+| **https://www.korigio.com**      | `bundle.homepage` (not an Authenticode DN field)                               | Installer / app metadata — not the signature publisher line   |
+
+Recommended cert Subject (created by the scripts below):
+
+```text
+CN=Moritz Alexander Wright, O=Korigio, E=info@korigio.com
+```
 
 ## First-time Windows setup
 
@@ -33,7 +48,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 That:
 
-1. Creates a `CodeSigningCert` (SHA-256) in `Cert:\CurrentUser\My` with subject `CN=Korigio, O=Moritz Alexander Wright`.
+1. Creates a `CodeSigningCert` (SHA-256) in `Cert:\CurrentUser\My` with subject `CN=Moritz Alexander Wright, O=Korigio, E=info@korigio.com`.
 2. Prints the **thumbprint**.
 3. Optionally exports a password-protected `.pfx` (password from prompt, or env `WINDOWS_CERTIFICATE_PASSWORD`).
 
@@ -45,7 +60,7 @@ If you have no Windows box, you can still create a PFX on macOS and let GitHub�
 
 ```bash
 openssl req -newkey rsa:4096 -nodes -keyout korigio-codesign.key -x509 -days 1825 \
-  -subj "/CN=Korigio/O=Moritz Alexander Wright" \
+  -subj "/CN=Moritz Alexander Wright/O=Korigio/emailAddress=info@korigio.com" \
   -addext "extendedKeyUsage=codeSigning" \
   -addext "keyUsage=digitalSignature" \
   -out korigio-codesign.crt
@@ -86,7 +101,12 @@ Signed NSIS on **Windows** when a thumbprint/config is present:
 npm run build:windows
 ```
 
-That runs `tauri build --bundles nsis` and lets **Tauri** call `signtool` (app exe, then the NSIS installer). There is no second manual sign step.
+That runs:
+
+1. `tauri build --bundles nsis` (Tauri’s own `signtool` pass).
+2. **Post-sign** the main release exe (Tauri’s NSIS bundle-type patch can leave it unsigned).
+3. Re-run `tauri bundle` with the exe marked read-only so the patch cannot strip that signature, then sign the NSIS installer again.
+4. `scripts/verify-windows-signature.ps1` on exe + installer.
 
 ## Verify
 
@@ -101,12 +121,14 @@ Expected (only artifacts this repo builds — NSIS, not MSI):
 ```text
 Checking application executable...
 SIGNED (NotTrusted)
+  Publisher: CN=Moritz Alexander Wright, O=Korigio, E=info@korigio.com
 
 Checking NSIS installer...
 SIGNED (NotTrusted)
+  Publisher: CN=Moritz Alexander Wright, O=Korigio, E=info@korigio.com
 ```
 
-`NotTrusted` is normal for self-signed. `UNSIGNED` or `HASH_MISMATCH` fails the script.
+`NotTrusted` / `UnknownError` is normal for self-signed. `UNSIGNED` or `HASH_MISMATCH` fails the script.
 
 Inspect one file:
 
@@ -121,10 +143,10 @@ Get-AuthenticodeSignature src-tauri\target\release\bundle\nsis\Korigio_*_x64-set
 
 Add two **repository secrets** (Settings → Secrets and variables → Actions):
 
-| Secret | Contents |
-| --- | --- |
-| `WINDOWS_CERTIFICATE` | Base64 of the `.pfx` (not the password) |
-| `WINDOWS_CERTIFICATE_PASSWORD` | PFX password |
+| Secret                         | Contents                                |
+| ------------------------------ | --------------------------------------- |
+| `WINDOWS_CERTIFICATE`          | Base64 of the `.pfx` (not the password) |
+| `WINDOWS_CERTIFICATE_PASSWORD` | PFX password                            |
 
 Encode on Windows:
 
@@ -140,13 +162,25 @@ Encode on macOS:
 base64 -i korigio-codesign.pfx | pbcopy
 ```
 
-If **both** secrets are set, the Windows job: decodes the PFX in the runner temp dir → imports into `Cert:\CurrentUser\My` → Tauri signs → verifies → deletes the PFX, merge config, and store cert. Logs must never print the password, PFX bytes, or Base64.
+If **both** secrets are set, the Windows job: decodes the PFX in the runner temp dir → imports into `Cert:\CurrentUser\My` → Tauri signs → post-signs exe + NSIS → verifies → deletes the PFX, merge config, and store cert. Logs must never print the password, PFX bytes, or Base64.
 
 If the secrets are **missing**, the job still produces an **unsigned** NSIS installer (same as before), with a warning.
 
-To send a tester build without tagging a version: **Actions → Release → Run workflow** (`workflow_dispatch`). Download the `servioo-windows-nsis` artifact. A `v*` tag is still what publishes to GitHub Releases and the public download page.
+### Regenerating after a Subject change
+
+If you change `CN` / `O` / `E` (for example to match this doc), create a **new** PFX once, then replace `WINDOWS_CERTIFICATE` (and the password secret if the password changed). Reusing an old PFX keeps the old Subject in Signature Details.
+
+To send a tester build without tagging a version: **Actions → Release → Run workflow** (`workflow_dispatch`). Download the Windows NSIS artifact. A `v*` tag is still what publishes to GitHub Releases and the public download page.
 
 `npm run tauri dev` and macOS/Linux jobs are unchanged.
+
+## Linux (AppImage)
+
+There is **no** Windows-like “publisher name at install” UX for the convenience AppImage this repo builds.
+
+- Tauri can optionally GPG-sign AppImages (`SIGN` / `SIGN_KEY` / related env vars) for **integrity**, not a friendly installer publisher dialog.
+- AppImage does not verify that signature on launch by itself.
+- This project keeps Linux **unsigned by design** (convenience download only). Do not expect `Moritz Alexander Wright` to appear in a Linux install UI from Authenticode-style signing.
 
 ## Security
 
@@ -157,12 +191,12 @@ To send a tester build without tagging a version: **Actions → Release → Run 
 
 ## SmartScreen limitation
 
-| Audience | What they see |
-| --- | --- |
-| Your Windows PC (cert in the store) | Signature details show Korigio / Moritz Alexander Wright |
-| Client PC without your cert installed | Still SmartScreen / untrusted publisher. The signature can show your name under “More info”, but Windows will not treat it as trusted |
-| After they install and launch from Start | Usually no warning on later launches of the **installed** app (true for unsigned builds too) |
-| Next version’s installer | Warning can appear again |
+| Audience                                 | What they see                                                                                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Your Windows PC (cert in the store)      | Signature details show Moritz Alexander Wright / Korigio                                                                              |
+| Client PC without your cert installed    | Still SmartScreen / untrusted publisher. The signature can show your name under “More info”, but Windows will not treat it as trusted |
+| After they install and launch from Start | Usually no warning on later launches of the **installed** app (true for unsigned builds too)                                          |
+| Next version’s installer                 | Warning can appear again                                                                                                              |
 
 To actually reduce SmartScreen for customers, switch this pipeline to a publicly trusted identity (Azure Artifact Signing or an OV certificate). `bundle.windows.signCommand` is the Tauri 2 hook for Artifact Signing (`%1` = file to sign). No application code change.
 

@@ -38,16 +38,30 @@ pub fn insert_repair(
     now: &str,
     ctx: &WriteContext,
 ) -> Result<Repair, AppError> {
+    let (est_list, est_discount, est_base, est_rate, est_tax, est_gross) = match input.estimate {
+        Some(est) => (
+            est.list_cents,
+            est.discount_bps,
+            Some(est.base_cents),
+            Some(est.tax_rate_bps),
+            Some(est.tax_cents),
+            Some(est.gross_cents),
+        ),
+        None => (None, None, None, None, None, None),
+    };
     tx.execute(
         "INSERT INTO repairs (
             id, repair_number, customer_id, device_id, company_id, assigned_to_staff_id,
             status, received_at, reported_problem, accessories_received, device_condition,
             diagnosis_notes, work_performed, notes, expected_pickup_at,
+            estimate_list_cents, estimate_discount_bps,
+            estimate_base_cents, estimate_tax_rate_bps, estimate_tax_cents, estimate_gross_cents,
             ready_at, collected_at, created_at, updated_at, archived_at,
             hlc_wall_ms, hlc_counter, origin_device_id, updated_by_staff_id, deleted_at
          ) VALUES (
             ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15,
-            NULL, NULL, ?16, ?17, NULL, ?18, ?19, ?20, ?21, NULL
+            ?16, ?17, ?18, ?19, ?20, ?21,
+            NULL, NULL, ?22, ?23, NULL, ?24, ?25, ?26, ?27, NULL
          )",
         params![
             id,
@@ -65,6 +79,12 @@ pub fn insert_repair(
             input.work_performed,
             input.notes,
             input.expected_pickup_at,
+            est_list,
+            est_discount,
+            est_base,
+            est_rate,
+            est_tax,
+            est_gross,
             now,
             now,
             ctx.hlc.wall,
@@ -147,9 +167,10 @@ const REPAIR_SELECT_COLS: &str = "repairs.id, repairs.repair_number, repairs.cus
         repairs.reported_problem, repairs.accessories_received, repairs.device_condition,
         repairs.diagnosis_notes, repairs.work_performed, repairs.notes,
         repairs.expected_pickup_at,
+        repairs.estimate_list_cents, repairs.estimate_discount_bps,
         repairs.estimate_base_cents, repairs.estimate_tax_rate_bps,
         repairs.estimate_tax_cents, repairs.estimate_gross_cents,
-        repairs.ready_at, repairs.collected_at,
+        repairs.ready_at, repairs.collected_at, repairs.warranty_years,
         repairs.created_at, repairs.updated_at, repairs.archived_at";
 
 const SEARCH_MATCH_SQL: &str = "(
@@ -162,6 +183,30 @@ const SEARCH_MATCH_SQL: &str = "(
             OR IFNULL(devices.model, '') LIKE {ph} ESCAPE '\\'
         )";
 
+/// Display label matching frontend `deviceLabel`: non-empty manufacturer/model/serial
+/// joined with ` · `, else device_type, else `#` + id.
+const DEVICE_NAME_SQL: &str = "CASE
+          WHEN NULLIF(TRIM(devices.manufacturer), '') IS NOT NULL
+            OR NULLIF(TRIM(devices.model), '') IS NOT NULL
+            OR NULLIF(TRIM(devices.serial_number), '') IS NOT NULL
+          THEN TRIM(
+            TRIM(COALESCE(NULLIF(TRIM(devices.manufacturer), ''), '') ||
+              CASE WHEN NULLIF(TRIM(devices.manufacturer), '') IS NOT NULL
+                    AND (NULLIF(TRIM(devices.model), '') IS NOT NULL
+                         OR NULLIF(TRIM(devices.serial_number), '') IS NOT NULL)
+                   THEN ' · ' ELSE '' END ||
+              COALESCE(NULLIF(TRIM(devices.model), ''), '') ||
+              CASE WHEN NULLIF(TRIM(devices.model), '') IS NOT NULL
+                    AND NULLIF(TRIM(devices.serial_number), '') IS NOT NULL
+                   THEN ' · ' ELSE '' END ||
+              COALESCE(NULLIF(TRIM(devices.serial_number), ''), '')
+            )
+          )
+          WHEN NULLIF(TRIM(devices.device_type), '') IS NOT NULL
+          THEN TRIM(devices.device_type)
+          ELSE '#' || devices.id
+        END";
+
 pub fn list_repairs(
     conn: &Connection,
     search: Option<&str>,
@@ -173,7 +218,6 @@ pub fn list_repairs(
     offset: u32,
 ) -> Result<(Vec<RepairListItem>, i64), AppError> {
     let pattern = like_pattern(search);
-    let needs_device_join = pattern.is_some();
 
     let mut where_parts =
         vec!["repairs.archived_at IS NULL AND repairs.deleted_at IS NULL".to_string()];
@@ -201,16 +245,13 @@ pub fn list_repairs(
     }
 
     let where_sql = format!("WHERE {}", where_parts.join(" AND "));
-    let from_sql = if needs_device_join {
-        "FROM repairs
+    let from_sql = "FROM repairs
          INNER JOIN customers ON customers.id = repairs.customer_id
-         INNER JOIN devices ON devices.id = repairs.device_id"
-    } else {
-        "FROM repairs
-         INNER JOIN customers ON customers.id = repairs.customer_id"
-    };
+         INNER JOIN devices ON devices.id = repairs.device_id";
 
-    let select_cols = format!("{REPAIR_SELECT_COLS}, customers.name AS customer_name");
+    let select_cols = format!(
+        "{REPAIR_SELECT_COLS}, customers.name AS customer_name, {DEVICE_NAME_SQL} AS device_name"
+    );
     let limit_ph = format!("?{idx}");
     let offset_ph = format!("?{}", idx + 1);
 
@@ -307,7 +348,8 @@ fn query_rows(
 fn map_repair_list_item(row: &rusqlite::Row<'_>) -> rusqlite::Result<RepairListItem> {
     Ok(RepairListItem {
         repair: map_repair(row)?,
-        customer_name: row.get(25)?,
+        customer_name: row.get(28)?,
+        device_name: row.get(29)?,
     })
 }
 
@@ -329,15 +371,18 @@ fn map_repair(row: &rusqlite::Row<'_>) -> rusqlite::Result<Repair> {
         work_performed: row.get(13)?,
         notes: row.get(14)?,
         expected_pickup_at: row.get(15)?,
-        estimate_base_cents: row.get(16)?,
-        estimate_tax_rate_bps: row.get(17)?,
-        estimate_tax_cents: row.get(18)?,
-        estimate_gross_cents: row.get(19)?,
-        ready_at: row.get(20)?,
-        collected_at: row.get(21)?,
-        created_at: row.get(22)?,
-        updated_at: row.get(23)?,
-        archived_at: row.get(24)?,
+        estimate_list_cents: row.get(16)?,
+        estimate_discount_bps: row.get(17)?,
+        estimate_base_cents: row.get(18)?,
+        estimate_tax_rate_bps: row.get(19)?,
+        estimate_tax_cents: row.get(20)?,
+        estimate_gross_cents: row.get(21)?,
+        ready_at: row.get(22)?,
+        collected_at: row.get(23)?,
+        warranty_years: row.get(24)?,
+        created_at: row.get(25)?,
+        updated_at: row.get(26)?,
+        archived_at: row.get(27)?,
     })
 }
 pub fn update_repair_diagnosis(
@@ -346,6 +391,8 @@ pub fn update_repair_diagnosis(
     status: &str,
     diagnosis_notes: Option<&str>,
     expected_pickup_at: Option<&str>,
+    estimate_list_cents: Option<i64>,
+    estimate_discount_bps: Option<i64>,
     estimate_base_cents: Option<i64>,
     estimate_tax_rate_bps: Option<i64>,
     estimate_tax_cents: Option<i64>,
@@ -358,17 +405,21 @@ pub fn update_repair_diagnosis(
             status = ?1,
             diagnosis_notes = ?2,
             expected_pickup_at = ?3,
-            estimate_base_cents = ?4,
-            estimate_tax_rate_bps = ?5,
-            estimate_tax_cents = ?6,
-            estimate_gross_cents = ?7,
-            updated_at = ?8,
-            hlc_wall_ms = ?9, hlc_counter = ?10, origin_device_id = ?11, updated_by_staff_id = ?12
-         WHERE id = ?13 AND archived_at IS NULL AND deleted_at IS NULL",
+            estimate_list_cents = ?4,
+            estimate_discount_bps = ?5,
+            estimate_base_cents = ?6,
+            estimate_tax_rate_bps = ?7,
+            estimate_tax_cents = ?8,
+            estimate_gross_cents = ?9,
+            updated_at = ?10,
+            hlc_wall_ms = ?11, hlc_counter = ?12, origin_device_id = ?13, updated_by_staff_id = ?14
+         WHERE id = ?15 AND archived_at IS NULL AND deleted_at IS NULL",
         params![
             status,
             diagnosis_notes,
             expected_pickup_at,
+            estimate_list_cents,
+            estimate_discount_bps,
             estimate_base_cents,
             estimate_tax_rate_bps,
             estimate_tax_cents,
@@ -481,6 +532,45 @@ pub fn update_repair_pickup_complete(
          WHERE id = ?7 AND archived_at IS NULL AND deleted_at IS NULL",
         params![
             collected_at,
+            now,
+            ctx.hlc.wall,
+            ctx.hlc.counter,
+            ctx.hlc.origin_device_id,
+            ctx.staff_id,
+            id
+        ],
+    )?;
+    if updated == 0 {
+        return match get_repair_by_id(conn, id)? {
+            Some(_) => Err(AppError::Validation {
+                field: None,
+                message: "Archived repairs cannot be edited.".into(),
+            }),
+            None => Err(AppError::NotFound),
+        };
+    }
+    get_repair_by_id(conn, id)?.ok_or(AppError::NotFound)
+}
+
+/// Sets `collected_at` and `warranty_years` without changing status (summary handover while still `ready`).
+pub fn update_repair_summary_handover(
+    conn: &Connection,
+    id: &str,
+    collected_at: &str,
+    warranty_years: i64,
+    now: &str,
+    ctx: &WriteContext,
+) -> Result<Repair, AppError> {
+    let updated = conn.execute(
+        "UPDATE repairs SET
+            collected_at = ?1,
+            warranty_years = ?2,
+            updated_at = ?3,
+            hlc_wall_ms = ?4, hlc_counter = ?5, origin_device_id = ?6, updated_by_staff_id = ?7
+         WHERE id = ?8 AND archived_at IS NULL AND deleted_at IS NULL",
+        params![
+            collected_at,
+            warranty_years,
             now,
             ctx.hlc.wall,
             ctx.hlc.counter,

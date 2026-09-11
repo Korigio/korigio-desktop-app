@@ -52,7 +52,9 @@ export const settingsApi = {
   getAutoBackupSettings(): Promise<AutoBackupSettings> {
     return invoke<AutoBackupSettings>("get_auto_backup_settings");
   },
-  setAutoBackupSettings(input: AutoBackupSettings): Promise<AutoBackupSettings> {
+  setAutoBackupSettings(
+    input: AutoBackupSettings,
+  ): Promise<AutoBackupSettings> {
     return invoke<AutoBackupSettings>("set_auto_backup_settings", { input });
   },
 };

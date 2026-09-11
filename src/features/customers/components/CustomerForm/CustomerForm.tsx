@@ -57,36 +57,38 @@ export function CustomerForm({
         )}
       </form.Field>
 
-      <form.Field name="phone">
-        {(field) => (
-          <FormField label={t("customers.fields.phone")} htmlFor={field.name}>
-            <TextField
-              id={field.name}
-              name={field.name}
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <form.Field name="phone">
+          {(field) => (
+            <FormField label={t("customers.fields.phone")} htmlFor={field.name}>
+              <TextField
+                id={field.name}
+                name={field.name}
+                value={field.state.value ?? ""}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
 
-      <form.Field name="email">
-        {(field) => (
-          <FormField label={t("customers.fields.email")} htmlFor={field.name}>
-            <TextField
-              id={field.name}
-              name={field.name}
-              type="email"
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+        <form.Field name="email">
+          {(field) => (
+            <FormField label={t("customers.fields.email")} htmlFor={field.name}>
+              <TextField
+                id={field.name}
+                name={field.name}
+                type="email"
+                value={field.state.value ?? ""}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
+      </div>
 
       <form.Field name="address">
         {(field) => (

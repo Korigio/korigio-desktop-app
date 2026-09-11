@@ -164,6 +164,22 @@ pub fn confirm_repair_summary(
 }
 
 #[tauri::command(rename_all = "camelCase")]
+pub fn record_repair_summary_handover(
+    state: State<'_, DbState>,
+    repair_id: String,
+    collected_at: String,
+    warranty_years: i64,
+) -> Result<Repair, CommandError> {
+    let db = lock_db(&state)?;
+    Ok(repairs::record_repair_summary_handover(
+        &db,
+        repair_id,
+        collected_at,
+        warranty_years,
+    )?)
+}
+
+#[tauri::command(rename_all = "camelCase")]
 pub fn complete_repair_pickup(
     state: State<'_, DbState>,
     repair_id: String,

@@ -4,17 +4,17 @@ Product name: **Korigio** (npm package `servioo`; Tauri identifier `com.servioo.
 
 ## Stack
 
-| Layer | Technology |
-| --- | --- |
-| Desktop shell | Tauri 2 (Windows NSIS installer) |
-| UI | React + TypeScript + Vite |
-| Styling | Tailwind CSS v4 + design tokens |
-| UI primitives | Radix (wrapped in our `src/ui`), shadcn-style ownership |
-| Routing | React Router 7 **Framework Mode** (`src/routes.ts` RouteConfig) |
-| Forms / tables | TanStack Form + TanStack Table (mandatory) |
-| Backend | Rust |
-| Database | SQLite via `rusqlite` |
-| IPC | Tauri commands only (no local HTTP server). Native → UI events: `open-settings`, `open-repair-intake`, `sync-applied`. |
+| Layer          | Technology                                                                                                             |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Desktop shell  | Tauri 2 (Windows NSIS installer)                                                                                       |
+| UI             | React + TypeScript + Vite                                                                                              |
+| Styling        | Tailwind CSS v4 + design tokens                                                                                        |
+| UI primitives  | Radix (wrapped in our `src/ui`), shadcn-style ownership                                                                |
+| Routing        | React Router 7 **Framework Mode** (`src/routes.ts` RouteConfig)                                                        |
+| Forms / tables | TanStack Form + TanStack Table (mandatory)                                                                             |
+| Backend        | Rust                                                                                                                   |
+| Database       | SQLite via `rusqlite`                                                                                                  |
+| IPC            | Tauri commands only (no local HTTP server). Native → UI events: `open-settings`, `open-repair-intake`, `sync-applied`. |
 
 ## Layers
 

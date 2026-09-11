@@ -36,6 +36,14 @@ pub const MIGRATIONS: &[(i64, &str)] = &[
         include_str!("../../migrations/010_phase17_uuid_team_sync.sql"),
     ),
     (11, include_str!("../../migrations/011_team_pin.sql")),
+    (
+        12,
+        include_str!("../../migrations/012_repair_estimate_list_discount.sql"),
+    ),
+    (
+        13,
+        include_str!("../../migrations/013_repair_warranty_years.sql"),
+    ),
 ];
 
 pub fn run(conn: &Connection) -> Result<(), AppError> {
@@ -102,7 +110,7 @@ mod tests {
                 row.get(0)
             })
             .expect("count");
-        assert_eq!(count, 11);
+        assert_eq!(count, 12);
 
         let tables: i64 = conn
             .query_row(

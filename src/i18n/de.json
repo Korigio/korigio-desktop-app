@@ -407,8 +407,25 @@
         "createCustomer": "Neuer Kunde",
         "createDevice": "Neues Gerät"
       },
+      "estimate": {
+        "heading": "Kostenvoranschlag",
+        "hint": "Optional. Dies ist nur eine Schätzung und kann sich nach einer detaillierten Diagnose ändern.",
+        "fields": {
+          "listPrice": "Listenpreis ({currency})",
+          "discountPercent": "Rabatt (%)"
+        },
+        "preview": {
+          "net": "Netto nach Rabatt",
+          "tax": "Steuer",
+          "gross": "Gesamt (inkl. Steuer)"
+        },
+        "validation": {
+          "discountNeedsPrice": "Geben Sie einen Listenpreis ein, bevor Sie einen Rabatt anwenden."
+        }
+      },
       "review": {
-        "heading": "Prüfen und anlegen"
+        "heading": "Prüfen und anlegen",
+        "estimateNet": "Kostenvoranschlag (netto)"
       },
       "done": {
         "heading": "Reparatur angelegt",
@@ -428,8 +445,8 @@
       "noTemplates": "Noch keine Diagnosevorlagen. Erstellen Sie welche unter Diagnosevorlagen.",
       "archivedHint": "Diese Reparatur ist archiviert. Die Diagnose kann nicht bearbeitet werden.",
       "cancelledHint": "Diese Reparatur ist storniert. Die Diagnose kann nicht bearbeitet werden.",
-      "estimateHint": "Geben Sie den Nettobetrag ohne Steuer ein. Die Steuer wird aus den Werkstatteinstellungen berechnet.",
-      "estimateLockedHint": "Es ist bereits ein Kostenvoranschlag gespeichert. Der Betrag kann geändert, aber nicht gelöscht werden.",
+      "estimateHint": "Optional: Listenpreis und Rabatt eingeben. Die Steuer wird aus den Werkstatteinstellungen berechnet.",
+      "estimateLockedHint": "Es ist bereits ein Kostenvoranschlag gespeichert. Listenpreis und Rabatt können geändert, aber nicht gelöscht werden.",
       "estimatePreviewInvalid": "Geben Sie einen gültigen Betrag ein.",
       "applyToNotesSuccess": "Checkliste in die Befunde übernommen.",
       "draftSuccess": "Diagnose-Entwurf gespeichert.",
@@ -463,8 +480,8 @@
         "selectTemplateFirst": "Zuerst eine Vorlage auswählen.",
         "loadTemplateFailed": "Vorlage konnte nicht geladen werden.",
         "nothingToApply": "Nichts zum Übernehmen. Zuerst Vorlage laden und Checkliste ausfüllen.",
-        "estimateRequired": "Vor dem Abschließen einen Netto-Kostenvoranschlag eingeben.",
-        "estimateInvalid": "Gültigen Netto-Kostenvoranschlag eingeben.",
+        "estimateRequired": "Vor dem Abschließen einen Listenpreis bzw. Kostenvoranschlagsbetrag eingeben.",
+        "estimateInvalid": "Gültigen Listenpreis bzw. Kostenvoranschlagsbetrag eingeben.",
         "notesRequired": "Vor dem Abschließen Befunde eingeben.",
         "saveFailed": "Diagnose konnte nicht gespeichert werden."
       }
@@ -534,8 +551,14 @@
         },
         "confirmSummary": {
           "title": "Signierte Zusammenfassung (optional)",
-          "description": "Drucken Sie die Reparaturzusammenfassung zur Unterschrift bei der Abholung.",
-          "hint": "Das Hochladen einer unterschriebenen Kopie ist optional. Sie können ohne fortfahren.",
+          "description": "Bestätigen Sie die Geräteübergabe und drucken Sie danach die Reparaturzusammenfassung zur Unterschrift.",
+          "hint": "Die Übergabe muss bestätigt werden, bevor Sie zur Unterschrift drucken. Das Hochladen einer unterschriebenen Kopie ist optional — Sie können ohne fortfahren.",
+          "handoverDate": "Übergabedatum",
+          "handoverDateRequired": "Übergabedatum ist erforderlich.",
+          "handoverFailed": "Übergabedatum konnte nicht gespeichert werden.",
+          "warrantyYears": "Garantie (Jahre)",
+          "warrantyYearsRequired": "Garantiezeit in Jahren ist erforderlich.",
+          "warrantyYearsInvalid": "Geben Sie eine ganze Zahl von 0 bis 10 ein.",
           "printSummary": "Zusammenfassung drucken",
           "confirmButton": "Bestätigen",
           "continueWithoutUpload": "Ohne Upload fortfahren",
@@ -559,7 +582,7 @@
         },
         "recordPickup": {
           "title": "Abholung erfassen",
-          "description": "Bestätigen Sie, wann der Kunde das Gerät abgeholt hat.",
+          "description": "Bestätigen Sie, dass der Kunde das Gerät abgeholt hat.",
           "pickupDate": "Abholdatum",
           "confirmButton": "Abholung bestätigen",
           "dateRequired": "Abholdatum ist erforderlich.",
@@ -598,8 +621,12 @@
           "total": "Gesamt",
           "expected": "Erwartet",
           "ready": "Bereit",
-          "collected": "Abgeholt"
-        }
+          "collected": "Abgeholt",
+          "warranty": "Garantie"
+        },
+        "warrantyNone": "Keine Garantie",
+        "warrantyOne": "1 Jahr",
+        "warrantyOther": "{n} Jahre"
       }
     },
     "documents": {
@@ -607,6 +634,7 @@
       "loading": "Dokumente werden geladen…",
       "print": "Drucken",
       "view": "Anzeigen",
+      "download": "Herunterladen",
       "replace": "Ersetzen",
       "delete": "Löschen",
       "uploadButton": "Unterschriebene Kopie hochladen",
@@ -779,11 +807,12 @@
     "shop": {
       "title": "Werkstatt-Standards",
       "subtitle": "Steuer und Währung für Kostenvoranschläge",
-      "hint": "Standard-Steuersatz ist 19%. Verwenden Sie einen dreistelligen Währungscode (z. B. EUR).",
+      "hint": "Standard-Steuersatz ist 19%. Wählen Sie die Währung für Kostenvoranschläge aus der Liste.",
       "saveSuccess": "Werkstatt-Einstellungen gespeichert.",
       "fields": {
         "taxRatePercent": "Steuersatz (%)",
-        "currency": "Währung"
+        "currency": "Währung",
+        "currencyPlaceholder": "Währung wählen"
       },
       "actions": {
         "save": "Werkstatt-Einstellungen speichern"
@@ -863,7 +892,8 @@
       "closeDiagnosis": "Zurück zur Reparatur"
     },
     "errors": {
-      "loadFailed": "Druckbericht konnte nicht geladen werden."
+      "loadFailed": "Druckbericht konnte nicht geladen werden.",
+      "printFailed": "Druckdialog konnte nicht geöffnet werden."
     },
     "entrance": {
       "title": "Geräteannahmebeleg",
@@ -892,6 +922,13 @@
         "condition": "Zustand",
         "notes": "Notizen",
         "expectedPickup": "Mögliche Abholung"
+      },
+      "estimate": {
+        "title": "Vorläufiger Kostenvoranschlag",
+        "disclaimer": "Dies ist nur eine Schätzung. Der Endpreis kann sich nach einer detaillierten Diagnose ändern.",
+        "listPrice": "Listenpreis",
+        "discountPercent": "Rabatt (%)",
+        "netAfterDiscount": "Netto nach Rabatt"
       },
       "signatures": {
         "client": "Unterschrift Kunde",

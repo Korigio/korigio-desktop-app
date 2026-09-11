@@ -26,8 +26,8 @@ function parseStatus(value: string | undefined | null): RepairStatus | "" {
 
 export function useRepairList(options: Options = {}) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<RepairStatus | "">(
-    () => parseStatus(options.initialStatus),
+  const [status, setStatus] = useState<RepairStatus | "">(() =>
+    parseStatus(options.initialStatus),
   );
   const [page, setPage] = useState(1);
   const [pageSize, setPageSizeState] = useState(DEFAULT_PAGE_SIZE);
@@ -62,7 +62,9 @@ export function useRepairList(options: Options = {}) {
         setError(null);
       } catch (err) {
         if (!silent) {
-          setError(err instanceof Error ? err.message : "Failed to load repairs");
+          setError(
+            err instanceof Error ? err.message : "Failed to load repairs",
+          );
           setResult(null);
         }
       } finally {

@@ -12,7 +12,7 @@ export function ShopSettingsFields() {
   }
 
   return (
-    <div className="flex max-w-md flex-col gap-3">
+    <div className="flex max-w-xl flex-col gap-3">
       <ShopTaxCurrencyFields
         taxRatePercent={shop.taxRatePercent}
         currency={shop.currency}

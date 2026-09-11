@@ -1,4 +1,7 @@
-import type { PrintCustomer, PrintDevice } from "@/features/print/types/printReport";
+import type {
+  PrintCustomer,
+  PrintDevice,
+} from "@/features/print/types/printReport";
 import { printFieldValue } from "@/features/print/utils/printFormat";
 
 type Props = {

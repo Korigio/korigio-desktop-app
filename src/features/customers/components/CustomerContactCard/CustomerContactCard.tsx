@@ -15,8 +15,14 @@ export function CustomerContactCard({ customer }: Props) {
     <Card title={t("customers.detail.sections.contact")}>
       <DefinitionList
         items={[
-          { label: t("customers.fields.phone"), value: customer.phone ?? EMPTY },
-          { label: t("customers.fields.email"), value: customer.email ?? EMPTY },
+          {
+            label: t("customers.fields.phone"),
+            value: customer.phone ?? EMPTY,
+          },
+          {
+            label: t("customers.fields.email"),
+            value: customer.email ?? EMPTY,
+          },
           {
             label: t("customers.fields.address"),
             value: customer.address ?? EMPTY,

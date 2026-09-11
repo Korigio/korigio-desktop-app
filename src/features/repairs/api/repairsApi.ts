@@ -67,6 +67,17 @@ export const repairsApi = {
   confirmSummary(repairId: string): Promise<Repair> {
     return invoke<Repair>("confirm_repair_summary", { repairId });
   },
+  recordSummaryHandover(
+    repairId: string,
+    collectedAt: string,
+    warrantyYears: number,
+  ): Promise<Repair> {
+    return invoke<Repair>("record_repair_summary_handover", {
+      repairId,
+      collectedAt,
+      warrantyYears,
+    });
+  },
   confirmPartsReceived(repairId: string): Promise<Repair> {
     return invoke<Repair>("confirm_repair_parts_received", { repairId });
   },

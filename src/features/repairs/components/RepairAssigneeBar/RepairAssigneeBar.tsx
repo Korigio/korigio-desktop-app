@@ -42,7 +42,9 @@ export function RepairAssigneeBar({ repair, onRepairChange }: Props) {
     void loadStaff(true);
   });
 
-  const assigned = staff.find((member) => member.id === repair.assignedToStaffId);
+  const assigned = staff.find(
+    (member) => member.id === repair.assignedToStaffId,
+  );
   const form = useForm({
     defaultValues: { staffId: repair.assignedToStaffId ?? "" },
     onSubmit: async ({ value }) => {
@@ -160,7 +162,10 @@ export function RepairAssigneeBar({ repair, onRepairChange }: Props) {
             selector={(state) => [state.canSubmit, state.isSubmitting] as const}
           >
             {([canSubmit, isSubmitting]) => (
-              <Button type="submit" disabled={!canSubmit || isSubmitting || busy}>
+              <Button
+                type="submit"
+                disabled={!canSubmit || isSubmitting || busy}
+              >
                 {isSubmitting ? t("common.saving") : t("repairs.assign")}
               </Button>
             )}

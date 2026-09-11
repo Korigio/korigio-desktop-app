@@ -44,9 +44,9 @@ Use this before handing Korigio to a customer. Check each item on a **Windows 10
 
 ## Sign-off
 
-| Role | Name | Date | Notes |
-| --- | --- | --- | --- |
-| Builder | | | |
-| Reviewer | | | |
+| Role     | Name | Date | Notes |
+| -------- | ---- | ---- | ----- |
+| Builder  |      |      |       |
+| Reviewer |      |      |       |
 
 Related: [installer.md](installer.md), [security.md](security.md), [performance-results.md](performance-results.md), [roadmap.md](roadmap.md).

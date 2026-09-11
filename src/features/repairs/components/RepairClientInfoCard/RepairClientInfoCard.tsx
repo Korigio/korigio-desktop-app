@@ -49,7 +49,7 @@ export function RepairClientInfoCard({
                   <LinkButton
                     to={`/customers/${repair.customerId}`}
                     variant="secondary"
-                    className="h-auto w-fit px-0 py-0 text-sm font-medium"
+                    className="h-auto w-fit px-3 py-1.5 text-sm font-medium"
                   >
                     {customerLabel(customer)}
                   </LinkButton>
@@ -82,7 +82,7 @@ export function RepairClientInfoCard({
                 <LinkButton
                   to={`/devices/${repair.deviceId}`}
                   variant="secondary"
-                  className="h-auto w-fit px-0 py-0 text-sm font-medium"
+                  className="h-auto w-fit px-3 py-1.5 text-sm font-medium"
                 >
                   {deviceLabel(device)}
                 </LinkButton>

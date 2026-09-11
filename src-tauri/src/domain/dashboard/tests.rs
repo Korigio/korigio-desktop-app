@@ -82,6 +82,8 @@ fn sample_repair(customer_id: &str, device_id: &str, company_id: &str) -> Repair
         work_performed: None,
         notes: None,
         expected_pickup_at: None,
+        estimate_base_cents: None,
+        estimate_discount_bps: None,
     }
 }
 

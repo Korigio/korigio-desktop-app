@@ -1,7 +1,4 @@
-import {
-  companyLabel,
-  type Company,
-} from "@/features/companies/types/company";
+import { companyLabel, type Company } from "@/features/companies/types/company";
 import type { RepairIntakeState } from "@/features/repairs/hooks/useRepairIntake";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -19,7 +16,11 @@ export function IntakeCompanyStep({ intake }: Props) {
         {t("repairs.intake.company.heading")}
       </h2>
       <p className="text-sm text-muted">{t("repairs.intake.company.hint")}</p>
-      <ul className="flex flex-col gap-2" role="radiogroup" aria-label={t("repairs.fields.company")}>
+      <ul
+        className="flex flex-col gap-2"
+        role="radiogroup"
+        aria-label={t("repairs.fields.company")}
+      >
         {intake.companies.map((company) => (
           <CompanyOption
             key={company.id}
@@ -63,7 +64,9 @@ function CompanyOption({
         <span className="min-w-0 flex-1">
           <span className="block font-medium">{companyLabel(company)}</span>
           {company.legalName !== companyLabel(company) ? (
-            <span className="block text-sm text-muted">{company.legalName}</span>
+            <span className="block text-sm text-muted">
+              {company.legalName}
+            </span>
           ) : null}
           {company.isDefault ? (
             <span className="mt-1 inline-block text-xs text-muted">

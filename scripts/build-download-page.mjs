@@ -65,7 +65,9 @@ function versionOf(release) {
 }
 
 function pickAsset(assets, test) {
-  return (assets ?? []).find((asset) => test(String(asset.name || "").toLowerCase()));
+  return (assets ?? []).find((asset) =>
+    test(String(asset.name || "").toLowerCase()),
+  );
 }
 
 function classifyAssets(assets) {
@@ -75,10 +77,7 @@ function classifyAssets(assets) {
       (name) => name.endsWith(".exe") || name.includes("setup"),
     ),
     macos: pickAsset(assets, (name) => name.endsWith(".dmg")),
-    linux: pickAsset(
-      assets,
-      (name) => name.endsWith(".appimage"),
-    ),
+    linux: pickAsset(assets, (name) => name.endsWith(".appimage")),
   };
 }
 
@@ -105,9 +104,13 @@ function loadReleases(input, repo) {
   if (input) {
     return JSON.parse(readFileSync(input, "utf8"));
   }
-  const json = execFileSync("gh", ["api", `repos/${repo}/releases`, "--paginate"], {
-    encoding: "utf8",
-  });
+  const json = execFileSync(
+    "gh",
+    ["api", `repos/${repo}/releases`, "--paginate"],
+    {
+      encoding: "utf8",
+    },
+  );
   return JSON.parse(json);
 }
 
@@ -196,7 +199,9 @@ function renderPage(releases) {
   const version = latest ? versionOf(latest) : "";
   const tag = latest?.tag_name || "";
   const assets = classifyAssets(latest?.assets);
-  const versionLabel = version ? `Version ${escapeHtml(version)}` : "No public release yet";
+  const versionLabel = version
+    ? `Version ${escapeHtml(version)}`
+    : "No public release yet";
   const status = latest
     ? `Latest release ${escapeHtml(tag)}. Windows is the supported shop target. macOS and Linux builds are unsigned convenience downloads.`
     : "Installers appear here after the next public GitHub Release. Windows is the supported shop target. macOS and Linux builds are unsigned convenience downloads.";
@@ -380,6 +385,9 @@ mkdirSync(outputDir, { recursive: true });
 writeFileSync(args.output, html);
 const latestPath = join(outputDir, "latest.json");
 const { latest } = selectReleases(releases);
-writeFileSync(latestPath, `${JSON.stringify(buildLatestJson(latest), null, 2)}\n`);
+writeFileSync(
+  latestPath,
+  `${JSON.stringify(buildLatestJson(latest), null, 2)}\n`,
+);
 console.log(`Wrote download page to ${args.output}`);
 console.log(`Wrote latest manifest to ${latestPath}`);

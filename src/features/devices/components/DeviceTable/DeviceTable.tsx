@@ -5,10 +5,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { Link } from "react-router";
-import {
-  deviceLabel,
-  type Device,
-} from "@/features/devices/types/device";
+import { deviceLabel, type Device } from "@/features/devices/types/device";
 import { Button, DataTable } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -115,7 +112,10 @@ export function DeviceTable({
             <th key={header.id} className="px-3 py-2 font-medium">
               {header.isPlaceholder
                 ? null
-                : flexRender(header.column.columnDef.header, header.getContext())}
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
             </th>
           ))}
         </tr>

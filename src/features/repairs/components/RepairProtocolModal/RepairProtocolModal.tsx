@@ -66,7 +66,11 @@ export function RepairProtocolModal({
           onChange={(event) => setWorkPerformed(event.target.value)}
         />
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={busy} onClick={() => void handleSave()}>
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void handleSave()}
+          >
             {busy
               ? t("common.saving")
               : t("repairs.workflow.modals.protocol.saveButton")}

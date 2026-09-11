@@ -41,5 +41,7 @@ Propose useful extras; do not implement without permission (SMS, cloud sync, inv
 ## Quality
 
 - Prefer small focused diffs; no drive-by refactors.
+- Preserve cohesive module boundaries. Review files near ~400 LOC, growth over 100 LOC in one change, or the addition of a third concern; these are advisory triggers, and responsibility/cohesion—not line count—decides extraction.
+- Extract stateful orchestration, pure logic, shared types, and reusable UI to their proper layers. Keep stable façades for public contracts, avoid one-helper-per-file fragmentation, and move/add focused tests plus façade regression coverage.
 - New dependencies require purpose + impact in the phase report.
 - Prefer performance over visual effects on low-end PCs.

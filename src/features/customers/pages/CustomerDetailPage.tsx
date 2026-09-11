@@ -15,7 +15,8 @@ type Props = { customerId: string };
 export function CustomerDetailPage({ customerId }: Props) {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { customer, loading, error, setCustomer } = useCustomerDetail(customerId);
+  const { customer, loading, error, setCustomer } =
+    useCustomerDetail(customerId);
 
   if (loading) {
     return <CustomerLoadState />;

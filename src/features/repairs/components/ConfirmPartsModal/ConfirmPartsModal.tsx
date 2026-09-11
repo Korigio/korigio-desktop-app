@@ -45,7 +45,11 @@ export function ConfirmPartsModal({
           {t("repairs.workflow.modals.confirmParts.hint")}
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={busy} onClick={() => void handleConfirm()}>
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void handleConfirm()}
+          >
             {busy
               ? t("repairs.workflow.modals.confirmParts.confirming")
               : t("repairs.workflow.modals.confirmParts.confirmButton")}

@@ -14,7 +14,9 @@ export function useRepairDocumentUpload({ repairId, onUploaded }: Options) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function pickAndUpload(documentType: RepairDocumentType): Promise<boolean> {
+  async function pickAndUpload(
+    documentType: RepairDocumentType,
+  ): Promise<boolean> {
     setError(null);
     setUploading(true);
     try {

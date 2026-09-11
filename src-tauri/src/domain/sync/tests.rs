@@ -101,6 +101,22 @@ fn same_change_id_is_idempotent() {
 }
 
 #[test]
+fn equal_hlc_with_a_new_change_id_is_idempotent() {
+    let db = Db::open_in_memory().expect("db");
+    let entity = new_entity_id();
+    let hlc = Hlc::new(50, 0, "dev");
+    let first = change(&new_entity_id(), &entity, "Once", hlc.clone());
+    apply_remote_change(db.conn(), &first).expect("apply");
+
+    let duplicate = change(&new_entity_id(), &entity, "Different payload", hlc);
+    assert_eq!(
+        apply_remote_change(db.conn(), &duplicate).expect("equal HLC"),
+        ApplyOutcome::Idempotent
+    );
+    assert_eq!(customer_name(&db, &entity), "Once");
+}
+
+#[test]
 fn device_id_tie_break_is_lexicographic() {
     let db = Db::open_in_memory().expect("db");
     let entity = new_entity_id();

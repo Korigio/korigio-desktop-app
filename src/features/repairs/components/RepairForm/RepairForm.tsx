@@ -281,41 +281,43 @@ export function RepairForm({
         )}
       </form.Field>
 
-      <form.Field name="accessoriesReceived">
-        {(field) => (
-          <FormField
-            label={t("repairs.fields.accessoriesReceived")}
-            htmlFor={field.name}
-          >
-            <TextField
-              id={field.name}
-              name={field.name}
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <form.Field name="accessoriesReceived">
+          {(field) => (
+            <FormField
+              label={t("repairs.fields.accessoriesReceived")}
+              htmlFor={field.name}
+            >
+              <TextField
+                id={field.name}
+                name={field.name}
+                value={field.state.value ?? ""}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
 
-      <form.Field name="deviceCondition">
-        {(field) => (
-          <FormField
-            label={t("repairs.fields.deviceCondition")}
-            htmlFor={field.name}
-          >
-            <TextField
-              id={field.name}
-              name={field.name}
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+        <form.Field name="deviceCondition">
+          {(field) => (
+            <FormField
+              label={t("repairs.fields.deviceCondition")}
+              htmlFor={field.name}
+            >
+              <TextField
+                id={field.name}
+                name={field.name}
+                value={field.state.value ?? ""}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
+      </div>
 
       <form.Field name="expectedPickupAt">
         {(field) => (

@@ -61,7 +61,7 @@ function versionsInSync(expected) {
   const cargo = /(?:^|\n)version = "([^"]+)"/.exec(
     readFileSync(cargoTomlPath, "utf8"),
   )?.[1];
-  const lock = /name = "repair-manager"\nversion = "([^"]+)"/.exec(
+  const lock = /name = "korigio"\nversion = "([^"]+)"/.exec(
     readFileSync(cargoLockPath, "utf8"),
   )?.[1];
   const mismatches = [];
@@ -96,7 +96,7 @@ function writeVersion(next) {
   writeFileSync(cargoTomlPath, cargoToml);
 
   const cargoLock = readFileSync(cargoLockPath, "utf8").replace(
-    /(name = "repair-manager"\nversion = ")[^"]+"/,
+    /(name = "korigio"\nversion = ")[^"]+"/,
     `$1${next}"`,
   );
   writeFileSync(cargoLockPath, cargoLock);

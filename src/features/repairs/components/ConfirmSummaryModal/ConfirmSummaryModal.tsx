@@ -38,6 +38,30 @@ export function ConfirmSummaryModal(props: Props) {
       printTo={`/repairs/${props.repair.id}/print/summary`}
       messages={messages}
       onConfirm={(repairId) => repairsApi.confirmSummary(repairId)}
+      handover={{
+        label: t("repairs.workflow.modals.confirmSummary.handoverDate"),
+        requiredMessage: t(
+          "repairs.workflow.modals.confirmSummary.handoverDateRequired",
+        ),
+        failedMessage: t(
+          "repairs.workflow.modals.confirmSummary.handoverFailed",
+        ),
+        warrantyYearsLabel: t(
+          "repairs.workflow.modals.confirmSummary.warrantyYears",
+        ),
+        warrantyYearsRequiredMessage: t(
+          "repairs.workflow.modals.confirmSummary.warrantyYearsRequired",
+        ),
+        warrantyYearsInvalidMessage: t(
+          "repairs.workflow.modals.confirmSummary.warrantyYearsInvalid",
+        ),
+        record: (repairId, collectedAt, warrantyYears) =>
+          repairsApi.recordSummaryHandover(
+            repairId,
+            collectedAt,
+            warrantyYears,
+          ),
+      }}
     />
   );
 }

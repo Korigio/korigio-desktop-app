@@ -62,7 +62,7 @@ export function CompanyForm({
 
   return (
     <form
-      className="flex max-w-xl flex-col gap-4"
+      className="grid max-w-xl grid-cols-1 gap-4 sm:grid-cols-2"
       onSubmit={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -80,6 +80,7 @@ export function CompanyForm({
       >
         {(field) => (
           <FormField
+            className="sm:col-span-2"
             label={t("companies.fields.legalName")}
             htmlFor={field.name}
             error={
@@ -135,7 +136,11 @@ export function CompanyForm({
 
       <form.Field name="address">
         {(field) => (
-          <FormField label={t("companies.fields.address")} htmlFor={field.name}>
+          <FormField
+            className="sm:col-span-2"
+            label={t("companies.fields.address")}
+            htmlFor={field.name}
+          >
             <TextField
               id={field.name}
               name={field.name}
@@ -181,7 +186,11 @@ export function CompanyForm({
 
       <form.Field name="website">
         {(field) => (
-          <FormField label={t("companies.fields.website")} htmlFor={field.name}>
+          <FormField
+            className="sm:col-span-2"
+            label={t("companies.fields.website")}
+            htmlFor={field.name}
+          >
             <TextField
               id={field.name}
               name={field.name}
@@ -194,10 +203,12 @@ export function CompanyForm({
         )}
       </form.Field>
 
-      {children}
+      {children ? (
+        <div className="flex flex-col gap-4 sm:col-span-2">{children}</div>
+      ) : null}
 
       {!hideSubmit ? (
-        <div>
+        <div className="sm:col-span-2">
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting] as const}
           >

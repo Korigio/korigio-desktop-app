@@ -1,6 +1,5 @@
 import type { Repair } from "@/features/repairs/types/repair";
 import { protocolCardStatus } from "@/features/repairs/utils/repairWorkflow";
-import { WorkflowCardStatusBadge } from "@/features/repairs/components/WorkflowCardStatusBadge";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { Button, Card, DefinitionList } from "@/ui";
 
@@ -21,10 +20,7 @@ export function RepairProtocolCard({ repair, onWriteClick }: Props) {
   const hasWork = Boolean(repair.workPerformed?.trim());
 
   return (
-    <Card
-      title={t("repairs.workflow.cards.protocol.title")}
-      actions={<WorkflowCardStatusBadge status={cardStatus} />}
-    >
+    <Card title={t("repairs.workflow.cards.protocol.title")}>
       {hasWork ? (
         <DefinitionList
           items={[

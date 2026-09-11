@@ -1,11 +1,6 @@
 import type { RepairDiagnosisFlowState } from "@/features/repairs/hooks/useRepairDiagnosisFlow";
+import { RepairEstimateFields } from "@/features/repairs/components/RepairEstimateFields";
 import { isDiagnosisComplete } from "@/features/repairs/utils/repairDiagnosis";
-import {
-  formatMoneyCents,
-  formatTaxRateBps,
-  parseMajorToCents,
-  previewEstimate,
-} from "@/features/repairs/utils/money";
 import {
   Button,
   CheckboxField,
@@ -55,7 +50,13 @@ export function RepairDiagnosisFlowForm({ flow, variant = "page" }: Props) {
   const adjusting = isDiagnosisComplete(repair);
 
   return (
-    <div className={variant === "modal" ? "flex flex-col gap-6" : "flex max-w-xl flex-col gap-6"}>
+    <div
+      className={
+        variant === "modal"
+          ? "flex flex-col gap-6"
+          : "flex max-w-xl flex-col gap-6"
+      }
+    >
       {readOnly ? (
         <StatusMessage>
           {isArchived
@@ -88,7 +89,9 @@ export function RepairDiagnosisFlowForm({ flow, variant = "page" }: Props) {
           {t("repairs.diagnosisFlow.templateHeading")}
         </h2>
         {templates.length === 0 ? (
-          <StatusMessage>{t("repairs.diagnosisFlow.noTemplates")}</StatusMessage>
+          <StatusMessage>
+            {t("repairs.diagnosisFlow.noTemplates")}
+          </StatusMessage>
         ) : (
           <>
             <FormField
@@ -113,10 +116,7 @@ export function RepairDiagnosisFlowForm({ flow, variant = "page" }: Props) {
                 type="button"
                 variant="secondary"
                 disabled={
-                  readOnly ||
-                  saving ||
-                  loadingTemplate ||
-                  !selectedTemplateId
+                  readOnly || saving || loadingTemplate || !selectedTemplateId
                 }
                 onClick={() => void loadTemplateChecklist()}
               >
@@ -177,71 +177,17 @@ export function RepairDiagnosisFlowForm({ flow, variant = "page" }: Props) {
         <h2 className="text-sm font-medium">
           {t("repairs.diagnosisFlow.estimateHeading")}
         </h2>
-        <form.Field name="estimateMajor">
-          {(field) => (
-            <>
-              <FormField
-                label={t("repairs.diagnosisFlow.fields.estimateBase").replace(
-                  "{currency}",
-                  currency,
-                )}
-                htmlFor={field.name}
-              >
-                <TextField
-                  id={field.name}
-                  name={field.name}
-                  inputMode="decimal"
-                  value={field.state.value ?? ""}
-                  disabled={readOnly || saving}
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                />
-              </FormField>
-              <p className="text-sm text-muted">
-                {estimateLocked
-                  ? t("repairs.diagnosisFlow.estimateLockedHint")
-                  : t("repairs.diagnosisFlow.estimateHint")}
-              </p>
-            </>
-          )}
-        </form.Field>
-
-        <form.Subscribe selector={(state) => state.values.estimateMajor}>
-          {(estimateMajor) => {
-            const cents = parseMajorToCents(estimateMajor);
-            const preview =
-              cents !== null
-                ? previewEstimate(cents, shopSettings.taxRatePercent)
-                : null;
-            if (!preview) {
-              return estimateMajor.trim() ? (
-                <StatusMessage>
-                  {t("repairs.diagnosisFlow.estimatePreviewInvalid")}
-                </StatusMessage>
-              ) : null;
-            }
-            return (
-              <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-1 text-sm">
-                <dt className="text-muted">
-                  {t("repairs.diagnosisFlow.fields.taxRate")}
-                </dt>
-                <dd>
-                  {formatTaxRateBps(preview.taxRateBps)}%
-                </dd>
-                <dt className="text-muted">
-                  {t("repairs.diagnosisFlow.fields.tax")}
-                </dt>
-                <dd>{formatMoneyCents(preview.taxCents, currency)}</dd>
-                <dt className="text-muted">
-                  {t("repairs.diagnosisFlow.fields.gross")}
-                </dt>
-                <dd className="font-medium">
-                  {formatMoneyCents(preview.grossCents, currency)}
-                </dd>
-              </dl>
-            );
-          }}
-        </form.Subscribe>
+        <p className="text-sm text-muted">
+          {estimateLocked
+            ? t("repairs.diagnosisFlow.estimateLockedHint")
+            : t("repairs.diagnosisFlow.estimateHint")}
+        </p>
+        <RepairEstimateFields
+          form={form}
+          currency={currency}
+          taxRatePercent={shopSettings.taxRatePercent}
+          disabled={readOnly || saving}
+        />
       </section>
 
       <form.Field name="expectedPickupAt">

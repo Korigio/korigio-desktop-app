@@ -11,7 +11,11 @@ type Props = {
   onChange: (status: RepairStatus) => void;
 };
 
-export function RepairStatusSelect({ value, disabled = false, onChange }: Props) {
+export function RepairStatusSelect({
+  value,
+  disabled = false,
+  onChange,
+}: Props) {
   const { t } = useI18n();
 
   return (

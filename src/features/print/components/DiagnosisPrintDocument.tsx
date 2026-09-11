@@ -31,8 +31,14 @@ type Props = {
 export function DiagnosisPrintDocument({ report }: Props) {
   const { t, locale } = useI18n();
   const empty = t("print.emptyValue");
-  const { repair, customer, device, company, companyLogoAbsolutePath, currency } =
-    report;
+  const {
+    repair,
+    customer,
+    device,
+    company,
+    companyLogoAbsolutePath,
+    currency,
+  } = report;
   const fields = (key: string) => t(`print.diagnosis.fields.${key}`);
   const title = t("print.diagnosis.title");
   const appName = t("app.name");
@@ -80,7 +86,11 @@ export function DiagnosisPrintDocument({ report }: Props) {
         <PrintDocumentHeading
           title={title}
           dateLabel={t("print.meta.date")}
-          formattedDate={formatPrintDate(new Date().toISOString(), locale, empty)}
+          formattedDate={formatPrintDate(
+            new Date().toISOString(),
+            locale,
+            empty,
+          )}
           repairNumberLabel={fields("repairNumber")}
           repairNumber={repair.repairNumber}
         />

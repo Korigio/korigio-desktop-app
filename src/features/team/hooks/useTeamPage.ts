@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { staffApi } from "@/features/staff/api/staffApi";
-import { useSession } from "@/features/staff/hooks/useSession";
+import { useSession } from "@/features/staff/hooks/session-context";
 import type { StaffRole } from "@/features/staff/types/staff";
 import { teamApi } from "@/features/team/api/teamApi";
 import type {

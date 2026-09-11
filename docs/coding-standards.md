@@ -48,14 +48,14 @@ features/<domain>/
 
 ### Atomic Design
 
-| Level | Path | Domain? |
-| --- | --- | --- |
-| Atoms | `ui/atoms/` | No |
-| Molecules | `ui/molecules/` | No |
-| Organisms (generic) | `ui/organisms/` | No |
-| Organisms (domain) | `features/*/components/` | Yes |
-| Templates | `ui/templates/` | No |
-| Pages | `features/*/pages/` | Yes |
+| Level               | Path                     | Domain? |
+| ------------------- | ------------------------ | ------- |
+| Atoms               | `ui/atoms/`              | No      |
+| Molecules           | `ui/molecules/`          | No      |
+| Organisms (generic) | `ui/organisms/`          | No      |
+| Organisms (domain)  | `features/*/components/` | Yes     |
+| Templates           | `ui/templates/`          | No      |
+| Pages               | `features/*/pages/`      | Yes     |
 
 Dependency direction: `pages → templates → organisms → molecules → atoms` (never upward).  
 `ui` never imports `features`. Features never import `@radix-ui/*` (only `@/ui`).
@@ -64,10 +64,10 @@ Dependency direction: `pages → templates → organisms → molecules → atoms
 
 `features/*/pages` are composition layers. A page should read like a storyboard of **named** parts, not raw layout markup.
 
-| Extract to | When |
-| --- | --- |
+| Extract to                                  | When                                                                                           |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | `ui/atoms\|molecules\|organisms\|templates` | Generic chrome reused across domains (`Page`, `PageHeader`, `SearchField`, `PaginationBar`, …) |
-| `features/<domain>/components` | Domain meaning (`CustomerListFilters`, `CustomerDetailFields`) |
+| `features/<domain>/components`              | Domain meaning (`CustomerListFilters`, `CustomerDetailFields`)                                 |
 
 **Forbidden in pages:** copy-pasted title/subtitle blocks, search toolbars, pagination bars, definition lists, button-styled `<Link>` className strings, repeated loading/error paragraphs.
 
@@ -78,6 +78,15 @@ Dependency direction: `pages → templates → organisms → molecules → atoms
 - Components stay thin.
 - Hooks own state / effects / form instances / table instances.
 - Utils are pure (no React, no `invoke`).
+
+### Module cohesion and extraction
+
+- A page, hook, or service façade may coordinate a workflow and preserve its public contract; independently testable responsibilities belong in focused modules behind it.
+- Extract state/effects and lifecycle orchestration to focused hooks or services; pure validation, mapping, formatting, transitions, and derivation to `utils`; shared DTOs and contracts to `types`; reusable markup to named components.
+- Review the boundary before adding a third distinct concern, when a file approaches roughly **400 lines**, or when a change grows it by more than **100 lines**. These are advisory review triggers, not pass/fail limits: cohesion and dependency direction decide whether to extract.
+- Prefer a small number of substantial responsibility modules. Do not create one-helper-per-file trees or move code solely to reduce a line count.
+- Keep the existing façade/import path when consumers rely on it. Extractions must not silently change IPC payloads, hook return shapes, routes, persistence, errors, timing, or user-facing copy.
+- Move existing tests with the responsibility they cover. Add focused tests for newly exposed pure seams and run the façade's regression/integration tests to prove the public contract is unchanged.
 
 ### DRY and reuse (mandatory)
 
@@ -92,12 +101,12 @@ Do not leave duplicate `dash`-style helpers, print headers, or copy-pasted confi
 
 ### Mandatory libraries
 
-| Concern | Must use | Must not use instead |
-| --- | --- | --- |
-| Routing | React Router 7 Framework Mode (`src/routes.ts`) | `RouterProvider` / ad-hoc primary nav switches |
-| Forms | TanStack Form | React Hook Form, Formik, sprawling useState forms |
-| Tables | TanStack Table | Hand-rolled grids for data tables |
-| Styling | Tailwind v4 + tokens | MUI, Ant Design, Chakra as app kit |
+| Concern | Must use                                        | Must not use instead                              |
+| ------- | ----------------------------------------------- | ------------------------------------------------- |
+| Routing | React Router 7 Framework Mode (`src/routes.ts`) | `RouterProvider` / ad-hoc primary nav switches    |
+| Forms   | TanStack Form                                   | React Hook Form, Formik, sprawling useState forms |
+| Tables  | TanStack Table                                  | Hand-rolled grids for data tables                 |
+| Styling | Tailwind v4 + tokens                            | MUI, Ant Design, Chakra as app kit                |
 
 Client-side form checks are UX only; Rust always re-validates.
 
@@ -124,6 +133,7 @@ src-tauri/src/
 - Commands: deserialize → call service → map errors.
 - Services: business rules and transactions.
 - Repositories: parameterized SQL only.
+- Large services remain thin façades over cohesive internal modules (for example validation, persistence, scheduling, transport, or restore orchestration); internal modules stay private unless a public contract requires otherwise.
 - Domains call other domains via **services**, not foreign repositories.
 - No `unwrap()` / `expect()` on recoverable paths.
 - User-facing errors are safe; technical detail goes to logs (without PII).

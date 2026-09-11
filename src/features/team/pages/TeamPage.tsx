@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSession } from "@/features/staff/hooks/useSession";
+import { useSession } from "@/features/staff/hooks/session-context";
 import { CreateTeamDialog } from "@/features/team/components/CreateTeamDialog";
 import { JoinTeamDialog } from "@/features/team/components/JoinTeamDialog";
 import { TeamLeaveDialog } from "@/features/team/components/TeamLeaveDialog";
@@ -7,7 +7,10 @@ import { TeamMembersCard } from "@/features/team/components/TeamMembersCard";
 import { TeamPinCard } from "@/features/team/components/TeamPinCard";
 import { TeamSyncStatus } from "@/features/team/components/TeamSyncStatus";
 import { useTeamPage } from "@/features/team/hooks/useTeamPage";
-import type { CreateTeamResult, JoinTeamResult } from "@/features/team/types/team";
+import type {
+  CreateTeamResult,
+  JoinTeamResult,
+} from "@/features/team/types/team";
 import { Button, Card, Page, PageHeader, StatusMessage } from "@/ui";
 import { useI18n } from "@/shared/hooks/useI18n";
 
@@ -69,9 +72,7 @@ export function TeamPage() {
               </Button>
             }
           />
-          {error ? (
-            <StatusMessage tone="danger">{error}</StatusMessage>
-          ) : null}
+          {error ? <StatusMessage tone="danger">{error}</StatusMessage> : null}
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <TeamPinCard pin={pin} />
@@ -110,9 +111,7 @@ export function TeamPage() {
               </>
             }
           />
-          {error ? (
-            <StatusMessage tone="danger">{error}</StatusMessage>
-          ) : null}
+          {error ? <StatusMessage tone="danger">{error}</StatusMessage> : null}
         </>
       )}
 

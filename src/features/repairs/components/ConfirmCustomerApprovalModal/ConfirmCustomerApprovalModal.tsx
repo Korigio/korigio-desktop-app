@@ -20,7 +20,9 @@ export function ConfirmCustomerApprovalModal(props: Props) {
   const { t } = useI18n();
   const messages: ConfirmSignedDocumentMessages = {
     title: t("repairs.workflow.modals.confirmCustomerApproval.title"),
-    description: t("repairs.workflow.modals.confirmCustomerApproval.description"),
+    description: t(
+      "repairs.workflow.modals.confirmCustomerApproval.description",
+    ),
     hint: t("repairs.workflow.modals.confirmCustomerApproval.hint"),
     printButton: t(
       "repairs.workflow.modals.confirmCustomerApproval.printDiagnosis",
@@ -31,9 +33,7 @@ export function ConfirmCustomerApprovalModal(props: Props) {
     continueWithoutUpload: t(
       "repairs.workflow.modals.confirmCustomerApproval.continueWithoutUpload",
     ),
-    confirming: t(
-      "repairs.workflow.modals.confirmCustomerApproval.confirming",
-    ),
+    confirming: t("repairs.workflow.modals.confirmCustomerApproval.confirming"),
     confirmFailed: t(
       "repairs.workflow.modals.confirmCustomerApproval.confirmFailed",
     ),

@@ -17,8 +17,7 @@ function diagnosisDraftDirty(
   diagnosis: RepairDiagnosis | null,
 ): boolean {
   return (
-    JSON.stringify(draftItems) !==
-    JSON.stringify(diagnosis?.result.items ?? [])
+    JSON.stringify(draftItems) !== JSON.stringify(diagnosis?.result.items ?? [])
   );
 }
 
@@ -55,9 +54,7 @@ export function useRepairDiagnosis(repairId: string) {
         return templateList.items[0] ? String(templateList.items[0].id) : "";
       });
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load diagnosis",
-      );
+      setError(err instanceof Error ? err.message : "Failed to load diagnosis");
       setDiagnosis(null);
       setDraftItems([]);
       setTemplates([]);
@@ -130,23 +127,18 @@ export function useRepairDiagnosis(repairId: string) {
       setDraftItems(saved.result.items);
       setSuccess(t("diagnosis.applySuccess"));
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to apply template",
-      );
+      setError(err instanceof Error ? err.message : "Failed to apply template");
     } finally {
       setApplying(false);
     }
   }, [repairId, selectedTemplateId, t]);
 
-  const setItemValue = useCallback(
-    (index: number, value: boolean | string) => {
-      setSuccess(null);
-      setDraftItems((prev) =>
-        prev.map((item, i) => (i === index ? { ...item, value } : item)),
-      );
-    },
-    [],
-  );
+  const setItemValue = useCallback((index: number, value: boolean | string) => {
+    setSuccess(null);
+    setDraftItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, value } : item)),
+    );
+  }, []);
 
   const save = useCallback(async () => {
     if (draftItems.length === 0) {

@@ -9,22 +9,13 @@ import {
   I18nContext,
   type LocalePreference,
 } from "@/app/providers/i18n-context";
-import { settingsApi, type LocaleSettingsDto } from "@/features/settings/api/settingsApi";
+import {
+  resolveLocale,
+  resolveLocalePreference,
+  resolveSystemLocale,
+} from "@/app/providers/locale";
+import { settingsApi } from "@/features/settings/api/settingsApi";
 import { defaultLocale, translate, type Locale } from "@/i18n";
-
-function toLocale(value: string): Locale {
-  if (value === "en" || value === "de" || value === "es") {
-    return value;
-  }
-  return defaultLocale;
-}
-
-function toPreference(value: LocaleSettingsDto["preference"]): LocalePreference {
-  if (value === "en" || value === "es" || value === "de" || value === "system") {
-    return value;
-  }
-  return "system";
-}
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(defaultLocale);
@@ -39,8 +30,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         if (cancelled) {
           return;
         }
-        setLocale(toLocale(settings.resolvedLocale));
-        setPreferenceState(toPreference(settings.preference));
+        setLocale(resolveLocale(settings.resolvedLocale));
+        setPreferenceState(resolveLocalePreference(settings.preference));
         setSystemLocale(settings.systemLocale);
       })
       .catch(() => {
@@ -49,14 +40,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
           return;
         }
         const tag = navigator.language || defaultLocale;
-        const lower = tag.toLowerCase();
-        const resolved = lower.startsWith("de")
-          ? "de"
-          : lower.startsWith("en")
-            ? "en"
-            : lower.startsWith("es")
-              ? "es"
-              : defaultLocale;
+        const resolved = resolveSystemLocale(tag);
         setLocale(resolved);
         setPreferenceState("system");
         setSystemLocale(tag);
@@ -72,8 +56,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setPreference = useCallback(async (next: LocalePreference) => {
     const settings = await settingsApi.setLocalePreference(next);
-    setLocale(toLocale(settings.resolvedLocale));
-    setPreferenceState(toPreference(settings.preference));
+    setLocale(resolveLocale(settings.resolvedLocale));
+    setPreferenceState(resolveLocalePreference(settings.preference));
     setSystemLocale(settings.systemLocale);
   }, []);
 
@@ -84,7 +68,5 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale, preference, systemLocale, setPreference, t],
   );
 
-  return (
-    <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

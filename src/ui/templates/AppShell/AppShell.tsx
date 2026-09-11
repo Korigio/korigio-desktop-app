@@ -15,10 +15,8 @@ import {
 } from "lucide-react";
 import { NativeMenuBridge } from "@/app/NativeMenuBridge";
 import { AutoBackupOnStartup } from "@/features/settings/components/AutoBackupOnStartup";
-import {
-  AppUpdateProvider,
-  useAppUpdate,
-} from "@/features/settings/hooks/useAppUpdate";
+import { AppUpdateProvider } from "@/features/settings/hooks/useAppUpdate";
+import { useAppUpdate } from "@/features/settings/hooks/app-update-context";
 import { SessionProvider } from "@/features/staff/hooks/useSession";
 import { Button } from "@/ui/atoms/Button";
 import { LinkButton } from "@/ui/molecules/LinkButton";
@@ -97,6 +95,7 @@ function NavItem({
     <NavLink
       to={to}
       end={end}
+      prefetch="render"
       title={collapsed ? label : undefined}
       aria-label={collapsed ? label : undefined}
       className={({ isActive }) =>
@@ -163,12 +162,7 @@ function AppShellLayout() {
             collapsed ? "md:justify-center" : "justify-between",
           )}
         >
-          <p
-            className={cn(
-              "text-lg font-semibold",
-              collapsed && "md:hidden",
-            )}
-          >
+          <p className={cn("text-lg font-semibold", collapsed && "md:hidden")}>
             {t("app.name")}
           </p>
           <Button
@@ -228,6 +222,7 @@ function AppShellLayout() {
           <div className="flex flex-wrap items-center justify-end gap-2">
             <LinkButton
               to="/repairs/intake"
+              prefetch="render"
               className="px-3 py-1.5 text-xs sm:text-sm"
             >
               {t("repairs.intake.start")}

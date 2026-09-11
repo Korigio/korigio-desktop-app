@@ -51,7 +51,9 @@ export function TeamMemberTable({
       accessorKey: "online",
       header: t("team.members.status"),
       cell: ({ getValue }) =>
-        getValue<boolean>() ? t("team.status.online") : t("team.status.offline"),
+        getValue<boolean>()
+          ? t("team.status.online")
+          : t("team.status.offline"),
     },
     {
       accessorKey: "gigCount",
@@ -74,7 +76,10 @@ export function TeamMemberTable({
             <th key={header.id} className="px-2 py-1.5 font-medium">
               {header.isPlaceholder
                 ? null
-                : flexRender(header.column.columnDef.header, header.getContext())}
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
             </th>
           ))}
         </tr>

@@ -48,9 +48,7 @@ export function PrintCompanyHeader({
     ? convertFileSrc(companyLogoAbsolutePath)
     : null;
   const displayName = company ? companyDisplayName(company) : appNameFallback;
-  const showLegalName = Boolean(
-    company && company.legalName !== displayName,
-  );
+  const showLegalName = Boolean(company && company.legalName !== displayName);
 
   return (
     <header className="pt-4">
@@ -64,7 +62,9 @@ export function PrintCompanyHeader({
             />
           ) : null}
           <div className="min-w-0">
-            <p className="text-2xl font-semibold tracking-tight">{displayName}</p>
+            <p className="text-2xl font-semibold tracking-tight">
+              {displayName}
+            </p>
             {showLegalName && company ? (
               <p className="text-sm text-neutral-700">{company.legalName}</p>
             ) : null}

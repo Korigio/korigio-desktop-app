@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Windows-only NSIS production build.
- * Delegates to scripts/build-windows.ps1 (Tauri signs when a thumbprint is configured).
+ * Delegates to scripts/build-windows.ps1 (Tauri + post-sign when a thumbprint is configured).
  */
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";

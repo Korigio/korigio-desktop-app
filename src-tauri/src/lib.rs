@@ -99,6 +99,7 @@ pub fn run() {
             commands::confirm_repair_parts_received,
             commands::complete_repair_protocol,
             commands::confirm_repair_summary,
+            commands::record_repair_summary_handover,
             commands::complete_repair_pickup,
             commands::assign_repair,
             commands::take_over_repair,

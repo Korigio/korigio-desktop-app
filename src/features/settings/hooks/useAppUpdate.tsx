@@ -1,28 +1,20 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { updatesApi } from "@/features/settings/api/updatesApi";
+import {
+  AppUpdateContext,
+  type AppUpdateContextValue,
+} from "@/features/settings/hooks/app-update-context";
 import type { UpdateCheck } from "@/features/settings/types/updates";
 import { isCommandError } from "@/shared/api/invoke";
 import { useI18n } from "@/shared/hooks/useI18n";
 
-type AppUpdateContextValue = {
-  updateAvailable: boolean;
-  currentVersion: string | null;
-  latestVersion: string | null;
-  downloadUrl: string | null;
-  checking: boolean;
-  error: string | null;
-  checkAgain: () => Promise<void>;
-};
-
-const AppUpdateContext = createContext<AppUpdateContextValue | null>(null);
+export { useAppUpdate } from "@/features/settings/hooks/app-update-context";
 
 export function AppUpdateProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n();
@@ -130,12 +122,4 @@ export function AppUpdateProvider({ children }: { children: ReactNode }) {
       {children}
     </AppUpdateContext.Provider>
   );
-}
-
-export function useAppUpdate(): AppUpdateContextValue { // eslint-disable-line react-refresh/only-export-components
-  const context = useContext(AppUpdateContext);
-  if (!context) {
-    throw new Error("useAppUpdate must be used within AppUpdateProvider");
-  }
-  return context;
 }

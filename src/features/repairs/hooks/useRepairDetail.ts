@@ -10,33 +10,38 @@ export function useRepairDetail(repairId: string) {
   const repairIdRef = useRef(repairId);
   repairIdRef.current = repairId;
 
-  const load = useCallback(async (silent: boolean) => {
-    const id = repairId;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-    try {
-      const next = await repairsApi.get(id);
-      if (repairIdRef.current !== id) {
-        return;
-      }
-      setRepair(next);
-      setError(null);
-    } catch (err) {
-      if (repairIdRef.current !== id) {
-        return;
-      }
+  const load = useCallback(
+    async (silent: boolean) => {
+      const id = repairId;
       if (!silent) {
-        setRepair(null);
-        setError(err instanceof Error ? err.message : "Failed to load repair");
+        setLoading(true);
+        setError(null);
       }
-    } finally {
-      if (repairIdRef.current === id && !silent) {
-        setLoading(false);
+      try {
+        const next = await repairsApi.get(id);
+        if (repairIdRef.current !== id) {
+          return;
+        }
+        setRepair(next);
+        setError(null);
+      } catch (err) {
+        if (repairIdRef.current !== id) {
+          return;
+        }
+        if (!silent) {
+          setRepair(null);
+          setError(
+            err instanceof Error ? err.message : "Failed to load repair",
+          );
+        }
+      } finally {
+        if (repairIdRef.current === id && !silent) {
+          setLoading(false);
+        }
       }
-    }
-  }, [repairId]);
+    },
+    [repairId],
+  );
 
   useEffect(() => {
     void load(false);

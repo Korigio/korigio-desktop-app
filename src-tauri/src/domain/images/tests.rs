@@ -83,6 +83,8 @@ fn seed_repair(db: &Db) -> String {
             work_performed: None,
             notes: None,
             expected_pickup_at: None,
+            estimate_base_cents: None,
+            estimate_discount_bps: None,
         },
     )
     .expect("repair")

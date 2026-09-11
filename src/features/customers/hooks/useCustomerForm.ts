@@ -2,7 +2,10 @@ import { useForm } from "@tanstack/react-form";
 import { useRef } from "react";
 import { useNavigate } from "react-router";
 import { customersApi } from "@/features/customers/api/customersApi";
-import type { Customer, CustomerInput } from "@/features/customers/types/customer";
+import type {
+  Customer,
+  CustomerInput,
+} from "@/features/customers/types/customer";
 
 type Options = {
   customer?: Customer;

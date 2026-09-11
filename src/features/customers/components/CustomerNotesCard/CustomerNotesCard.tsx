@@ -15,7 +15,10 @@ export function CustomerNotesCard({ customer }: Props) {
     <Card title={t("customers.detail.sections.notes")}>
       <DefinitionList
         items={[
-          { label: t("customers.fields.notes"), value: customer.notes ?? EMPTY },
+          {
+            label: t("customers.fields.notes"),
+            value: customer.notes ?? EMPTY,
+          },
         ]}
       />
     </Card>

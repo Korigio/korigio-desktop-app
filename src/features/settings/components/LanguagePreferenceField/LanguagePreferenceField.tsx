@@ -10,7 +10,10 @@ export function LanguagePreferenceField() {
 
   return (
     <div className="flex flex-col gap-2">
-      <FormField label={t("settings.language.label")} htmlFor="settings-language">
+      <FormField
+        label={t("settings.language.label")}
+        htmlFor="settings-language"
+      >
         <SelectField
           id="settings-language"
           value={preference}

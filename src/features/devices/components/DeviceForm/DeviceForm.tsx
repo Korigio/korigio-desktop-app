@@ -129,53 +129,58 @@ export function DeviceForm({
         <StatusMessage tone="danger">{customersError}</StatusMessage>
       ) : null}
 
-      <form.Field name="deviceType">
-        {(field) => (
-          <FormField label={t("devices.fields.deviceType")} htmlFor={field.name}>
-            <TextField
-              id={field.name}
-              name={field.name}
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <form.Field name="deviceType">
+          {(field) => (
+            <FormField
+              label={t("devices.fields.deviceType")}
+              htmlFor={field.name}
+            >
+              <TextField
+                id={field.name}
+                name={field.name}
+                value={field.state.value ?? ""}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
 
-      <form.Field name="manufacturer">
-        {(field) => (
-          <FormField
-            label={t("devices.fields.manufacturer")}
-            htmlFor={field.name}
-          >
-            <TextField
-              id={field.name}
-              name={field.name}
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+        <form.Field name="manufacturer">
+          {(field) => (
+            <FormField
+              label={t("devices.fields.manufacturer")}
+              htmlFor={field.name}
+            >
+              <TextField
+                id={field.name}
+                name={field.name}
+                value={field.state.value ?? ""}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
 
-      <form.Field name="model">
-        {(field) => (
-          <FormField label={t("devices.fields.model")} htmlFor={field.name}>
-            <TextField
-              id={field.name}
-              name={field.name}
-              value={field.state.value ?? ""}
-              disabled={disabled}
-              onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(event.target.value)}
-            />
-          </FormField>
-        )}
-      </form.Field>
+        <form.Field name="model">
+          {(field) => (
+            <FormField label={t("devices.fields.model")} htmlFor={field.name}>
+              <TextField
+                id={field.name}
+                name={field.name}
+                value={field.state.value ?? ""}
+                disabled={disabled}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </FormField>
+          )}
+        </form.Field>
+      </div>
 
       <form.Field name="serialNumber">
         {(field) => (
@@ -228,7 +233,9 @@ export function DeviceForm({
         )}
       </form.Field>
 
-      <p className="text-sm text-muted">{t("devices.validation.identityHint")}</p>
+      <p className="text-sm text-muted">
+        {t("devices.validation.identityHint")}
+      </p>
 
       {!hideSubmit ? (
         <div>

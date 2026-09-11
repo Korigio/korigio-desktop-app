@@ -91,21 +91,36 @@ function errorMessage(error: unknown): string | null {
   return null;
 }
 
+function isTauriRuntimeAvailable(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return Boolean(
+    (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__,
+  );
+}
+
 export async function invoke<T>(
   command: string,
   args?: Record<string, unknown>,
 ): Promise<T> {
+  if (!isTauriRuntimeAvailable()) {
+    throw new Error(
+      "Tauri IPC is unavailable. Run the app with `npm run tauri dev` (desktop window), not a browser tab on localhost.",
+    );
+  }
   try {
     return await tauriInvoke<T>(command, args);
   } catch (error) {
-    const commandError = parseCommandError(error);
-    if (commandError) {
-      if (commandError.code === "unauthorized") {
-        notifyUnauthorized();
-      }
-      throw commandError;
-    }
-    const message = errorMessage(error);
-    throw new Error(message ?? `Command failed: ${command}`);
+    throw mapInvokeError(error, command);
   }
+}
+
+export function mapInvokeError(error: unknown, command: string): Error {
+  const commandError = parseCommandError(error);
+  if (commandError) {
+    if (commandError.code === "unauthorized") notifyUnauthorized();
+    return commandError;
+  }
+  return new Error(errorMessage(error) ?? `Command failed: ${command}`);
 }

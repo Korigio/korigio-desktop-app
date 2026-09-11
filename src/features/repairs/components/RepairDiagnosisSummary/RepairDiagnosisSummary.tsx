@@ -108,7 +108,9 @@ export function RepairDiagnosisSummary({ repair, onOpenDiagnosis }: Props) {
       ) : null}
 
       {!hasContent ? (
-        <StatusMessage>{t("repairs.diagnosisFlow.summary.empty")}</StatusMessage>
+        <StatusMessage>
+          {t("repairs.diagnosisFlow.summary.empty")}
+        </StatusMessage>
       ) : (
         <DefinitionList
           items={[

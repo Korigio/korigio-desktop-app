@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { repairsApi } from "@/features/repairs/api/repairsApi";
 import type { Repair } from "@/features/repairs/types/repair";
+import { collectedAtOrToday } from "@/features/repairs/utils/isoDate";
 import { useModalAsyncAction } from "@/shared/hooks/useModalAsyncAction";
 import { useI18n } from "@/shared/hooks/useI18n";
-import { Button, Dialog, FormField, StatusMessage, TextField } from "@/ui";
+import { Button, Dialog, StatusMessage } from "@/ui";
 
 type Props = {
   repair: Repair;
@@ -12,10 +12,6 @@ type Props = {
   onSuccess: (repair: Repair) => void;
 };
 
-function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export function RecordPickupModal({
   repair,
   open: isOpen,
@@ -23,14 +19,10 @@ export function RecordPickupModal({
   onSuccess,
 }: Props) {
   const { t } = useI18n();
-  const [collectedAt, setCollectedAt] = useState(todayIsoDate);
-  const { busy, error, setError, run } = useModalAsyncAction(isOpen);
+  const { busy, error, run } = useModalAsyncAction(isOpen);
 
   async function handleConfirm() {
-    if (!collectedAt.trim()) {
-      setError(t("repairs.workflow.modals.recordPickup.dateRequired"));
-      return;
-    }
+    const collectedAt = collectedAtOrToday(repair.collectedAt);
     const updated = await run(
       () => repairsApi.completePickup(repair.id, collectedAt),
       t("repairs.workflow.modals.recordPickup.recordFailed"),
@@ -51,21 +43,12 @@ export function RecordPickupModal({
     >
       <div className="flex flex-col gap-4">
         {error ? <StatusMessage tone="danger">{error}</StatusMessage> : null}
-        <FormField
-          label={t("repairs.workflow.modals.recordPickup.pickupDate")}
-          htmlFor="pickup-date"
-        >
-          <TextField
-            id="pickup-date"
-            name="collectedAt"
-            type="date"
-            value={collectedAt}
-            disabled={busy}
-            onChange={(event) => setCollectedAt(event.target.value)}
-          />
-        </FormField>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={busy} onClick={() => void handleConfirm()}>
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void handleConfirm()}
+          >
             {busy
               ? t("common.saving")
               : t("repairs.workflow.modals.recordPickup.confirmButton")}

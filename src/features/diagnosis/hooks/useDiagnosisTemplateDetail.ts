@@ -10,37 +10,40 @@ export function useDiagnosisTemplateDetail(id: string) {
   const idRef = useRef(id);
   idRef.current = id;
 
-  const load = useCallback(async (silent: boolean) => {
-    const requestedId = id;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-    }
-    try {
-      const data = await diagnosisTemplatesApi.get(requestedId);
-      if (idRef.current !== requestedId) {
-        return;
-      }
-      setTemplate(data);
-      setError(null);
-    } catch (err) {
-      if (idRef.current !== requestedId) {
-        return;
-      }
+  const load = useCallback(
+    async (silent: boolean) => {
+      const requestedId = id;
       if (!silent) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load diagnosis template",
-        );
-        setTemplate(null);
+        setLoading(true);
+        setError(null);
       }
-    } finally {
-      if (idRef.current === requestedId && !silent) {
-        setLoading(false);
+      try {
+        const data = await diagnosisTemplatesApi.get(requestedId);
+        if (idRef.current !== requestedId) {
+          return;
+        }
+        setTemplate(data);
+        setError(null);
+      } catch (err) {
+        if (idRef.current !== requestedId) {
+          return;
+        }
+        if (!silent) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load diagnosis template",
+          );
+          setTemplate(null);
+        }
+      } finally {
+        if (idRef.current === requestedId && !silent) {
+          setLoading(false);
+        }
       }
-    }
-  }, [id]);
+    },
+    [id],
+  );
 
   useEffect(() => {
     void load(false);

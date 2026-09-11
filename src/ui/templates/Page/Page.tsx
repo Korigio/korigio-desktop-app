@@ -9,7 +9,12 @@ export type PageProps = {
 /** Standard feature page shell — padding + vertical rhythm. */
 export function Page({ children, className }: PageProps) {
   return (
-    <main className={cn("flex min-w-0 flex-col gap-4 p-4 sm:gap-6 sm:p-6", className)}>
+    <main
+      className={cn(
+        "flex min-w-0 flex-col gap-4 p-4 sm:gap-6 sm:p-6",
+        className,
+      )}
+    >
       {children}
     </main>
   );

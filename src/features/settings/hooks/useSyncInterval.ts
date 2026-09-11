@@ -60,9 +60,7 @@ export function useSyncInterval() {
       setValue(String(next.intervalSeconds));
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : t("settings.syncInterval.error"),
+        err instanceof Error ? err.message : t("settings.syncInterval.error"),
       );
     } finally {
       setSaving(false);

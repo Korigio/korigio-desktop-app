@@ -1,79 +1,45 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { useFlowWizard } from "@/shared/hooks/useFlowWizard";
-import { companiesApi } from "@/features/companies/api/companiesApi";
-import {
-  companyLabel,
-  type Company,
-} from "@/features/companies/types/company";
-import { customersApi } from "@/features/customers/api/customersApi";
-import {
-  customerLabel,
-  useCustomerSearchCombobox,
-} from "@/features/customers/hooks/useCustomerSearchCombobox";
+import { useCustomerSearchCombobox } from "@/features/customers/hooks/useCustomerSearchCombobox";
 import { useCustomerForm } from "@/features/customers/hooks/useCustomerForm";
 import type { Customer } from "@/features/customers/types/customer";
-import { devicesApi } from "@/features/devices/api/devicesApi";
 import { useDeviceSearchCombobox } from "@/features/devices/hooks/useDeviceSearchCombobox";
 import { useDeviceForm } from "@/features/devices/hooks/useDeviceForm";
-import {
-  deviceLabel,
-  type Device,
-} from "@/features/devices/types/device";
+import type { Device } from "@/features/devices/types/device";
 import { useRepairForm } from "@/features/repairs/hooks/useRepairForm";
+import { useRepairIntakeCompanies } from "@/features/repairs/hooks/useRepairIntakeCompanies";
+import { useRepairIntakeEntityActions } from "@/features/repairs/hooks/useRepairIntakeEntityActions";
+import { useRepairIntakePresets } from "@/features/repairs/hooks/useRepairIntakePresets";
 import type { Repair } from "@/features/repairs/types/repair";
+import {
+  BASE_INTAKE_STEPS,
+  type IntakeGate,
+  type IntakeStep,
+  type RepairIntakePresets,
+} from "@/features/repairs/types/repairIntake";
+import {
+  buildIntakeSteps,
+  buildRepairIntakeReviewItems,
+  resolveIntakeEstimateFields,
+  stepAfterKnownEntities,
+} from "@/features/repairs/utils/repairIntake";
+import { settingsApi } from "@/features/settings/api/settingsApi";
+import type { ShopSettings } from "@/features/settings/types/shopSettings";
 
-const BASE_INTAKE_STEPS = [
-  "customer",
-  "device",
-  "details",
-  "review",
-  "done",
-] as const;
-
-export type IntakeStep =
-  | "company"
-  | (typeof BASE_INTAKE_STEPS)[number];
-
-export function buildIntakeSteps(includeCompany: boolean): readonly IntakeStep[] {
-  return includeCompany
-    ? (["company", ...BASE_INTAKE_STEPS] as const)
-    : BASE_INTAKE_STEPS;
-}
+export type {
+  IntakeGate,
+  IntakeStep,
+  RepairIntakePresets,
+} from "@/features/repairs/types/repairIntake";
+export { buildIntakeSteps } from "@/features/repairs/utils/repairIntake";
 
 /** @deprecated Prefer `buildIntakeSteps` / `intake.steps` for dynamic company step. */
 export const INTAKE_STEPS = BASE_INTAKE_STEPS;
 
-export type IntakeGate = "loading" | "no-company" | "ready";
-
-export type RepairIntakePresets = {
-  presetCustomerId?: string;
-  presetDeviceId?: string;
-};
-
-function stepAfterKnownEntities(
-  customer: Customer | null,
-  device: Device | null,
-): Extract<IntakeStep, "customer" | "device" | "details"> {
-  if (customer && device) {
-    return "details";
-  }
-  if (customer) {
-    return "device";
-  }
-  return "customer";
-}
-
 export function useRepairIntake(presets: RepairIntakePresets = {}) {
   const { t } = useI18n();
   const { presetCustomerId, presetDeviceId } = presets;
-
-  const [gate, setGate] = useState<IntakeGate>("loading");
-  const [presetsReady, setPresetsReady] = useState(() => !presetCustomerId);
-  const appliedPresetsRef = useRef(false);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [company, setCompany] = useState<Company | null>(null);
-  const [companiesError, setCompaniesError] = useState<string | null>(null);
 
   const [customerCreateOpen, setCustomerCreateOpen] = useState(false);
   const [deviceCreateOpen, setDeviceCreateOpen] = useState(false);
@@ -87,8 +53,33 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdRepair, setCreatedRepair] = useState<Repair | null>(null);
+  const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null);
 
   const createButtonRef = useRef<HTMLButtonElement>(null);
+  const clearError = useCallback(() => setError(null), []);
+  const {
+    gate,
+    companies,
+    companiesError,
+    company,
+    selectCompany,
+    resetCompany,
+  } = useRepairIntakeCompanies(clearError);
+
+  useEffect(() => {
+    let cancelled = false;
+    void settingsApi
+      .getShopSettings()
+      .then((settings) => {
+        if (!cancelled) setShopSettings(settings);
+      })
+      .catch(() => {
+        /* review/preview can proceed without tax formatting */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const includeCompanyStep = companies.length > 1;
   const steps = useMemo(
@@ -106,12 +97,9 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
   const customerSearchReset = customerSearch.reset;
   const deviceSearchReset = deviceSearch.reset;
 
-  const isNewCustomer =
-    customer !== null && createdCustomerId === customer.id;
+  const isNewCustomer = customer !== null && createdCustomerId === customer.id;
   const isNewCustomerRef = useRef(isNewCustomer);
   isNewCustomerRef.current = isNewCustomer;
-
-  const clearError = useCallback(() => setError(null), []);
 
   const wizard = useFlowWizard<IntakeStep>({
     steps,
@@ -137,15 +125,6 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
   });
 
   const { goTo, next, back, reset: resetWizardSteps, stepId } = wizard;
-
-  const goToRef = useRef(goTo);
-  goToRef.current = goTo;
-  const includeCompanyStepRef = useRef(includeCompanyStep);
-  includeCompanyStepRef.current = includeCompanyStep;
-  const customerSearchSelectRef = useRef(customerSearch.select);
-  customerSearchSelectRef.current = customerSearch.select;
-  const deviceSearchSelectRef = useRef(deviceSearch.select);
-  deviceSearchSelectRef.current = deviceSearch.select;
 
   const customerForm = useCustomerForm({
     mode: "create",
@@ -190,50 +169,6 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
   const repairFormReset = repairForm.reset;
 
   useEffect(() => {
-    let cancelled = false;
-    setGate("loading");
-    setCompaniesError(null);
-
-    void companiesApi
-      .list({ includeArchived: false, page: 1, pageSize: 100 })
-      .then((result) => {
-        if (cancelled) {
-          return;
-        }
-        const items = result.items;
-        setCompanies(items);
-        if (items.length === 0) {
-          setCompany(null);
-          setGate("no-company");
-          return;
-        }
-        if (items.length === 1) {
-          setCompany(items[0] ?? null);
-        } else {
-          const preferred =
-            items.find((item) => item.isDefault) ?? items[0] ?? null;
-          setCompany(preferred);
-        }
-        setGate("ready");
-      })
-      .catch((err: unknown) => {
-        if (cancelled) {
-          return;
-        }
-        setCompanies([]);
-        setCompany(null);
-        setCompaniesError(
-          err instanceof Error ? err.message : "Failed to load companies",
-        );
-        setGate("no-company");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
     if (!company?.id) {
       return;
     }
@@ -255,73 +190,20 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     repairForm.setFieldValue("deviceId", String(device.id));
   }, [device?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- sync ids only
 
-  const selectCompany = useCallback((next: Company) => {
-    setCompany(next);
-    clearError();
-  }, [clearError]);
-
-  const applyPresetsAndSkip = useCallback(async () => {
-    let appliedCustomer: Customer | null = null;
-    let appliedDevice: Device | null = null;
-
-    if (presetCustomerId) {
-      try {
-        const fetched = await customersApi.get(presetCustomerId);
-        appliedCustomer = fetched;
-        setCustomer(fetched);
-        setCreatedCustomerId(null);
-        customerSearchSelectRef.current(fetched);
-      } catch {
-        appliedCustomer = null;
-      }
-
-      if (appliedCustomer && presetDeviceId) {
-        try {
-          const fetched = await devicesApi.get(presetDeviceId);
-          if (fetched.customerId === appliedCustomer.id) {
-            appliedDevice = fetched;
-            setDevice(fetched);
-            deviceSearchSelectRef.current(fetched);
-          }
-        } catch {
-          // Ignore invalid / mismatched device presets.
-        }
-      }
-    }
-
-    if (includeCompanyStepRef.current) {
-      goToRef.current("company");
-    } else {
-      goToRef.current(stepAfterKnownEntities(appliedCustomer, appliedDevice));
-    }
-  }, [presetCustomerId, presetDeviceId]);
-
-  useEffect(() => {
-    if (gate !== "ready" || appliedPresetsRef.current) {
-      return;
-    }
-    if (!presetCustomerId) {
-      appliedPresetsRef.current = true;
-      setPresetsReady(true);
-      return;
-    }
-
-    appliedPresetsRef.current = true;
-    let cancelled = false;
-    void applyPresetsAndSkip().finally(() => {
-      if (!cancelled) {
-        setPresetsReady(true);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [applyPresetsAndSkip, gate, presetCustomerId]);
+  const { presetsReady, reapplyPresets } = useRepairIntakePresets({
+    presetCustomerId,
+    presetDeviceId,
+    gate,
+    includeCompanyStep,
+    goTo,
+    selectCustomer: customerSearch.select,
+    selectDevice: deviceSearch.select,
+    setCustomer,
+    setCreatedCustomerId,
+    setDevice,
+  });
 
   const resetWizard = useCallback(() => {
-    if (presetCustomerId) {
-      setPresetsReady(false);
-    }
     setCustomerCreateOpen(false);
     setDeviceCreateOpen(false);
     setCustomer(null);
@@ -335,29 +217,17 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     customerFormReset();
     deviceFormReset();
     repairFormReset();
-    if (companies.length === 1) {
-      setCompany(companies[0] ?? null);
-    } else if (companies.length > 1) {
-      const preferred =
-        companies.find((item) => item.isDefault) ?? companies[0] ?? null;
-      setCompany(preferred);
-    }
+    resetCompany();
     resetWizardSteps();
-    if (!presetCustomerId) {
-      return;
-    }
-    void applyPresetsAndSkip().finally(() => {
-      setPresetsReady(true);
-    });
+    reapplyPresets();
   }, [
-    applyPresetsAndSkip,
-    companies,
     customerFormReset,
     customerSearchReset,
     deviceFormReset,
     deviceSearchReset,
-    presetCustomerId,
+    reapplyPresets,
     repairFormReset,
+    resetCompany,
     resetWizardSteps,
   ]);
 
@@ -392,33 +262,33 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     stepId,
   ]);
 
-  const openCustomerCreate = useCallback(() => {
-    clearError();
-    customerFormReset();
-    customerForm.setFieldValue("name", customerSearch.query.trim());
-    setCustomerCreateOpen(true);
-  }, [clearError, customerForm, customerFormReset, customerSearch.query]);
+  const {
+    openCustomerCreate,
+    openDeviceCreate,
+    continueFromCustomer,
+    continueFromDevice,
+  } = useRepairIntakeEntityActions({
+    t,
+    customer,
+    isNewCustomer,
+    customerSearch,
+    deviceSearch,
+    customerForm,
+    deviceForm,
+    clearError,
+    goTo,
+    setCustomer,
+    setCreatedCustomerId,
+    setDevice,
+    setCustomerCreateOpen,
+    setDeviceCreateOpen,
+    setSubmitting,
+    setError,
+  });
 
   const onCustomerCreateOpenChange = useCallback((open: boolean) => {
     setCustomerCreateOpen(open);
   }, []);
-
-  const openDeviceCreate = useCallback(() => {
-    if (!customer) {
-      return;
-    }
-    clearError();
-    deviceFormReset();
-    deviceForm.setFieldValue("customerId", String(customer.id));
-    deviceForm.setFieldValue("serialNumber", deviceSearch.query.trim());
-    setDeviceCreateOpen(true);
-  }, [
-    clearError,
-    customer,
-    deviceForm,
-    deviceFormReset,
-    deviceSearch.query,
-  ]);
 
   const onDeviceCreateOpenChange = useCallback((open: boolean) => {
     setDeviceCreateOpen(open);
@@ -434,78 +304,32 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     goTo(stepAfterKnownEntities(customer, device));
   }, [clearError, company, customer, device, goTo, repairForm, t]);
 
-  const continueFromCustomer = useCallback(async () => {
-    clearError();
-
-    const selected = customerSearch.selected;
-    if (!selected) {
-      setError(t("repairs.validation.customerRequired"));
-      customerSearchFocus();
-      return;
-    }
-    setCustomer(selected);
-    setCreatedCustomerId(null);
-    setDevice(null);
-    deviceSearchReset();
-    deviceFormReset();
-    setDeviceCreateOpen(false);
-    goTo("device");
-  }, [
-    clearError,
-    customerSearch.selected,
-    customerSearchFocus,
-    deviceFormReset,
-    deviceSearchReset,
-    goTo,
-    t,
-  ]);
-
-  const continueFromDevice = useCallback(async () => {
-    clearError();
-
-    if (!customer) {
-      setError(t("repairs.validation.customerRequired"));
-      goTo("customer");
-      return;
-    }
-
-    if (isNewCustomer) {
-      deviceForm.setFieldValue("customerId", String(customer.id));
-      setSubmitting(true);
-      try {
-        await deviceForm.handleSubmit();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to create device");
-      } finally {
-        setSubmitting(false);
+  const mapEstimateError = useCallback(
+    (reason: "discountNeedsPrice" | "invalidPrice" | "invalidDiscount") => {
+      if (reason === "discountNeedsPrice") {
+        return t("repairs.intake.estimate.validation.discountNeedsPrice");
       }
-      return;
-    }
-
-    const selected = deviceSearch.selected;
-    if (!selected) {
-      setError(t("repairs.validation.deviceRequired"));
-      deviceSearchFocus();
-      return;
-    }
-    setDevice(selected);
-    goTo("details");
-  }, [
-    clearError,
-    customer,
-    deviceForm,
-    deviceSearch.selected,
-    deviceSearchFocus,
-    goTo,
-    isNewCustomer,
-    t,
-  ]);
+      if (reason === "invalidDiscount") {
+        return t("repairs.diagnosisFlow.estimatePreviewInvalid");
+      }
+      return t("repairs.diagnosisFlow.errors.estimateInvalid");
+    },
+    [t],
+  );
 
   const continueFromDetails = useCallback(() => {
     clearError();
     const values = repairForm.state.values;
     if (!values.reportedProblem.trim()) {
       setError(t("repairs.intake.problemRequired"));
+      return;
+    }
+    const estimate = resolveIntakeEstimateFields(
+      values.estimateMajor,
+      values.estimateDiscountPercent,
+    );
+    if (!estimate.ok) {
+      setError(mapEstimateError(estimate.reason));
       return;
     }
     if (company?.id) {
@@ -519,7 +343,16 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     }
     repairForm.setFieldValue("status", "received");
     next();
-  }, [clearError, company?.id, customer?.id, device?.id, next, repairForm, t]);
+  }, [
+    clearError,
+    company?.id,
+    customer?.id,
+    device?.id,
+    mapEstimateError,
+    next,
+    repairForm,
+    t,
+  ]);
 
   const createRepair = useCallback(async () => {
     clearError();
@@ -537,6 +370,16 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     if (!device) {
       setError(t("repairs.validation.deviceRequired"));
       goTo("device");
+      return;
+    }
+
+    const estimate = resolveIntakeEstimateFields(
+      repairForm.state.values.estimateMajor,
+      repairForm.state.values.estimateDiscountPercent,
+    );
+    if (!estimate.ok) {
+      setError(mapEstimateError(estimate.reason));
+      goTo("details");
       return;
     }
 
@@ -561,6 +404,7 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     firstStep,
     goTo,
     includeCompanyStep,
+    mapEstimateError,
     repairForm,
     t,
   ]);
@@ -596,40 +440,14 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
 
   const details = repairForm.state.values;
 
-  const reviewItems = [
-    {
-      label: t("repairs.fields.company"),
-      value: company ? companyLabel(company) : "—",
-    },
-    {
-      label: t("repairs.fields.customer"),
-      value: customer ? customerLabel(customer) : "—",
-    },
-    {
-      label: t("repairs.fields.device"),
-      value: device ? deviceLabel(device) : "—",
-    },
-    {
-      label: t("repairs.fields.reportedProblem"),
-      value: details.reportedProblem.trim() || "—",
-    },
-    {
-      label: t("repairs.fields.accessoriesReceived"),
-      value: details.accessoriesReceived.trim() || "—",
-    },
-    {
-      label: t("repairs.fields.deviceCondition"),
-      value: details.deviceCondition.trim() || "—",
-    },
-    {
-      label: t("repairs.fields.expectedPickupAt"),
-      value: details.expectedPickupAt.trim() || "—",
-    },
-    {
-      label: t("repairs.fields.notes"),
-      value: details.notes.trim() || "—",
-    },
-  ];
+  const reviewItems = buildRepairIntakeReviewItems(
+    t,
+    company,
+    customer,
+    device,
+    details,
+    shopSettings,
+  );
 
   const formGate: IntakeGate =
     gate === "ready" && !presetsReady ? "loading" : gate;
@@ -653,6 +471,7 @@ export function useRepairIntake(presets: RepairIntakePresets = {}) {
     customerForm,
     deviceForm,
     repairForm,
+    shopSettings,
     createButtonRef,
     submitting,
     error,

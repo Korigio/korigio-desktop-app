@@ -27,26 +27,27 @@ Offline Windows desktop repair-shop app (Tauri 2 + React/TS + Rust + SQLite). Pr
 9. Performance over visual effects; Windows 10/11 x64 + 4 GB RAM target.
 10. Never commit secrets; never log customer PII.
 11. **Always** split non-trivial work across `/phase-orchestrator` → `/backend` → `/frontend` → `/i18n` → `/verifier`. The main chat must not implement full-stack in one pass (exception: tiny typo/docs or explicit user override).
+12. Preserve cohesive module boundaries. A façade may orchestrate focused hooks/services, but stateful workflow, pure logic, shared types, and reusable UI must not accumulate in one mixed-responsibility file. Review a file when it approaches ~400 LOC, grows by >100 LOC in one change, or gains a third distinct concern; these are review triggers, not hard limits. Extract by responsibility, never one helper per file, and move/add focused tests that preserve the public contract.
 
 ## Specialized agents (mandatory split)
 
 **Always** split feature / phase work across project subagents under `.cursor/agents/`.  
 The main chat **must not** implement backend + frontend + i18n in one pass.
 
-| Invoke | Owns |
-| --- | --- |
+| Invoke                | Owns                                                                        |
+| --------------------- | --------------------------------------------------------------------------- |
 | `/phase-orchestrator` | Phase/side-quest plan, IPC contract, task split, 12-point report (readonly) |
-| `/backend` | `src-tauri/**` only |
-| `/frontend` | `src/**` UI only (no Rust) |
-| `/i18n` | Locale catalogs `en` / `es` / `de` |
-| `/verifier` | Run checks; report pass/fail (readonly) |
+| `/backend`            | `src-tauri/**` only                                                         |
+| `/frontend`           | `src/**` UI only (no Rust)                                                  |
+| `/i18n`               | Locale catalogs `en` / `es` / `de`                                          |
+| `/verifier`           | Run checks; report pass/fail (readonly)                                     |
 
 **Required order for every non-trivial change:**
 
-1. `/phase-orchestrator` — lock scope + IPC contract + who does what  
-2. `/backend` — Rust commands, domain, tests  
-3. `/frontend` — pages/components/hooks against that contract  
-4. `/i18n` — all new user-facing strings in `en`/`es`/`de`  
+1. `/phase-orchestrator` — lock scope + IPC contract + who does what
+2. `/backend` — Rust commands, domain, tests
+3. `/frontend` — pages/components/hooks against that contract
+4. `/i18n` — all new user-facing strings in `en`/`es`/`de`
 5. `/verifier` — typecheck / lint / `cargo test` (and build if UI changed)
 
 Exceptions (main chat may do alone): tiny typo fixes, pure docs, or an explicit user “do it in this chat” override.

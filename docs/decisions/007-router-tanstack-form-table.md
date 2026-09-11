@@ -10,12 +10,12 @@ Routing, forms, and tables must follow one standard so AI and humans do not inve
 
 ## Decision
 
-| Concern | Standard |
-| --- | --- |
-| Routing | **React Router 7 Framework Mode** — `src/routes.ts` with `RouteConfig` from `@react-router/dev/routes` |
+| Concern     | Standard                                                                                                        |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| Routing     | **React Router 7 Framework Mode** — `src/routes.ts` with `RouteConfig` from `@react-router/dev/routes`          |
 | SPA (Tauri) | `react-router.config.ts` with `ssr: false` and `routeDiscovery: { mode: "initial" }` (no runtime `/__manifest`) |
-| Forms | `@tanstack/react-form` for all create/edit forms |
-| Tables | `@tanstack/react-table` for all data tables |
+| Forms       | `@tanstack/react-form` for all create/edit forms                                                                |
+| Tables      | `@tanstack/react-table` for all data tables                                                                     |
 
 ### Routing rules
 

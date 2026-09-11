@@ -9,11 +9,7 @@ type Props = {
   onBack: () => void;
 };
 
-export function RepairDetailActions({
-  repair,
-  onRepairChange,
-  onBack,
-}: Props) {
+export function RepairDetailActions({ repair, onRepairChange, onBack }: Props) {
   const { t } = useI18n();
   const isArchived = Boolean(repair.archivedAt);
   const isCancelled = repair.status === "cancelled";

@@ -407,8 +407,25 @@
         "createCustomer": "Cliente nuevo",
         "createDevice": "Dispositivo nuevo"
       },
+      "estimate": {
+        "heading": "Presupuesto",
+        "hint": "Opcional. Es solo una estimación y puede cambiar tras un diagnóstico detallado.",
+        "fields": {
+          "listPrice": "Precio de lista ({currency})",
+          "discountPercent": "Descuento (%)"
+        },
+        "preview": {
+          "net": "Neto tras descuento",
+          "tax": "Impuesto",
+          "gross": "Total (IVA incl.)"
+        },
+        "validation": {
+          "discountNeedsPrice": "Introduzca un precio de lista antes de aplicar un descuento."
+        }
+      },
       "review": {
-        "heading": "Revisar y crear"
+        "heading": "Revisar y crear",
+        "estimateNet": "Presupuesto (neto)"
       },
       "done": {
         "heading": "Reparación creada",
@@ -428,8 +445,8 @@
       "noTemplates": "Aún no hay plantillas de diagnóstico. Créelas en Plantillas de diagnóstico.",
       "archivedHint": "Esta reparación está archivada. No se puede editar el diagnóstico.",
       "cancelledHint": "Esta reparación está cancelada. No se puede editar el diagnóstico.",
-      "estimateHint": "Introduzca el importe neto sin impuestos. El impuesto se calcula con los ajustes del taller.",
-      "estimateLockedHint": "Ya hay un presupuesto guardado. Puede cambiar el importe, pero no eliminarlo.",
+      "estimateHint": "Opcional: introduzca precio de lista y descuento. El impuesto se calcula con los ajustes del taller.",
+      "estimateLockedHint": "Ya hay un presupuesto guardado. Puede cambiar el precio de lista o el descuento, pero no eliminarlo.",
       "estimatePreviewInvalid": "Introduzca un importe válido.",
       "applyToNotesSuccess": "Lista aplicada a los hallazgos.",
       "draftSuccess": "Borrador del diagnóstico guardado.",
@@ -463,8 +480,8 @@
         "selectTemplateFirst": "Seleccione una plantilla primero.",
         "loadTemplateFailed": "No se pudo cargar la plantilla.",
         "nothingToApply": "Nada que aplicar. Cargue una plantilla y complete la lista primero.",
-        "estimateRequired": "Introduzca un presupuesto neto antes de finalizar.",
-        "estimateInvalid": "Introduzca un presupuesto neto válido.",
+        "estimateRequired": "Introduzca un precio de lista o importe de presupuesto antes de finalizar.",
+        "estimateInvalid": "Introduzca un precio de lista o importe de presupuesto válido.",
         "notesRequired": "Introduzca los hallazgos antes de finalizar.",
         "saveFailed": "No se pudo guardar el diagnóstico."
       }
@@ -534,8 +551,14 @@
         },
         "confirmSummary": {
           "title": "Resumen firmado (opcional)",
-          "description": "Imprima el resumen de reparación para que el cliente lo firme al recoger.",
-          "hint": "Subir una copia firmada es opcional. Puede continuar sin ella.",
+          "description": "Confirme que el dispositivo fue entregado y luego imprima el resumen de reparación para que el cliente lo firme.",
+          "hint": "Debe confirmar la entrega antes de imprimir para la firma. Subir una copia firmada es opcional: puede continuar sin ella.",
+          "handoverDate": "Fecha de entrega",
+          "handoverDateRequired": "La fecha de entrega es obligatoria.",
+          "handoverFailed": "No se pudo guardar la fecha de entrega.",
+          "warrantyYears": "Garantía (años)",
+          "warrantyYearsRequired": "Los años de garantía son obligatorios.",
+          "warrantyYearsInvalid": "Introduzca un número entero de 0 a 10.",
           "printSummary": "Imprimir resumen",
           "confirmButton": "Confirmar",
           "continueWithoutUpload": "Continuar sin subir",
@@ -559,7 +582,7 @@
         },
         "recordPickup": {
           "title": "Registrar entrega",
-          "description": "Confirme cuándo el cliente recogió el dispositivo.",
+          "description": "Confirme que el cliente ha recogido el dispositivo.",
           "pickupDate": "Fecha de entrega",
           "confirmButton": "Confirmar entrega",
           "dateRequired": "La fecha de entrega es obligatoria.",
@@ -598,8 +621,12 @@
           "total": "Total",
           "expected": "Prevista",
           "ready": "Lista",
-          "collected": "Recogida"
-        }
+          "collected": "Recogida",
+          "warranty": "Garantía"
+        },
+        "warrantyNone": "Sin garantía",
+        "warrantyOne": "1 año",
+        "warrantyOther": "{n} años"
       }
     },
     "documents": {
@@ -607,6 +634,7 @@
       "loading": "Cargando documentos…",
       "print": "Imprimir",
       "view": "Ver",
+      "download": "Descargar",
       "replace": "Reemplazar",
       "delete": "Eliminar",
       "uploadButton": "Subir copia firmada",
@@ -779,11 +807,12 @@
     "shop": {
       "title": "Ajustes del taller",
       "subtitle": "Impuesto y moneda para presupuestos de reparación",
-      "hint": "El tipo impositivo predeterminado es el 19%. Use un código de moneda de tres letras (por ejemplo EUR).",
+      "hint": "El tipo impositivo predeterminado es el 19%. Elija en la lista la moneda para los presupuestos de reparación.",
       "saveSuccess": "Ajustes del taller guardados.",
       "fields": {
         "taxRatePercent": "Tipo impositivo (%)",
-        "currency": "Moneda"
+        "currency": "Moneda",
+        "currencyPlaceholder": "Seleccionar moneda"
       },
       "actions": {
         "save": "Guardar ajustes del taller"
@@ -863,7 +892,8 @@
       "closeDiagnosis": "Volver a la reparación"
     },
     "errors": {
-      "loadFailed": "No se pudo cargar el informe."
+      "loadFailed": "No se pudo cargar el informe.",
+      "printFailed": "No se pudo abrir el cuadro de impresión."
     },
     "entrance": {
       "title": "Comprobante de recepción",
@@ -892,6 +922,13 @@
         "condition": "Estado",
         "notes": "Notas",
         "expectedPickup": "Posible recogida"
+      },
+      "estimate": {
+        "title": "Presupuesto provisional",
+        "disclaimer": "Esto es solo una estimación. El precio final puede cambiar tras un diagnóstico detallado.",
+        "listPrice": "Precio de lista",
+        "discountPercent": "Descuento (%)",
+        "netAfterDiscount": "Neto tras descuento"
       },
       "signatures": {
         "client": "Firma del cliente",

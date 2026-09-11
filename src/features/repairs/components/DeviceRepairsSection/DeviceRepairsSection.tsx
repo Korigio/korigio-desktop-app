@@ -21,9 +21,7 @@ export function DeviceRepairsSection({ customerId, deviceId }: Props) {
   return (
     <Card
       title={t("repairs.deviceSectionTitle")}
-      actions={
-        <NewRepairButton customerId={customerId} deviceId={deviceId} />
-      }
+      actions={<NewRepairButton customerId={customerId} deviceId={deviceId} />}
     >
       <div className="flex flex-col gap-4">
         <RepairListFilters

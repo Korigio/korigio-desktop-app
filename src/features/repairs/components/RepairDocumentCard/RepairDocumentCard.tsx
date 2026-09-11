@@ -11,7 +11,6 @@ import {
   documentCardStatus,
   documentForType,
 } from "@/features/repairs/utils/repairWorkflow";
-import { WorkflowCardStatusBadge } from "@/features/repairs/components/WorkflowCardStatusBadge";
 import { useI18n } from "@/shared/hooks/useI18n";
 import { Button, Card, LinkButton, StatusMessage } from "@/ui";
 
@@ -33,19 +32,26 @@ export function RepairDocumentCard({
   const { t } = useI18n();
   const cardStatus = documentCardStatus(repair, documents);
   const [busyType, setBusyType] = useState<RepairDocumentType | null>(null);
+  const [busyAction, setBusyAction] = useState<"download" | "delete" | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
-  async function handleView(documentType: RepairDocumentType) {
+  async function handleDownload(documentType: RepairDocumentType) {
     setError(null);
     setBusyType(documentType);
+    setBusyAction("download");
     try {
       await repairsApi.openDocument(repair.id, documentType);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : t("repairs.documents.openFailed"),
+        err instanceof Error
+          ? err.message
+          : t("repairs.documents.openFailed"),
       );
     } finally {
       setBusyType(null);
+      setBusyAction(null);
     }
   }
 
@@ -57,22 +63,25 @@ export function RepairDocumentCard({
 
     setError(null);
     setBusyType(documentType);
+    setBusyAction("delete");
     try {
       await repairsApi.deleteDocument(repair.id, documentType);
       onDocumentsChange();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : t("repairs.documents.deleteFailed"),
+        err instanceof Error
+          ? err.message
+          : t("repairs.documents.deleteFailed"),
       );
     } finally {
       setBusyType(null);
+      setBusyAction(null);
     }
   }
 
   return (
     <Card
       title={t("repairs.documents.title")}
-      actions={<WorkflowCardStatusBadge status={cardStatus} />}
       className={cardStatus === "disabled" ? "opacity-60" : undefined}
     >
       {error ? (
@@ -94,21 +103,13 @@ export function RepairDocumentCard({
                 key={documentType}
                 className="flex flex-col gap-2 border-b border-border pb-4 last:border-b-0 last:pb-0"
               >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {t(`repairs.documents.types.${documentType}.label`)}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {t(`repairs.documents.types.${documentType}.description`)}
-                    </p>
-                  </div>
-                  <LinkButton
-                    variant="secondary"
-                    to={REPAIR_DOCUMENT_PRINT_PATHS[documentType](repair.id)}
-                  >
-                    {t("repairs.documents.print")}
-                  </LinkButton>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {t(`repairs.documents.types.${documentType}.label`)}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {t(`repairs.documents.types.${documentType}.description`)}
+                  </p>
                 </div>
 
                 {doc ? (
@@ -117,15 +118,21 @@ export function RepairDocumentCard({
                       {doc.originalFilename}
                     </p>
                     <div className="flex flex-wrap gap-2">
+                      <LinkButton
+                        variant="secondary"
+                        to={REPAIR_DOCUMENT_PRINT_PATHS[documentType](repair.id)}
+                      >
+                        {t("repairs.documents.print")}
+                      </LinkButton>
                       <Button
                         type="button"
                         variant="secondary"
                         disabled={busy}
-                        onClick={() => void handleView(documentType)}
+                        onClick={() => void handleDownload(documentType)}
                       >
-                        {busy
+                        {busy && busyAction === "download"
                           ? t("repairs.documents.opening")
-                          : t("repairs.documents.view")}
+                          : t("repairs.documents.download")}
                       </Button>
                       <Button
                         type="button"
@@ -150,13 +157,21 @@ export function RepairDocumentCard({
                     <p className="mb-2 text-sm text-muted">
                       {t("repairs.documents.noneUploaded")}
                     </p>
-                    <Button
-                      type="button"
-                      disabled={cardStatus === "disabled" || busy}
-                      onClick={() => onUploadClick(documentType)}
-                    >
-                      {t("repairs.documents.uploadButton")}
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <LinkButton
+                        variant="secondary"
+                        to={REPAIR_DOCUMENT_PRINT_PATHS[documentType](repair.id)}
+                      >
+                        {t("repairs.documents.print")}
+                      </LinkButton>
+                      <Button
+                        type="button"
+                        disabled={cardStatus === "disabled" || busy}
+                        onClick={() => onUploadClick(documentType)}
+                      >
+                        {t("repairs.documents.uploadButton")}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </li>

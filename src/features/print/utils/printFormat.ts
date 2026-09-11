@@ -58,10 +58,24 @@ export function formatPrintDate(
 }
 
 /** Compact unlabeled footer: address · phone · email (skips empty parts). */
-export function printFooterLine(company: PrintCompany | null | undefined): string {
+export function printFooterLine(
+  company: PrintCompany | null | undefined,
+): string {
   if (!company) return "";
   return [company.address, company.phone, company.email]
     .map((part) => part?.trim())
     .filter((part): part is string => Boolean(part && part.length > 0))
     .join(" · ");
+}
+
+/** Warranty label for summary print: null → empty, 0/1/n → localized forms. */
+export function formatWarrantyYearsDisplay(
+  years: number | null | undefined,
+  empty: string,
+  messages: { none: string; one: string; other: string },
+): string {
+  if (years == null) return empty;
+  if (years === 0) return messages.none;
+  if (years === 1) return messages.one;
+  return messages.other.replace("{n}", String(years));
 }

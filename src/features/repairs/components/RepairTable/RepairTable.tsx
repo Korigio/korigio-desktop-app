@@ -70,7 +70,7 @@ export function RepairTable({
                 className="text-primary hover:underline"
                 to={`/devices/${row.original.deviceId}`}
               >
-                #{row.original.deviceId}
+                {row.original.deviceName}
               </Link>
             ),
           } satisfies ColumnDef<RepairListItem>,
@@ -116,7 +116,10 @@ export function RepairTable({
             <th key={header.id} className="px-3 py-2 font-medium">
               {header.isPlaceholder
                 ? null
-                : flexRender(header.column.columnDef.header, header.getContext())}
+                : flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
             </th>
           ))}
         </tr>

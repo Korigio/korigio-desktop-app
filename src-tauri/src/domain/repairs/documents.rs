@@ -160,7 +160,29 @@ pub fn resolve_repair_document_absolute(
     let repair_id = crate::domain::ids::parse_entity_id_field(&repair_id, "repairId")?;
     let type_slug = document_type.as_slug();
     let row = get_document_row(db.conn(), &repair_id, type_slug)?.ok_or(AppError::NotFound)?;
-    resolve_document_path(db.paths(), &row.file_path)
+    validate_document_relative(&row.file_path)?;
+
+    let display = db.paths().root.join(&row.file_path);
+    if display.is_file() {
+        return resolve_document_path(db.paths(), &row.file_path);
+    }
+
+    if !row.content_hash.is_empty() {
+        let blob = crate::domain::sync::blobs::blob_absolute(&db.paths().root, &row.content_hash);
+        if blob.is_file() {
+            crate::domain::sync::blobs::copy_to_display_path(
+                &db.paths().root,
+                &row.content_hash,
+                &row.file_path,
+            )?;
+            return resolve_document_path(db.paths(), &row.file_path);
+        }
+    }
+
+    Err(AppError::Validation {
+        field: Some("path".into()),
+        message: "Document file was not found.".into(),
+    })
 }
 
 fn ensure_repair_documents_editable(repair: &Repair) -> Result<(), AppError> {
@@ -182,6 +204,7 @@ fn ensure_repair_documents_editable(repair: &Repair) -> Result<(), AppError> {
 struct DocumentRow {
     id: String,
     file_path: String,
+    content_hash: String,
     created_at: String,
 }
 
@@ -191,7 +214,7 @@ fn get_document_row(
     document_type: &str,
 ) -> Result<Option<DocumentRow>, AppError> {
     let mut stmt = conn.prepare(
-        "SELECT id, file_path, created_at FROM repair_documents
+        "SELECT id, file_path, content_hash, created_at FROM repair_documents
          WHERE repair_id = ?1 AND document_type = ?2 AND deleted_at IS NULL",
     )?;
     let row = stmt
@@ -199,7 +222,8 @@ fn get_document_row(
             Ok(DocumentRow {
                 id: row.get(0)?,
                 file_path: row.get(1)?,
-                created_at: row.get(2)?,
+                content_hash: row.get(2)?,
+                created_at: row.get(3)?,
             })
         })
         .optional()?;
@@ -265,7 +289,13 @@ fn upsert_document_row(
             "id": stored_id,
             "repairId": repair_id,
             "documentType": document_type,
+            "filePath": file_path,
+            "originalFilename": original_filename,
             "contentHash": content_hash,
+            "createdAt": created_at,
+            "updatedAt": updated_at,
+            "updatedByStaffId": ctx.staff_id,
+            "deletedAt": serde_json::Value::Null,
         }),
         &ctx,
     )?;
@@ -302,7 +332,7 @@ fn map_repair_document(row: &rusqlite::Row<'_>) -> rusqlite::Result<RepairDocume
     })
 }
 
-pub(crate) fn resolve_document_path(paths: &AppPaths, relative: &str) -> Result<PathBuf, AppError> {
+fn validate_document_relative(relative: &str) -> Result<(), AppError> {
     if relative.is_empty()
         || Path::new(relative).is_absolute()
         || has_parent_dir_component(relative)
@@ -320,8 +350,19 @@ pub(crate) fn resolve_document_path(paths: &AppPaths, relative: &str) -> Result<
             message: "Document path is invalid.".into(),
         });
     }
+    Ok(())
+}
+
+pub(crate) fn resolve_document_path(paths: &AppPaths, relative: &str) -> Result<PathBuf, AppError> {
+    validate_document_relative(relative)?;
 
     let candidate = paths.root.join(relative);
+    if !candidate.is_file() {
+        return Err(AppError::Validation {
+            field: Some("path".into()),
+            message: "Document file was not found.".into(),
+        });
+    }
     let canonical = candidate.canonicalize().map_err(|_| AppError::Validation {
         field: Some("path".into()),
         message: "Document file was not found.".into(),
@@ -375,9 +416,22 @@ fn open_document_with_shell(path: &Path) -> Result<(), AppError> {
     Ok(())
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+fn open_document_with_shell(path: &Path) -> Result<(), AppError> {
+    use std::process::Command;
+
+    Command::new("open")
+        .arg(path)
+        .spawn()
+        .map_err(|err| AppError::Internal {
+            message: format!("failed to open document: {err}"),
+        })?;
+    Ok(())
+}
+
+#[cfg(all(not(windows), not(target_os = "macos")))]
 fn open_document_with_shell(_path: &Path) -> Result<(), AppError> {
     Err(AppError::Internal {
-        message: "Opening documents is only supported on Windows.".into(),
+        message: "Opening documents is only supported on Windows and macOS.".into(),
     })
 }

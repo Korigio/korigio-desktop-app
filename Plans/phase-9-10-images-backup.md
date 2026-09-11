@@ -8,25 +8,25 @@
 
 ### Images
 
-| Choice | Decision |
-| --- | --- |
-| Capture | Disk file picker only — **no webcam** |
-| Formats | JPEG / PNG |
-| Limits | Max **10 MB** per file; max **30** images per repair |
+| Choice  | Decision                                                                                 |
+| ------- | ---------------------------------------------------------------------------------------- |
+| Capture | Disk file picker only — **no webcam**                                                    |
+| Formats | JPEG / PNG                                                                               |
+| Limits  | Max **10 MB** per file; max **30** images per repair                                     |
 | Storage | Relative under AppData: `images/{repair_id}/{uuid}.ext`, `thumbs/{repair_id}/{uuid}.jpg` |
-| Thumbs | ~320px max edge, JPEG, generated in Rust off UI thread |
-| Schema | Existing `repair_images` — **no migration** |
-| UI | Repair detail gallery: lazy thumbs, full view, caption, delete (row + files) |
+| Thumbs  | ~320px max edge, JPEG, generated in Rust off UI thread                                   |
+| Schema  | Existing `repair_images` — **no migration**                                              |
+| UI      | Repair detail gallery: lazy thumbs, full view, caption, delete (row + files)             |
 
 ### Backup
 
-| Choice | Decision |
-| --- | --- |
-| Package | ZIP named `Servioo-YYYY-MM-DD-HHmm.backup` |
-| Contents | `manifest.json` + WAL-safe `database.sqlite` (rusqlite Online Backup API) + `images/` + `thumbs/` |
-| Restore | Validate → **safety backup** of current data → replace → reopen `DbState` |
-| Auto | `backups/auto/`, retain **14** dailies + latest pre-restore safety |
-| Encryption | Deferred (Phase 12 / ADR 004) |
+| Choice     | Decision                                                                                          |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| Package    | ZIP named `Servioo-YYYY-MM-DD-HHmm.backup`                                                        |
+| Contents   | `manifest.json` + WAL-safe `database.sqlite` (rusqlite Online Backup API) + `images/` + `thumbs/` |
+| Restore    | Validate → **safety backup** of current data → replace → reopen `DbState`                         |
+| Auto       | `backups/auto/`, retain **14** dailies + latest pre-restore safety                                |
+| Encryption | Deferred (Phase 12 / ADR 004)                                                                     |
 
 ## Out of scope
 

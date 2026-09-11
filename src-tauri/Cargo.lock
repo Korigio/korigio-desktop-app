@@ -2205,6 +2205,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "korigio"
+version = "1.1.0"
+dependencies = [
+ "chacha20poly1305",
+ "hex",
+ "hkdf",
+ "image",
+ "rand 0.8.8",
+ "reqwest 0.12.28",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sys-locale",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-opener",
+ "tempfile",
+ "thiserror 2.0.20",
+ "time",
+ "tokio",
+ "uuid",
+ "zip",
+]
+
+[[package]]
 name = "libappindicator"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3261,33 +3288,6 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
-
-[[package]]
-name = "repair-manager"
-version = "1.0.3"
-dependencies = [
- "chacha20poly1305",
- "hex",
- "hkdf",
- "image",
- "rand 0.8.8",
- "reqwest 0.12.28",
- "rusqlite",
- "serde",
- "serde_json",
- "sha2",
- "sys-locale",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-opener",
- "tempfile",
- "thiserror 2.0.20",
- "time",
- "tokio",
- "uuid",
- "zip",
-]
 
 [[package]]
 name = "reqwest"

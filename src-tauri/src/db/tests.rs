@@ -8,7 +8,7 @@ use crate::paths::AppPaths;
 fn opens_in_memory_and_reports_health() {
     let db = Db::open_in_memory().expect("open");
     let health = db.health_check().expect("health");
-    assert_eq!(health.migrations_applied, 11);
+    assert_eq!(health.migrations_applied, 13);
     assert_eq!(health.customers, 0);
 }
 
@@ -19,7 +19,7 @@ fn opens_file_database_under_temp_app_data() {
     let db = Db::open(paths).expect("open");
     assert!(db.database_path().exists());
     let health = db.health_check().expect("health");
-    assert_eq!(health.migrations_applied, 11);
+    assert_eq!(health.migrations_applied, 13);
 }
 
 #[test]
@@ -119,7 +119,7 @@ fn migration_list_is_non_empty_and_ordered() {
         assert!(!sql.trim().is_empty());
         last = *version;
     }
-    assert_eq!(last, 11);
+    assert_eq!(last, 13);
 }
 
 #[test]
