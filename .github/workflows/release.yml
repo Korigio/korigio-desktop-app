@@ -36,7 +36,7 @@ jobs:
 
       - run: npm ci
 
-      - run: node --test scripts/ci-macos-build.test.mjs
+      - run: node --test scripts/ci-macos-build.check.mjs
 
       - name: Check version files
         run: |

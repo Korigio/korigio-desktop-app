@@ -121,7 +121,7 @@ After a Windows build:
 
 The verifier requires the configured certificate in `Cert:\CurrentUser\My`, the Windows SDK signing tool for builds, and 7-Zip for payload extraction (available on GitHub Windows runners). It checks the selected certificate thumbprint on all three artifacts and requires Windows Authenticode `Status=Valid`. Unsigned files, different signers, tampered bytes, and `UnknownError` all fail.
 
-For a self-signed certificate, verification temporarily adds **only the selected certificate's public bytes** to `CurrentUser\Root` and `CurrentUser\TrustedPublisher`. It removes only entries it added, in `finally`, including on verification failure. Existing trust is preserved. This validates file integrity under the selected test identity; it does **not** establish public/customer trust. Abruptly killing the process can prevent cleanup; use an ephemeral CI runner for release builds.
+For a self-signed certificate, verification temporarily adds **only the selected certificate's public bytes** to `CurrentUser\Root` and `CurrentUser\TrustedPublisher` for local builds. Disposable GitHub-hosted Windows runners use the corresponding `LocalMachine` stores to avoid interactive root-trust prompts. It removes only entries it added, in `finally`, including on verification failure. Existing trust is preserved. This validates file integrity under the selected test identity; it does **not** establish public/customer trust. Abruptly killing the process can prevent cleanup; use an ephemeral CI runner for release builds.
 
 Use `-RequireTrusted` to disable temporary trust and require the machine's existing trust policy. This does not necessarily imply a publicly issued certificate if the machine already trusts a private certificate.
 

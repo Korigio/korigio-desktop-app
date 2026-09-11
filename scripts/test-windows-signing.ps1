@@ -12,8 +12,10 @@ function Assert-Rejected {
 }
 function Assert-NoTemporaryTrust {
   param([string]$Thumbprint)
-  foreach ($store in @('Root', 'TrustedPublisher')) {
-    if (Test-Path -LiteralPath "Cert:\CurrentUser\$store\$Thumbprint") { throw "Temporary trust leaked into $store." }
+  foreach ($location in @('CurrentUser', 'LocalMachine')) {
+    foreach ($store in @('Root', 'TrustedPublisher')) {
+      if (Test-Path -LiteralPath "Cert:\$location\$store\$Thumbprint") { throw "Temporary trust leaked into $location/$store." }
+    }
   }
 }
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) ('korigio-signing-test-' + [guid]::NewGuid().ToString('N'))
@@ -54,13 +56,17 @@ try {
     function Get-AuthenticodeSignature { [pscustomobject]@{ SignerCertificate = $cert; Status = 'UnknownError'; StatusMessage = 'Synthetic provider error' } }
     Assert-Rejected -Label 'UnknownError with expected signer' -Action { Assert-WindowsSignature -Path $signed -Thumbprint $cert.Thumbprint }
   }
-  # Existing user trust must survive the verifier.
-  $store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList 'TrustedPublisher', 'CurrentUser'
+  # Existing trust must survive the verifier in its selected store location.
+  $trustLocation = 'CurrentUser'
+  if ($env:GITHUB_ACTIONS -eq 'true' -and $env:RUNNER_ENVIRONMENT -eq 'github-hosted') {
+    $trustLocation = 'LocalMachine'
+  }
+  $store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList 'TrustedPublisher', $trustLocation
   try { $store.Open('ReadWrite'); $store.Add($cert) } finally { $store.Close() }
   try {
     Invoke-WithWindowsSigningTrust -Certificate $cert -Action { Assert-WindowsSignature -Path $signed -Thumbprint $cert.Thumbprint }
-    if (-not (Test-Path "Cert:\CurrentUser\TrustedPublisher\$($cert.Thumbprint)")) { throw 'Existing trust was removed.' }
-  } finally { Remove-Item -LiteralPath "Cert:\CurrentUser\TrustedPublisher\$($cert.Thumbprint)" -ErrorAction SilentlyContinue }
+    if (-not (Test-Path "Cert:\$trustLocation\TrustedPublisher\$($cert.Thumbprint)")) { throw 'Existing trust was removed.' }
+  } finally { Remove-Item -LiteralPath "Cert:\$trustLocation\TrustedPublisher\$($cert.Thumbprint)" -ErrorAction SilentlyContinue }
   Assert-NoTemporaryTrust -Thumbprint $cert.Thumbprint
   Write-Host 'Windows Authenticode regression tests passed.'
 } finally {

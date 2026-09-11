@@ -60,12 +60,19 @@ function Invoke-WithWindowsSigningTrust {
   # Windows must validate the Authenticode file digest, chain, and signing policy.
   # Temporarily anchor ONLY the explicitly selected self-signed certificate.
   # Copy public bytes so trust stores never receive a private-key association.
+  # CurrentUser Root can display a protected-root confirmation dialog and hang CI.
+  # Only disposable GitHub-hosted VMs use machine trust; local/self-hosted builds
+  # retain user-scoped trust. Hosted Windows runners are already administrators.
+  $location = 'CurrentUser'
+  if ($env:GITHUB_ACTIONS -eq 'true' -and $env:RUNNER_ENVIRONMENT -eq 'github-hosted') {
+    $location = 'LocalMachine'
+  }
   $added = [System.Collections.Generic.List[string]]::new()
   $publicCert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList @(,$Certificate.RawData)
   try {
     if (-not $RequireTrusted -and $Certificate.Subject -eq $Certificate.Issuer) {
       foreach ($name in @('Root', 'TrustedPublisher')) {
-        $store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $name, 'CurrentUser'
+        $store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $name, $location
         try {
           $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
           if (-not ($store.Certificates | Where-Object { $_.Thumbprint -eq $Certificate.Thumbprint })) {
@@ -74,12 +81,12 @@ function Invoke-WithWindowsSigningTrust {
           }
         } finally { $store.Close() }
       }
-      Write-Host 'Verifying with the selected self-signed certificate temporarily trusted for this user; this does not establish customer trust.'
+      Write-Host "Verifying with the selected self-signed certificate temporarily trusted in $location; this does not establish customer trust."
     }
     & $Action
   } finally {
     foreach ($name in $added) {
-      $store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $name, 'CurrentUser'
+      $store = New-Object System.Security.Cryptography.X509Certificates.X509Store -ArgumentList $name, $location
       try {
         $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
         $store.Remove($publicCert)

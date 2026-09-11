@@ -9,6 +9,7 @@ permissions:
 jobs:
   signing:
     runs-on: windows-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - name: Check signing and verification with disposable certificates
